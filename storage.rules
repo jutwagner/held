@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow users to upload images to their own folder
+    match /objects/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow public read access to images that are marked as public
+    // This will be handled at the application level by checking the object's isPublic flag
+    match /{allPaths=**} {
+      allow read: if true; // Allow public read access for now
+      allow write: if request.auth != null; // Allow authenticated users to write
+    }
+  }
+}

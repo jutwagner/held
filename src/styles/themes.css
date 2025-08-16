@@ -1,0 +1,25 @@
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+.light {
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+.dark {
+  --background-color: #000000;
+  --text-color: #ffffff;
+}
+
+.colorful {
+  --background-color: #ffefd5;
+  --text-color: #ff4500;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}

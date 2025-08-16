@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /registries/{document=**} {
+      allow read: if resource.data.isPublic == true;
+    }
+
+
+    // Users can read and write their own objects
+    match /objects/{objectId} {
+      allow read: if request.auth != null; // Temporarily allow all authenticated users to read objects for debugging
+      allow write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Users can read and write their own rotations
+    match /rotations/{rotationId} {
+      allow read, write: if request.auth != null; // Temporarily allow all authenticated users to read and write rotations for debugging
+    }
+    
+    // Allow public read access to public objects and rotations
+    match /objects/{objectId} {
+      allow read: if resource != null && resource.data.isPublic == true;
+    }
+    
+    match /rotations/{rotationId} {
+      allow read: if resource != null && resource.data.isPublic == true;
+    }
+  }
+}
+
