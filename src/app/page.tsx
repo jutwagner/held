@@ -21,7 +21,7 @@ export default function HomePage() {
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
             A private, beautiful way to catalog and share the physical objects that matter to you. 
-            No social pressure, no algorithms—just your collection, your way.
+            No social pressure, no algorithms&mdash;just your collection, your way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
