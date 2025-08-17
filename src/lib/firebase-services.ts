@@ -149,7 +149,7 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
 
 export const updateObject = async (id: string, data: UpdateObjectData): Promise<void> => {
   const objectRef = doc(db, 'objects', id);
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     ...data,
     updatedAt: new Date(),
   };
@@ -284,7 +284,7 @@ export const createRotation = async (userId: string, data: CreateRotationData): 
 
 export const updateRotation = async (id: string, data: UpdateRotationData): Promise<void> => {
   const rotationRef = doc(db, 'rotations', id);
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     ...data,
     updatedAt: new Date(),
   };

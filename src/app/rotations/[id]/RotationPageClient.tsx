@@ -23,15 +23,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 function RotationPageClient({ id }: { id: string }) {
-  if (!id) {
-    console.error('Rotation ID is missing');
-    return <p>Invalid rotation ID</p>;
-  }
-
   const [rotation, setRotation] = useState<DocumentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
+  if (!id) {
+    console.error('Rotation ID is missing');
+    return <p>Invalid rotation ID</p>;
+  }
 
   useEffect(() => {
     console.log('Rotation ID:', id);

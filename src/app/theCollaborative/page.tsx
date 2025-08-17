@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 import type { HeldObject } from '@/types';
 import { addRotation } from '@/scripts/addRotation';
 
-export default function theCollaborativePage() {
+export default function TheCollaborativePage() {
   const [posts, setPosts] = useState<HeldObject[]>([]);
 
   useEffect(() => {

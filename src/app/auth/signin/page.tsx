@@ -24,8 +24,12 @@ export default function SignInPage() {
     try {
       await signIn(email, password);
       router.push('/registry');
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign in');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to sign in');
+      } else {
+        setError('Failed to sign in');
+      }
     } finally {
       setLoading(false);
     }

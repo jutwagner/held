@@ -37,7 +37,6 @@ export default function RotationsPage() {
       setLoadingRotations(true);
       const userRotations = await getRotations(user.uid);
       setRotations(userRotations);
-      
       // Load objects for each rotation
       const rotationsWithObjs = await Promise.all(
         userRotations.map(async (rotation) => {
@@ -45,10 +44,13 @@ export default function RotationsPage() {
           return rotationWithObjects;
         })
       );
-      
       setRotationsWithObjects(rotationsWithObjs.filter(Boolean));
-    } catch (error) {
-      console.error('Error loading rotations:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error loading rotations:', error.message);
+      } else {
+        console.error('Error loading rotations');
+      }
     } finally {
       setLoadingRotations(false);
     }

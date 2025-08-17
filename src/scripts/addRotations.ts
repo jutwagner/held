@@ -1,6 +1,6 @@
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, addDoc } = require('firebase/firestore');
-const { Rotation } = require('../types');
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { Rotation } from '../types';
 
 // Firebase configuration (ensure this matches your Firebase project)
 const firebaseConfig = {

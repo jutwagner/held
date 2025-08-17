@@ -50,8 +50,12 @@ export default function NewObjectPage() {
       await createObject(user.uid, formData);
       console.log('Object created successfully'); // Debug log
       router.push('/registry');
-    } catch (error: any) {
-      setError(error.message || 'Failed to create object');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to create object');
+      } else {
+        setError('Failed to create object');
+      }
     } finally {
       setLoading(false);
     }

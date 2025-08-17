@@ -87,6 +87,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const result = await createUserWithEmailAndPassword(auth, email, password);
     
     // Create user in our database
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const code = (error as { code: string }).code;
+        if (code === 'auth/email-already-in-use') {
+          throw new Error('Email is already in use.');
+        } else {
+          throw new Error('Failed to create account. Please try again later.');
+        }
+      } else {
+        throw new Error('Failed to create account. Please try again later.');
+      }
+    }
+    
+    // Create user in our database
     await createUser({
       uid: result.user.uid,
       email: result.user.email!,
