@@ -17,7 +17,7 @@ export default function ObjectDetailPage() {
   const router = useRouter();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState<string>('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -40,7 +40,6 @@ export default function ObjectDetailPage() {
       loadObject();
     }
   }, [user, objectId]);
-    }, [user, objectId, loadObject]);
 
   useEffect(() => {
     if (object) {

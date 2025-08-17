@@ -112,9 +112,7 @@ export default function NewObjectPage() {
         <div className="max-w-2xl">
           <div className="held-card p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                // Removed error display
-              )}
+              {/* Error display removed */}
 
               {/* Title */}
               <div>
