@@ -1,4 +1,5 @@
-'use client';
+import type { RotationWithObjects } from '@/types';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +16,8 @@ export default function RotationsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [rotations, setRotations] = useState<Rotation[]>([]);
-  const [rotationsWithObjects, setRotationsWithObjects] = useState<any[]>([]);
+  import type { RotationWithObjects } from '@/types';
+  const [rotationsWithObjects, setRotationsWithObjects] = useState<RotationWithObjects[]>([]);
   const [loadingRotations, setLoadingRotations] = useState(true);
 
   useEffect(() => {
@@ -122,7 +124,6 @@ export default function RotationsPage() {
   );
 }
 
-import { RotationWithObjects } from '@/types';
 function RotationCard({ rotation }: { rotation: RotationWithObjects }) {
   return (
     <Link href={`/rotations/${rotation.id}`}>

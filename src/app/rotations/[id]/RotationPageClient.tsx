@@ -27,10 +27,8 @@ function RotationPageClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
-  if (!id) {
-    console.error('Rotation ID is missing');
-    return <p>Invalid rotation ID</p>;
-  }
+
+  // Move conditional rendering below hooks
 
   useEffect(() => {
     console.log('Rotation ID:', id);

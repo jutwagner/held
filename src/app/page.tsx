@@ -97,7 +97,7 @@ export default function HomePage() {
           </h2>
           <p className="text-gray-600 leading-relaxed">
             Held is designed for collectors, enthusiasts, and anyone who finds meaning in their 
-            physical possessions. Whether you're documenting family heirlooms, tracking your 
+            physical possessions. Whether you&apos;re documenting family heirlooms, tracking your 
             design collection, or simply want a beautiful way to remember what you own, 
             Held provides the tools you need without the noise of social media.
           </p>
