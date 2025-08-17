@@ -105,16 +105,21 @@ export default function ObjectDetailPage() {
         setError('Object not found');
         return;
       }
-      
       // Check if user owns this object
       if (obj.userId !== user?.uid) {
         setError('Access denied');
         return;
       }
-      
       setObject(obj);
-    } catch (error) {
-  console.error('Failed to load object', error);
+    } catch (error: unknown) {
+      console.error('Failed to load object', error);
+      let errorMsg = 'Failed to load object.';
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMsg += ` ${(error as { message?: string }).message}`;
+      } else {
+        errorMsg += ` ${(error as string)}`;
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -138,7 +143,12 @@ export default function ObjectDetailPage() {
         <Navigation />
         <div className="held-container py-24">
           <div className="text-center">
-            <p className="text-gray-600">{error || 'Object not found'}</p>
+            <p className="text-red-600 font-mono">{error || 'Object not found'}</p>
+            {error && (
+              <pre className="bg-gray-100 text-xs text-red-700 p-2 rounded mt-2 overflow-x-auto">
+                {error}
+              </pre>
+            )}
             <Button asChild className="mt-4">
               <Link href="/registry">Back to Registry</Link>
             </Button>

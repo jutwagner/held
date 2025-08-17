@@ -12,6 +12,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Runtime check for missing env vars
+const missingVars = Object.entries(firebaseConfig)
+  .filter(([_, value]) => !value)
+  .map(([key]) => key);
+if (missingVars.length > 0) {
+  throw new Error(
+    `Missing Firebase environment variables: ${missingVars.join(', ')}.\n` +
+    'Check your .env.local file or Vercel project settings.'
+  );
+}
+
 
 firebaseConfig
 
