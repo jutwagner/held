@@ -16,7 +16,6 @@ export default function RotationsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [rotations, setRotations] = useState<Rotation[]>([]);
-  import type { RotationWithObjects } from '@/types';
   const [rotationsWithObjects, setRotationsWithObjects] = useState<RotationWithObjects[]>([]);
   const [loadingRotations, setLoadingRotations] = useState(true);
 
@@ -46,7 +45,7 @@ export default function RotationsPage() {
           return rotationWithObjects;
         })
       );
-      setRotationsWithObjects(rotationsWithObjs.filter(Boolean));
+  setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Error loading rotations:', error.message);
