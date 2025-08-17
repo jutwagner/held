@@ -122,7 +122,8 @@ export default function RotationsPage() {
   );
 }
 
-function RotationCard({ rotation }: { rotation: any }) {
+import { RotationWithObjects } from '@/types';
+function RotationCard({ rotation }: { rotation: RotationWithObjects }) {
   return (
     <Link href={`/rotations/${rotation.id}`}>
       <div className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">

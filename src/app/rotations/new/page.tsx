@@ -78,8 +78,12 @@ export default function NewRotationPage() {
 
       await createRotation(user.uid, rotationData);
       router.push('/rotations');
-    } catch (error: any) {
-      setError(error.message || 'Failed to create rotation');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to create rotation');
+      } else {
+        setError('Failed to create rotation');
+      }
     } finally {
       setLoading(false);
     }

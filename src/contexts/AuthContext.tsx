@@ -40,21 +40,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (!userData) {
           // Create new user in our database
-          const userDataToCreate: any = {
+          const userDataToCreate: Record<string, unknown> = {
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
           };
-          
           // Only add displayName if it exists and is not null
           if (firebaseUser.displayName) {
             userDataToCreate.displayName = firebaseUser.displayName;
           }
-          
           // Only add photoURL if it exists and is not null
           if (firebaseUser.photoURL) {
             userDataToCreate.photoURL = firebaseUser.photoURL;
           }
-          
           userData = await createUser(userDataToCreate);
         }
         
@@ -72,11 +69,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
-        throw new Error('No user found with this email.');
-      } else if (error.code === 'auth/wrong-password') {
-        throw new Error('Incorrect password.');
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const code = (error as { code: string }).code;
+        if (code === 'auth/user-not-found') {
+          throw new Error('No user found with this email.');
+        } else if (code === 'auth/wrong-password') {
+          throw new Error('Incorrect password.');
+        } else {
+          throw new Error('Failed to sign in. Please try again later.');
+        }
       } else {
         throw new Error('Failed to sign in. Please try again later.');
       }
