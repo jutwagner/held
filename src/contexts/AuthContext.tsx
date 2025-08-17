@@ -70,7 +70,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found') {
+        throw new Error('No user found with this email.');
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Incorrect password.');
+      } else {
+        throw new Error('Failed to sign in. Please try again later.');
+      }
+    }
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {

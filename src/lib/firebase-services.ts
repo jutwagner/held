@@ -37,19 +37,21 @@ import { generateSlug } from './utils';
 export const createUser = async (userData: Omit<User, 'createdAt' | 'updatedAt'>) => {
   const userRef = doc(db, 'users', userData.uid);
   const now = new Date();
-  
+
   // Filter out undefined values
   const cleanUserData = Object.fromEntries(
     Object.entries(userData).filter(([_, value]) => value !== undefined)
   );
-  
-  await setDoc(userRef, {
+
+  const userToSave = {
     ...cleanUserData,
     createdAt: now,
     updatedAt: now,
-  });
-  
-  return { ...cleanUserData, createdAt: now, updatedAt: now };
+  };
+
+  await setDoc(userRef, userToSave);
+
+  return userToSave as User;
 };
 
 export const getUser = async (uid: string): Promise<User | null> => {

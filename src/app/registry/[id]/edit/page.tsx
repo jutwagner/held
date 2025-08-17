@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 
 type UpdateObjectData = {
@@ -43,21 +45,26 @@ const DisplayObjectDetails = ({ objectData }: { objectData: UpdateObjectData }) 
 
       {/* Share in theCollaborative */}
       <div>
-        <strong>Share in theCollaborative:</strong> {objectData.shareInCollaborative !== undefined ? (objectData.shareInCollaborative ? (
-          <span className="text-green-600 flex items-center">
-            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.707 6.293a1 1 0 00-1.414 0L9 11.586 7.707 10.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
-            </svg>
-            Shared in theCollaborative
-          </span>
+        <strong>Share in theCollaborative:</strong>{' '}
+        {objectData.shareInCollaborative !== undefined ? (
+          objectData.shareInCollaborative ? (
+            <span className="text-green-600 flex items-center">
+              <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.707 6.293a1 1 0 00-1.414 0L9 11.586 7.707 10.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
+              </svg>
+              Shared in theCollaborative
+            </span>
+          ) : (
+            <span className="text-red-600 flex items-center">
+              <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.707 6.293a1 1 0 00-1.414 0L9 11.586 7.707 10.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
+              </svg>
+              Not shared in theCollaborative
+            </span>
+          )
         ) : (
-          <span className="text-red-600 flex items-center">
-            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.707 6.293a1 1 0 00-1.414 0L9 11.586 7.707 10.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
-            </svg>
-            Not shared in theCollaborative
-          </span>
-        ) : 'Not Set'}
+          <span>Not Set</span>
+        )}
       </div>
 
       {/* ...existing fields... */}
