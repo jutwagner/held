@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { getFirestore, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import Navigation from '@/components/Navigation';
@@ -43,11 +42,11 @@ function RotationPageClient({ id }: { id: string }) {
             // Debug log removed for production
             setRotation(docSnap.data());
           } else {
-            // Error log removed for production
+  // Error log removed for production
             setError('Rotation not found');
           }
         } catch (err) {
-          // Error log removed for production
+            // Error log removed for production
           setError('Failed to fetch rotation');
         } finally {
           setLoading(false);
@@ -56,7 +55,7 @@ function RotationPageClient({ id }: { id: string }) {
 
       fetchRotation();
     }
-  }, [id]);
+  }, [id, getObject]);
 
   useEffect(() => {
     const fetchObjects = async () => {

@@ -17,7 +17,7 @@ export default function ObjectDetailPage() {
   const router = useRouter();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -40,6 +40,7 @@ export default function ObjectDetailPage() {
       loadObject();
     }
   }, [user, objectId]);
+    }, [user, objectId, loadObject]);
 
   useEffect(() => {
     if (object) {
@@ -74,8 +75,7 @@ export default function ObjectDetailPage() {
       
       setObject(obj);
     } catch (error) {
-      console.error('Error loading object:', error);
-      setError('Failed to load object');
+  console.error('Failed to load object', error);
     } finally {
       setLoading(false);
     }
@@ -89,8 +89,7 @@ export default function ObjectDetailPage() {
       await deleteObject(object.id);
       router.push('/registry');
     } catch (error) {
-      console.error('Error deleting object:', error);
-      setError('Failed to delete object');
+  console.error('Failed to delete object', error);
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);

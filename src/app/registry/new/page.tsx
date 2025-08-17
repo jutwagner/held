@@ -16,7 +16,6 @@ export default function NewObjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',
@@ -38,7 +37,7 @@ export default function NewObjectPage() {
     if (!user) return;
 
     if (!formData.title.trim()) {
-      setError('Title is required');
+  return; // Removed error handling
       return;
     }
 
@@ -52,9 +51,10 @@ export default function NewObjectPage() {
       router.push('/registry');
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message || 'Failed to create object');
+  // Removed error handling
       } else {
         setError('Failed to create object');
+  // Removed error handling
       }
     } finally {
       setLoading(false);
@@ -113,9 +113,7 @@ export default function NewObjectPage() {
           <div className="held-card p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
+                // Removed error display
               )}
 
               {/* Title */}

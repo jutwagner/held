@@ -12,7 +12,6 @@ export default function PassportPage() {
   const params = useParams();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   const slug = params.slug as string;
 
@@ -27,13 +26,11 @@ export default function PassportPage() {
       setLoading(true);
       const obj = await getObjectBySlug(slug);
       if (!obj) {
-        setError('Object not found');
         return;
       }
       setObject(obj);
     } catch (error) {
       console.error('Error loading object:', error);
-      setError('Failed to load object');
     } finally {
       setLoading(false);
     }
@@ -68,12 +65,12 @@ export default function PassportPage() {
     );
   }
 
-  if (error || !object) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-24">
-          <div className="text-center">
-            <p className="text-gray-600">{error || 'Object not found'}</p>
+    if (!object) {
+      return (
+        <div className="min-h-screen bg-white">
+          <div className="max-w-4xl mx-auto px-4 py-24">
+            <div className="text-center">
+              <p className="text-gray-600">Object not found</p>
             <Link href="/" className="text-gray-900 hover:underline mt-4 inline-block">
               Return to Held
             </Link>

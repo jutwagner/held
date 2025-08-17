@@ -46,8 +46,8 @@ export default function RegistryPage() {
       const userObjects = await getObjects(user.uid);
       console.log('Loaded objects:', userObjects); // Debug log
       setObjects(userObjects);
-    } catch (error) {
-      console.error('Error loading objects:', error);
+  } catch {
+  console.error('Error loading objects');
     } finally {
       setLoadingObjects(false);
     }
@@ -84,8 +84,8 @@ export default function RegistryPage() {
       await createObject(user.uid, createObjectData); // Save the new object
       await loadObjects(); // Refresh the objects list
       console.log('Object added and registry updated:', createObjectData); // Debug log
-    } catch (error) {
-      console.error('Error adding object:', error);
+  } catch {
+  console.error('Error adding object');
     }
   };
 

@@ -10,9 +10,7 @@ import {
   query,
   where,
   orderBy,
-  limit,
-  serverTimestamp,
-  writeBatch,
+  // ...existing code...
 } from 'firebase/firestore';
 import {
   ref,
@@ -196,7 +194,7 @@ export const deleteObject = async (id: string): Promise<void> => {
       try {
         const imageRef = ref(storage, imageUrl);
         await deleteStorageObject(imageRef);
-      } catch (error) {
+      } catch {
   // Error log removed for production
       }
     })
