@@ -13,7 +13,8 @@ export default function theCollaborativePage() {
   useEffect(() => {
     async function fetchPosts() {
       const publicPosts = await getPublicPosts();
-      setPosts(publicPosts);
+      const collaborativePosts = publicPosts.filter(post => post.shareInCollaborative);
+      setPosts(collaborativePosts);
     }
 
     fetchPosts();

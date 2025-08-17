@@ -29,7 +29,8 @@ export default function ObjectDetailPage() {
     visibility: 'Public',
     tags: '',
     notes: '',
-    year: undefined,
+    year: undefined as number | undefined,
+    shareInCollaborative: false, // New field
   });
 
   const objectId = params.id as string;
@@ -50,7 +51,8 @@ export default function ObjectDetailPage() {
         visibility: object.isPublic ? 'Public' : 'Private',
         tags: Array.isArray(object.tags) ? object.tags.join(', ') : '',
         notes: object.notes || '',
-        year: object.year || undefined,
+        year: object.year ?? undefined,
+        shareInCollaborative: object.shareInCollaborative ?? false, // Ensure default value
       });
     }
   }, [object]);
@@ -110,7 +112,7 @@ export default function ObjectDetailPage() {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()), // Convert tags string to array
         condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor', // Ensure correct type
-        year: formData.year || undefined, // Ensure year is undefined if not provided
+        year: formData.year as number | undefined, // Ensure year is undefined if not provided
       };
       await updateObject(object.id, updatedObject);
       setObject({ ...object, ...updatedObject });
@@ -279,6 +281,18 @@ export default function ObjectDetailPage() {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
                 />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="shareInCollaborative"
+                    checked={formData.shareInCollaborative}
+                    onChange={(e) => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
+                    className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="shareInCollaborative" className="text-sm text-gray-700">
+                    Share in theCollaborative
+                  </label>
+                </div>
               </>
             ) : (
               <>
@@ -318,6 +332,9 @@ export default function ObjectDetailPage() {
                   <p className="text-gray-500">No tags available</p>
                 )}
                 <p className="text-gray-600">Notes: {object.notes}</p>
+                <p className="text-gray-600">
+                  Share in theCollaborative: {object.shareInCollaborative ? 'Yes' : 'No'}
+                </p>
               </>
             )}
             <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono">

@@ -39,10 +39,10 @@ export default function Navigation() {
               Rotations
             </Link>
             <Link 
-              href="/community" 
+              href="/theCollaborative" 
               className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Community
+              theCollaborative
             </Link>
           </div>
 

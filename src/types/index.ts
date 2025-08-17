@@ -23,6 +23,7 @@ export interface HeldObject {
   createdAt: Date;
   updatedAt: Date;
   description?: string;
+  shareInCollaborative?: boolean; // New field
 }
 
 export interface Rotation {
@@ -51,6 +52,7 @@ export interface CreateObjectData {
   notes?: string;
   images: File[];
   isPublic: boolean;
+  shareInCollaborative?: boolean; // New field
 }
 
 export interface UpdateObjectData extends Partial<CreateObjectData> {

@@ -73,6 +73,9 @@ export default function NewRotationPage() {
         objectIds: selectedObjects,
       };
       
+      console.log('User ID:', user?.uid);
+      console.log('Rotation Data:', rotationData);
+
       await createRotation(user.uid, rotationData);
       router.push('/rotations');
     } catch (error: any) {
@@ -105,9 +108,9 @@ export default function NewRotationPage() {
       
       <div className="held-container py-8">
         {/* Header */}
-        <div className="flex flex-col items-start w-full">
-          <Button variant="ghost" asChild className="mb-2 pl-2 -ml-2">
-            <Link href="/rotations" className="flex items-center">
+        <div className="flex items-center mb-8">
+          <Button variant="ghost" asChild className="mr-4">
+            <Link href="/rotations">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Rotations
             </Link>

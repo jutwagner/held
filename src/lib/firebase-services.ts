@@ -104,18 +104,22 @@ export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> 
 };
 
 export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
+  console.log('Creating object with data:', data); // Debug log
+
   // Upload images first
   const imageUrls = await Promise.all(
     data.images.map(async (file) => {
       const imageRef = ref(storage, `objects/${userId}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(imageRef, file);
-      return getDownloadURL(snapshot.ref);
+      const url = await getDownloadURL(snapshot.ref);
+      console.log('Uploaded image URL:', url); // Debug log
+      return url;
     })
   );
-  
+
   const slug = generateSlug(data.title);
   const now = new Date();
-  
+
   const objectData = {
     userId,
     title: data.title,
@@ -131,9 +135,10 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
     createdAt: now,
     updatedAt: now,
   };
-  
+
   const docRef = await addDoc(collection(db, 'objects'), objectData);
-  
+  console.log('Object created with ID:', docRef.id); // Debug log
+
   return {
     id: docRef.id,
     ...objectData,
@@ -146,7 +151,12 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     ...data,
     updatedAt: new Date(),
   };
-  
+
+  // Ensure shareInCollaborative is included in the update
+  if (data.shareInCollaborative !== undefined) {
+    updateData.shareInCollaborative = data.shareInCollaborative;
+  }
+
   // Handle new images if provided
   if (data.images && data.images.length > 0) {
     const object = await getObject(id);
@@ -163,12 +173,12 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
       updateData.images = [...object.images, ...newImageUrls];
     }
   }
-  
+
   // Update slug if title changed
   if (data.title) {
     updateData.slug = generateSlug(data.title);
   }
-  
+
   delete updateData.id; // Remove id from update data
   await updateDoc(objectRef, updateData);
 };

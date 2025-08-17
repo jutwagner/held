@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
-import { getObjects } from '@/lib/firebase-services';
+import { getObjects, createObject } from '@/lib/firebase-services';
 import { Plus, Search, Filter, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate, formatCurrency } from '@/lib/utils';
@@ -39,10 +39,12 @@ export default function RegistryPage() {
 
   const loadObjects = async () => {
     if (!user) return;
-    
+
     try {
       setLoadingObjects(true);
+      console.log('Loading objects for user:', user.uid); // Debug log
       const userObjects = await getObjects(user.uid);
+      console.log('Loaded objects:', userObjects); // Debug log
       setObjects(userObjects);
     } catch (error) {
       console.error('Error loading objects:', error);
@@ -69,6 +71,22 @@ export default function RegistryPage() {
     }
 
     setFilteredObjects(filtered);
+  };
+
+  const handleAddObject = async (newObjectData: HeldObject) => {
+    if (!user) return; // Ensure user is defined
+
+    try {
+      const createObjectData = {
+        ...newObjectData,
+        images: newObjectData.images.map((url) => new File([], url)), // Convert URLs to empty File objects
+      };
+      await createObject(user.uid, createObjectData); // Save the new object
+      await loadObjects(); // Refresh the objects list
+      console.log('Object added and registry updated:', createObjectData); // Debug log
+    } catch (error) {
+      console.error('Error adding object:', error);
+    }
   };
 
   if (loading || !user) {
@@ -164,9 +182,11 @@ export default function RegistryPage() {
 }
 
 function ObjectCard({ object }: { object: HeldObject }) {
+  const cardClassName = "bg-white rounded-lg shadow p-4 min-h-[390px] flex flex-col justify-between"; // Updated min height to 390px for consistent card sizes
+
   return (
     <Link href={`/registry/${object.id}`}>
-      <div className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">
+      <div className={`${cardClassName} held-card p-6 hover:shadow-lg transition-shadow cursor-pointer`}>
         {/* Image */}
         <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
           {object.images.length > 0 ? (
@@ -191,11 +211,13 @@ function ObjectCard({ object }: { object: HeldObject }) {
           
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span className="font-mono">
-              {object.year && `${object.year}`}
+              {object.year && !isNaN(object.year) ? `${object.year}` : "N/A"}
             </span>
             <div className="flex items-center space-x-2">
               {object.value && (
-                <span className="font-mono">{formatCurrency(object.value)}</span>
+                <span className="font-mono">
+                  {isNaN(object.value) ? "N/A" : formatCurrency(object.value)}
+                </span>
               )}
               {object.isPublic ? (
                 <Eye className="h-3 w-3" />
