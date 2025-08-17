@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 type AddObjectFlowProps = {
   onPhotoSelected?: (photo: string) => void; // Made optional
@@ -44,9 +45,9 @@ const AddObjectFlow: React.FC<AddObjectFlowProps> = ({ onPhotoSelected }) => {
         <>
           <div className="w-72 h-44 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
             {photo ? (
-              <img src={photo} alt="Selected Photo" className="w-full h-full object-cover" />
+              <Image src={photo} alt="Selected Photo" width={400} height={400} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-gray-400">{name}</span> // Display default name
+              <span className="text-gray-400">{name}</span>
             )}
           </div>
           <input

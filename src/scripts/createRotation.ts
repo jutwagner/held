@@ -8,7 +8,7 @@ async function createRotationDocument() {
   const user = auth.currentUser;
 
   if (!user) {
-    console.error('User is not authenticated');
+  // Error log removed for production
     return;
   }
 
@@ -25,9 +25,9 @@ async function createRotationDocument() {
 
   try {
     const docRef = await addDoc(collection(db, 'rotations'), rotationData);
-    console.log('Rotation document created with ID:', docRef.id);
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error creating rotation document:', error);
+  // Error log removed for production
   }
 }
 

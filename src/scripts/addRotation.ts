@@ -13,12 +13,12 @@ export async function addRotation() {
     updatedAt: Timestamp.now(),
   };
 
-  console.log('Rotation Data:', rotationData); // Log the rotation data being sent to Firestore
+  // Debug log removed for production
 
   try {
     const docRef = await addDoc(collection(db, 'rotations'), rotationData);
-    console.log('Rotation document created with ID:', docRef.id);
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error creating rotation document:', error);
+  // Error log removed for production
   }
 }

@@ -47,11 +47,11 @@ const addRotations = async () => {
     const collectionRef = collection(db, 'rotations');
     for (const rotation of rotations) {
       await addDoc(collectionRef, rotation);
-      console.log(`Added rotation: ${rotation.name}`);
+  // Debug log removed for production
     }
-    console.log('All rotations added successfully.');
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error adding rotations:', error);
+  // Error log removed for production
   }
 };
 

@@ -11,9 +11,9 @@ export async function addUser() {
 
   try {
     const docRef = await addDoc(collection(db, 'users'), userData);
-    console.log('User document created with ID:', docRef.id);
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error creating user document:', error);
+  // Error log removed for production
   }
 }
 

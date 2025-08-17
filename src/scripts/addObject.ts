@@ -12,9 +12,9 @@ export async function addObject() {
 
   try {
     const docRef = await addDoc(collection(db, 'objects'), objectData);
-    console.log('Object document created with ID:', docRef.id);
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error creating object document:', error);
+  // Error log removed for production
   }
 }
 

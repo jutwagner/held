@@ -16,7 +16,6 @@ export default function NewObjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  // ...existing code...
 
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',

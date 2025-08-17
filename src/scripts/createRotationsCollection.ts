@@ -1,13 +1,10 @@
 import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore, serverTimestamp } from 'firebase-admin/firestore';
-import adminConfig from '@/lib/firebase.admin'; // Adjusted to use the alias
+import { getFirestore } from 'firebase-admin/firestore';
+import { db as adminDb } from '@/lib/firebase.admin';
 
 // Initialize Firebase Admin SDK
-initializeApp({
-  credential: cert(adminConfig),
-});
-
-const db = getFirestore();
+// Firebase Admin SDK is initialized in lib/firebase.admin.ts
+const db = adminDb;
 
 // Sample rotation documents
 const rotations = [
@@ -17,8 +14,8 @@ const rotations = [
     items: ['item1', 'item2'],
     visibility: 'private',
     notes: 'This is the first rotation.',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
   },
   {
     userId: 'user2',
@@ -26,8 +23,8 @@ const rotations = [
     items: ['item3', 'item4'],
     visibility: 'public',
     notes: 'This is the second rotation.',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
   },
 ];
 
@@ -42,9 +39,9 @@ const createRotationsCollection = async () => {
     });
 
     await batch.commit();
-    console.log('Rotations collection created successfully.');
+  // Debug log removed for production
   } catch (error) {
-    console.error('Error creating rotations collection:', error);
+  // Error log removed for production
   }
 };
 
