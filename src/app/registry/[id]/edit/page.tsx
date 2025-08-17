@@ -41,9 +41,7 @@ const MyComponent: React.FC = () => {
 const DisplayObjectDetails = ({ objectData }: { objectData: UpdateObjectData }) => {
   return (
     <div>
-      {/* ...existing fields... */}
-
-      {/* Share in theCollaborative */}
+      {/* Display other object details here if needed */}
       <div>
         <strong>Share in theCollaborative:</strong>{' '}
         {objectData.shareInCollaborative !== undefined ? (
@@ -66,8 +64,6 @@ const DisplayObjectDetails = ({ objectData }: { objectData: UpdateObjectData }) 
           <span>Not Set</span>
         )}
       </div>
-
-      {/* ...existing fields... */}
     </div>
   );
 };
