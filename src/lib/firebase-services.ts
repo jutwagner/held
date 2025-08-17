@@ -106,7 +106,7 @@ export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> 
 };
 
 export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
-  console.log('Creating object with data:', data); // Debug log
+  // Debug log removed for production
 
   // Upload images first
   const imageUrls = await Promise.all(
@@ -114,7 +114,7 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
       const imageRef = ref(storage, `objects/${userId}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(imageRef, file);
       const url = await getDownloadURL(snapshot.ref);
-      console.log('Uploaded image URL:', url); // Debug log
+  // Debug log removed for production
       return url;
     })
   );
@@ -139,7 +139,7 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
   };
 
   const docRef = await addDoc(collection(db, 'objects'), objectData);
-  console.log('Object created with ID:', docRef.id); // Debug log
+  // Debug log removed for production
 
   return {
     id: docRef.id,
@@ -149,7 +149,7 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
 
 export const updateObject = async (id: string, data: UpdateObjectData): Promise<void> => {
   const objectRef = doc(db, 'objects', id);
-  const updateData: Record<string, unknown> = {
+  const updateData: Partial<UpdateObjectData> = {
     ...data,
     updatedAt: new Date(),
   };
@@ -164,14 +164,15 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     const object = await getObject(id);
     if (object) {
       // Upload new images
+      const filesToUpload = data.images.filter((img): img is File => typeof img !== 'string');
       const newImageUrls = await Promise.all(
-        data.images.map(async (file) => {
+        filesToUpload.map(async (file) => {
           const imageRef = ref(storage, `objects/${object.userId}/${Date.now()}_${file.name}`);
           const snapshot = await uploadBytes(imageRef, file);
           return getDownloadURL(snapshot.ref);
         })
       );
-      
+      // When updating, images should be URLs (string[]), not File[]
       updateData.images = [...object.images, ...newImageUrls];
     }
   }
@@ -196,7 +197,7 @@ export const deleteObject = async (id: string): Promise<void> => {
         const imageRef = ref(storage, imageUrl);
         await deleteStorageObject(imageRef);
       } catch (error) {
-        console.error('Error deleting image:', error);
+  // Error log removed for production
       }
     })
   );
@@ -284,7 +285,7 @@ export const createRotation = async (userId: string, data: CreateRotationData): 
 
 export const updateRotation = async (id: string, data: UpdateRotationData): Promise<void> => {
   const rotationRef = doc(db, 'rotations', id);
-  const updateData: Record<string, unknown> = {
+  const updateData: Partial<UpdateRotationData> = {
     ...data,
     updatedAt: new Date(),
   };

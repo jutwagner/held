@@ -48,9 +48,9 @@ export default function RotationsPage() {
   setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error('Error loading rotations:', error.message);
+  // Error log removed for production
       } else {
-        console.error('Error loading rotations');
+  // Error log removed for production
       }
     } finally {
       setLoadingRotations(false);

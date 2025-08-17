@@ -46,9 +46,9 @@ export default function NewObjectPage() {
     setError('');
 
     try {
-      console.log('Creating object with formData:', formData); // Debug log
+  // Debug log removed for production
       await createObject(user.uid, formData);
-      console.log('Object created successfully'); // Debug log
+  // Debug log removed for production
       router.push('/registry');
     } catch (error: unknown) {
       if (error instanceof Error) {

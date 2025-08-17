@@ -31,23 +31,23 @@ function RotationPageClient({ id }: { id: string }) {
   // Move conditional rendering below hooks
 
   useEffect(() => {
-    console.log('Rotation ID:', id);
+  // Debug log removed for production
     if (id) {
       const fetchRotation = async () => {
         try {
-          console.log('Fetching rotation data for ID:', id);
+          // Debug log removed for production
           const docRef = doc(db, 'rotations', id as string);
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            console.log('Rotation data:', docSnap.data());
+            // Debug log removed for production
             setRotation(docSnap.data());
           } else {
-            console.error('Rotation not found');
+            // Error log removed for production
             setError('Rotation not found');
           }
         } catch (err) {
-          console.error('Error fetching rotation:', err);
+          // Error log removed for production
           setError('Failed to fetch rotation');
         } finally {
           setLoading(false);
@@ -83,7 +83,7 @@ function RotationPageClient({ id }: { id: string }) {
   }
 
   if (!rotation) {
-    console.error('Rotation data is null or undefined');
+  // Error log removed for production
     return <p>No rotation data available</p>;
   }
 

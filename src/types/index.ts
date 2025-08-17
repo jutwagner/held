@@ -55,8 +55,20 @@ export interface CreateObjectData {
   shareInCollaborative?: boolean; // New field
 }
 
-export interface UpdateObjectData extends Partial<CreateObjectData> {
+export interface UpdateObjectData {
   id: string;
+  title?: string;
+  maker?: string;
+  year?: number;
+  value?: number;
+  condition?: 'excellent' | 'good' | 'fair' | 'poor';
+  tags?: string[];
+  notes?: string;
+  images?: File[] | string[];
+  isPublic?: boolean;
+  shareInCollaborative?: boolean;
+  updatedAt?: Date;
+  slug?: string;
 }
 
 export interface CreateRotationData {
@@ -68,4 +80,6 @@ export interface CreateRotationData {
 
 export interface UpdateRotationData extends Partial<CreateRotationData> {
   id: string;
+  updatedAt?: Date;
+  slug?: string;
 }

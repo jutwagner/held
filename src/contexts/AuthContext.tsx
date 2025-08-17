@@ -40,18 +40,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (!userData) {
           // Create new user in our database
-          const userDataToCreate: Record<string, unknown> = {
+          const userDataToCreate: Omit<User, 'createdAt' | 'updatedAt'> = {
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
+            ...(firebaseUser.displayName ? { displayName: firebaseUser.displayName } : {}),
+            ...(firebaseUser.photoURL ? { photoURL: firebaseUser.photoURL } : {}),
           };
-          // Only add displayName if it exists and is not null
-          if (firebaseUser.displayName) {
-            userDataToCreate.displayName = firebaseUser.displayName;
-          }
-          // Only add photoURL if it exists and is not null
-          if (firebaseUser.photoURL) {
-            userDataToCreate.photoURL = firebaseUser.photoURL;
-          }
           userData = await createUser(userDataToCreate);
         }
         
@@ -86,11 +80,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    
-    // Create user in our database
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await createUser({
+        uid: result.user.uid,
+        email: result.user.email!,
+        displayName,
+      });
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const code = (error as { code: string }).code;
@@ -103,13 +99,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to create account. Please try again later.');
       }
     }
-    
-    // Create user in our database
-    await createUser({
-      uid: result.user.uid,
-      email: result.user.email!,
-      displayName,
-    });
   };
 
   const logout = async () => {
