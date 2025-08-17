@@ -16,9 +16,10 @@ const adminConfig = {
 };
 
 // Initialize Firebase Admin SDK if not already initialized
+import type { ServiceAccount } from 'firebase-admin/app';
 if (!getApps().length) {
   initializeApp({
-    credential: cert(adminConfig),
+    credential: cert(adminConfig as ServiceAccount),
   });
 }
 

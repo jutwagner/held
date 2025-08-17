@@ -16,7 +16,7 @@ export default function NewObjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  // ...existing code...
 
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',
@@ -43,7 +43,7 @@ export default function NewObjectPage() {
     }
 
     setLoading(true);
-    setError('');
+  // Error state removed
 
     try {
   // Debug log removed for production
@@ -54,7 +54,7 @@ export default function NewObjectPage() {
       if (error instanceof Error) {
   // Removed error handling
       } else {
-        setError('Failed to create object');
+  // Error state removed
   // Removed error handling
       }
     } finally {
