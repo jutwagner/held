@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser } from '@/lib/firebase-services';
 import { User } from '@/types';
@@ -13,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +30,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  
+    // Google Sign-In
+    const signInWithGoogle = async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        // Create user in DB if not exists
+        let userData = await getUser(result.user.uid);
+        if (!userData) {
+          const userDataToCreate: Omit<User, 'createdAt' | 'updatedAt'> = {
+            uid: result.user.uid,
+            email: result.user.email!,
+            ...(result.user.displayName ? { displayName: result.user.displayName } : {}),
+            ...(result.user.photoURL ? { photoURL: result.user.photoURL } : {}),
+          };
+          await createUser(userDataToCreate);
+        }
+      } catch (error) {
+        throw new Error('Google sign-in failed.');
+      }
+    };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -112,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     logout,
+      signInWithGoogle,
   };
 
   return (
