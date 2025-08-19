@@ -1,5 +1,3 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
 import { db as adminDb } from '@/lib/firebase.admin';
 
 // Initialize Firebase Admin SDK

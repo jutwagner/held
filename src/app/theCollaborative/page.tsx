@@ -18,7 +18,7 @@ export default function TheCollaborativePage() {
     }
 
     fetchPosts();
-  }, [getPublicPosts]);
+  }, []);
 
   useEffect(() => {
     addRotation();
