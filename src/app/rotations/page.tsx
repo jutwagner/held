@@ -32,8 +32,7 @@ export default function RotationsPage() {
   }, [user]);
 
   const loadRotations = async () => {
-    if (!user) return;
-    
+    if (!user || typeof user.uid !== 'string') return;
     try {
       setLoadingRotations(true);
       const userRotations = await getRotations(user.uid);
@@ -45,13 +44,9 @@ export default function RotationsPage() {
           return rotationWithObjects;
         })
       );
-  setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
+      setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-  // Error log removed for production
-      } else {
-  // Error log removed for production
-      }
+      // Optionally handle error
     } finally {
       setLoadingRotations(false);
     }

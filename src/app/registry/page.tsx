@@ -38,7 +38,7 @@ export default function RegistryPage() {
   }, [objects, searchTerm, showPublicOnly]);
 
   const loadObjects = async () => {
-    if (!user) return;
+    if (!user || typeof user.uid !== 'string') return;
 
     try {
       setLoadingObjects(true);
@@ -46,8 +46,8 @@ export default function RegistryPage() {
       const userObjects = await getObjects(user.uid);
       console.log('Loaded objects:', userObjects); // Debug log
       setObjects(userObjects);
-  } catch {
-  console.error('Error loading objects');
+    } catch {
+      console.error('Error loading objects');
     } finally {
       setLoadingObjects(false);
     }
@@ -74,7 +74,7 @@ export default function RegistryPage() {
   };
 
   const handleAddObject = async (newObjectData: HeldObject) => {
-    if (!user) return; // Ensure user is defined
+    if (!user || typeof user.uid !== 'string') return;
 
     try {
       const createObjectData = {
@@ -84,8 +84,8 @@ export default function RegistryPage() {
       await createObject(user.uid, createObjectData); // Save the new object
       await loadObjects(); // Refresh the objects list
       console.log('Object added and registry updated:', createObjectData); // Debug log
-  } catch {
-  console.error('Error adding object');
+    } catch {
+      console.error('Error adding object');
     }
   };
 

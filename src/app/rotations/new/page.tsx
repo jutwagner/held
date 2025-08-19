@@ -35,8 +35,7 @@ export default function NewRotationPage() {
   }, [user]);
 
   const loadObjects = async () => {
-    if (!user) return;
-    
+    if (!user || typeof user.uid !== 'string') return;
     try {
       const userObjects = await getObjects(user.uid);
       setObjects(userObjects);
@@ -47,7 +46,7 @@ export default function NewRotationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+  if (!user || typeof user.uid !== 'string') return;
 
     if (!formData.name.trim()) {
       setError('Name is required');

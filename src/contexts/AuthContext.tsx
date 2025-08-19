@@ -1,19 +1,23 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+// import type { Dispatch, SetStateAction } from 'react';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser } from '@/lib/firebase-services';
-import { User } from '@/types';
+import type { UserDoc } from '@/types';
 
+import type { Dispatch, SetStateAction } from 'react';
 interface AuthContextType {
-  user: User | null;
+  user: UserDoc | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  setUser: Dispatch<SetStateAction<UserDoc | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,58 +31,61 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserDoc | null>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('held_user');
+      if (cached) return JSON.parse(cached);
+    }
+    return null;
+  });
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   
     // Google Sign-In
-    const signInWithGoogle = async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        // Create user in DB if not exists
-        let userData = await getUser(result.user.uid);
-        if (!userData) {
-          const userDataToCreate: Omit<User, 'createdAt' | 'updatedAt'> = {
-            uid: result.user.uid,
-            email: result.user.email!,
-            ...(result.user.displayName ? { displayName: result.user.displayName } : {}),
-            ...(result.user.photoURL ? { photoURL: result.user.photoURL } : {}),
-          };
-          await createUser(userDataToCreate);
-        }
-      } catch (error) {
-        throw new Error('Google sign-in failed.');
+  const signInWithGoogle = async (): Promise<void> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      // Create user in DB if not exists
+      const userData = await getUser(result.user.uid);
+      if (!userData) {
+        await createUser({
+          uid: result.user.uid,
+          email: result.user.email!,
+          displayName: result.user.displayName || '',
+          avatarUrl: result.user.photoURL || '',
+        });
       }
-    };
+    } catch (error) {
+      throw new Error('Google sign-in failed.');
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
-      
       if (firebaseUser) {
-        // Check if user exists in our database
         let userData = await getUser(firebaseUser.uid);
-        
         if (!userData) {
-          // Create new user in our database
-          const userDataToCreate: Omit<User, 'createdAt' | 'updatedAt'> = {
+          userData = await createUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
-            ...(firebaseUser.displayName ? { displayName: firebaseUser.displayName } : {}),
-            ...(firebaseUser.photoURL ? { photoURL: firebaseUser.photoURL } : {}),
-          };
-          userData = await createUser(userDataToCreate);
+            displayName: firebaseUser.displayName || '',
+            avatarUrl: firebaseUser.photoURL || '',
+          });
         }
-        
         setUser(userData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('held_user', JSON.stringify(userData));
+        }
       } else {
         setUser(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('held_user');
+        }
       }
-      
       setLoading(false);
     });
-
     return unsubscribe;
   }, []);
 
@@ -108,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         uid: result.user.uid,
         email: result.user.email!,
         displayName,
+        avatarUrl: result.user.photoURL || '',
       });
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'code' in error) {
@@ -127,14 +135,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signOut(auth);
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     firebaseUser,
     loading,
     signIn,
     signUp,
     logout,
-      signInWithGoogle,
+    signInWithGoogle,
+    setUser,
   };
 
   return (

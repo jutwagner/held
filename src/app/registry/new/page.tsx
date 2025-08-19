@@ -34,28 +34,19 @@ export default function NewObjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || typeof user.uid !== 'string') return;
 
     if (!formData.title.trim()) {
-  return; // Removed error handling
       return;
     }
 
     setLoading(true);
-  // Error state removed
 
     try {
-  // Debug log removed for production
       await createObject(user.uid, formData);
-  // Debug log removed for production
       router.push('/registry');
     } catch (error: unknown) {
-      if (error instanceof Error) {
-  // Removed error handling
-      } else {
-  // Error state removed
-  // Removed error handling
-      }
+      // Optionally handle error
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,35 @@
+export type Theme = 'light' | 'dim' | 'dark';
+export type Density = 'cozy' | 'standard' | 'spacious';
+
+export interface UserDoc {
+  displayName: string;
+  handle: string;
+  bio: string;
+  avatarUrl: string;
+  theme: Theme;
+  typeTitleSerif: boolean;
+  typeMetaMono: boolean;
+  density: Density;
+  notifications: {
+    monthlyRotation: boolean;
+    quarterlyReview: boolean;
+    email: boolean;
+    push: boolean;
+  };
+  premium: {
+    active: boolean;
+    plan: 'plus' | null;
+    since: number | null;
+    renewsAt: number | null;
+  };
+  backup: { enabled: boolean; lastRun: number | null };
+  security: {
+    providers: string[];
+    sessions: { id: string; device: string; lastActive: number }[];
+  };
+  email?: string;
+  uid?: string;
+}
 export interface User {
   uid: string;
   email: string;

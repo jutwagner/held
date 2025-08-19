@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {
 import { User, LogOut, Settings, Plus } from 'lucide-react';
 
 export default function Navigation() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   return (
     <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
@@ -48,7 +49,11 @@ export default function Navigation() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {user ? (
+            {loading ? (
+              <div className="flex items-center justify-center h-8 w-24">
+                <span className="text-gray-400 text-sm">Loading…</span>
+              </div>
+            ) : user ? (
               <>
                 <Button asChild size="sm">
                   <Link href="/registry/new">
@@ -56,7 +61,6 @@ export default function Navigation() {
                     Add Object
                   </Link>
                 </Button>
-                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

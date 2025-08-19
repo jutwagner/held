@@ -1,3 +1,8 @@
+// Update user profile
+export const updateUser = async (uid: string, data: Partial<UserDoc>) => {
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { ...data, updatedAt: new Date() });
+};
 import {
   collection,
   doc,
@@ -27,39 +32,81 @@ import {
   UpdateObjectData,
   CreateRotationData,
   UpdateRotationData,
-  User 
+  UserDoc
 } from '@/types';
 import { generateSlug } from './utils';
 
 // User services
-export const createUser = async (userData: Omit<User, 'createdAt' | 'updatedAt'>) => {
+export const createUser = async (userData: Partial<UserDoc> & { uid: string; email: string }) => {
   const userRef = doc(db, 'users', userData.uid);
   const now = new Date();
 
-  // Filter out undefined values
-  const cleanUserData = Object.fromEntries(
-    Object.entries(userData).filter(([_, value]) => value !== undefined)
-  );
-
-  const userToSave = {
-    ...cleanUserData,
-    createdAt: now,
-    updatedAt: now,
+  // Fill missing fields with sensible defaults
+  const avatarUrl = userData.avatarUrl || (typeof (userData as { photoURL?: string }).photoURL === 'string' ? (userData as { photoURL?: string }).photoURL! : '');
+  const userToSave: UserDoc = {
+    displayName: userData.displayName || '',
+    handle: userData.handle || userData.uid.slice(0, 8),
+    bio: userData.bio || '',
+    avatarUrl,
+    theme: userData.theme || 'light',
+    typeTitleSerif: userData.typeTitleSerif ?? true,
+    typeMetaMono: userData.typeMetaMono ?? false,
+    density: userData.density || 'standard',
+    notifications: userData.notifications || {
+      monthlyRotation: true,
+      quarterlyReview: true,
+      email: true,
+      push: false,
+    },
+    premium: userData.premium || {
+      active: false,
+      plan: null,
+      since: null,
+      renewsAt: null,
+    },
+    backup: userData.backup || { enabled: false, lastRun: null },
+    security: userData.security || { providers: ['password'], sessions: [] },
+    email: userData.email,
+    uid: userData.uid,
   };
 
-  await setDoc(userRef, userToSave);
-
-  return userToSave as User;
+  await setDoc(userRef, { ...userToSave, createdAt: now, updatedAt: now });
+  return userToSave;
 };
 
-export const getUser = async (uid: string): Promise<User | null> => {
+export const getUser = async (uid: string): Promise<UserDoc | null> => {
   const userRef = doc(db, 'users', uid);
   const userSnap = await getDoc(userRef);
-  
   if (userSnap.exists()) {
-    return userSnap.data() as User;
+    const data = userSnap.data();
+    // Fill missing fields with defaults
+    return {
+      displayName: data.displayName || '',
+      handle: data.handle || uid.slice(0, 8),
+      bio: data.bio || '',
+      avatarUrl: data.avatarUrl || data.photoURL || '',
+      theme: data.theme || 'light',
+      typeTitleSerif: data.typeTitleSerif ?? true,
+      typeMetaMono: data.typeMetaMono ?? false,
+      density: data.density || 'standard',
+      notifications: data.notifications || {
+        monthlyRotation: true,
+        quarterlyReview: true,
+        email: true,
+        push: false,
+      },
+      premium: data.premium || {
+        active: false,
+        plan: null,
+        since: null,
+        renewsAt: null,
+      },
+      backup: data.backup || { enabled: false, lastRun: null },
+      security: data.security || { providers: ['password'], sessions: [] },
+      email: data.email,
+      uid: data.uid,
+    };
   }
-  
   return null;
 };
 
