@@ -1,5 +1,6 @@
-import type { RotationWithObjects } from '@/types';
+
 "use client";
+import type { RotationWithObjects } from '@/types';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,7 @@ import { getRotations, getRotationWithObjects } from '@/lib/firebase-services';
 import { Plus, RotateCcw, Eye, EyeOff, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
+import Image from 'next/image';
 
 export default function RotationsPage() {
   const { user, loading } = useAuth();
@@ -68,9 +70,8 @@ export default function RotationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navigation />
-      
+      {/* Header */}
       <div className="held-container py-8">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-serif font-medium mb-2">Rotations</h1>
@@ -89,7 +90,6 @@ export default function RotationsPage() {
         {/* Rotations Grid */}
         {loadingRotations ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">Loading your rotations...</p>
           </div>
         ) : rotationsWithObjects.length === 0 ? (
           <div className="text-center py-12">
@@ -144,15 +144,17 @@ function RotationCard({ rotation }: { rotation: RotationWithObjects }) {
         {/* Objects Preview */}
         <div className="mb-4">
           <div className="flex -space-x-2">
-            {rotation.objects.slice(0, 4).map((obj: HeldObject, index: number) => (
+            {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
               <div
                 key={obj.id}
                 className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden"
               >
                 {obj.images.length > 0 ? (
-                  <img
+                  <Image
                     src={obj.images[0]}
                     alt={obj.title}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (

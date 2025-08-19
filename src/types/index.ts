@@ -46,6 +46,7 @@ export interface HeldObject {
   maker?: string;
   year?: number;
   value?: number;
+  category: string;
   condition: 'excellent' | 'good' | 'fair' | 'poor';
   tags: string[];
   notes?: string;
@@ -79,6 +80,7 @@ export interface CreateObjectData {
   maker?: string;
   year?: number;
   value?: number;
+  category: string;
   condition: 'excellent' | 'good' | 'fair' | 'poor';
   tags: string[];
   notes?: string;

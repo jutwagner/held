@@ -22,6 +22,7 @@ export default function NewObjectPage() {
     maker: '',
     year: undefined,
     value: undefined,
+    category: '',
     condition: 'good',
     tags: [],
     notes: '',
@@ -36,7 +37,7 @@ export default function NewObjectPage() {
     e.preventDefault();
     if (!user || typeof user.uid !== 'string') return;
 
-    if (!formData.title.trim()) {
+    if (!formData.title.trim() || !formData.category) {
       return;
     }
 
@@ -117,6 +118,35 @@ export default function NewObjectPage() {
                   required
                   placeholder="e.g., Vintage Eames Lounge Chair"
                 />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category *
+                </label>
+                <select
+                  id="category"
+                  value={formData.category}
+                  onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  required
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                >
+                  <option value="" disabled>Select a category</option>
+                  <option value="Audio">Audio</option>
+                  <option value="Bicycles">Bicycles</option>
+                  <option value="Photography">Photography</option>
+                  <option value="Art">Art</option>
+                  <option value="Design">Design</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Lighting">Lighting</option>
+                  <option value="Books">Books</option>
+                  <option value="Watches">Watches</option>
+                  <option value="Instruments">Instruments</option>
+                  <option value="Fashion">Fashion</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Miscellaneous">Miscellaneous</option>
+                </select>
               </div>
 
               {/* Maker */}

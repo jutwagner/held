@@ -61,7 +61,7 @@ export default function RegistryPage() {
       filtered = filtered.filter(obj => 
         obj.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         obj.maker?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        obj.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        (Array.isArray(obj.tags) && obj.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
       );
     }
 
