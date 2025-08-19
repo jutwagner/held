@@ -53,7 +53,6 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col items-center justify-center">
-      <Navigation />
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 mt-8">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
         {error && (
