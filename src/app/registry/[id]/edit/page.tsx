@@ -4,18 +4,33 @@ import React, { useState } from 'react';
 
 type UpdateObjectData = {
   // ...existing fields...
+  isPublic: boolean;
   shareInCollaborative: boolean; // New field
 };
 
 const MyComponent: React.FC = () => {
   const [formData, setFormData] = useState<UpdateObjectData>({
     // ...existing state...
+    isPublic: false,
     shareInCollaborative: false, // New field
   });
 
   return (
     <form>
-      {/* ...existing form fields... */}
+      {/* Minimal edit form, no header/title at the top */}
+      {/* Make Public */}
+      <div className="flex items-center space-x-2 mb-4">
+        <input
+          type="checkbox"
+          id="isPublic"
+          checked={formData.isPublic}
+          onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
+          className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
+        />
+        <label htmlFor="isPublic" className="text-sm text-gray-700">
+          Make this object public
+        </label>
+      </div>
 
       {/* Share in theCollaborative */}
       <div className="flex items-center space-x-2">

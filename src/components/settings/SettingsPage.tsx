@@ -13,7 +13,6 @@ import DangerZoneSection from './DangerZoneSection';
 import Toast from '@/components/Toast';
 import { updateUser, getUser } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import type { Theme, Density } from '@/types';
 import type { UserDoc } from '@/types';
 
@@ -83,7 +82,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const { loading } = useAuth();
   return (
     <div>
-      <Navigation />
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
         <aside className="hidden md:block w-64 border-r bg-white">

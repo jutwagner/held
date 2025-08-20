@@ -1,3 +1,13 @@
+// Get public rotations
+export const getPublicRotations = async (): Promise<Rotation[]> => {
+  const rotationsRef = collection(db, 'rotations');
+  const q = query(rotationsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Rotation[];
+};
 // Update user profile
 export const updateUser = async (uid: string, data: Partial<UserDoc>) => {
   const userRef = doc(db, 'users', uid);

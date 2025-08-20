@@ -88,7 +88,6 @@ function RotationPageClient({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
       <header className="bg-white shadow">
         <div className="held-container py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">{rotation.name || 'Unnamed Rotation'}</h1>

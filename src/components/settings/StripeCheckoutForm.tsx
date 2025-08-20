@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-export default function StripeCheckoutForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function StripeCheckoutForm({ uid, email, onSuccess }: { uid?: string, email?: string, onSuccess?: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,11 @@ export default function StripeCheckoutForm({ onSuccess }: { onSuccess?: () => vo
       return;
     }
     // Call your backend to create a PaymentIntent and get clientSecret
-    const res = await fetch('/api/create-payment-intent', { method: 'POST' });
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, email }),
+    });
     const { clientSecret } = await res.json();
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {

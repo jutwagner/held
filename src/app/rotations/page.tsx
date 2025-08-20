@@ -57,7 +57,6 @@ export default function RotationsPage() {
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <Navigation />
         <div className="held-container py-24">
           <div className="text-center">
             <p className="text-gray-600">Loading...</p>
@@ -69,7 +68,6 @@ export default function RotationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
       {/* Header */}
       <div className="held-container py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">

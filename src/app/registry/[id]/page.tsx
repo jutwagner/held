@@ -1,7 +1,9 @@
+
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,7 @@ export default function ObjectDetailPage() {
   const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -39,6 +42,7 @@ export default function ObjectDetailPage() {
     if (user && objectId) {
       loadObject();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, objectId]);
 
   useEffect(() => {
@@ -56,8 +60,6 @@ export default function ObjectDetailPage() {
       });
     }
   }, [object]);
-
-  // Handler functions must be outside JSX
 
   const handleSave = async () => {
     if (!object) return;
@@ -97,6 +99,9 @@ export default function ObjectDetailPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
+
+
   const loadObject = async () => {
     try {
       setLoading(true);
@@ -105,14 +110,12 @@ export default function ObjectDetailPage() {
         setError('Object not found');
         return;
       }
-      // Check if user owns this object
       if (obj.userId !== user?.uid) {
         setError('Access denied');
         return;
       }
       setObject(obj);
     } catch (error: unknown) {
-      console.error('Failed to load object', error);
       let errorMsg = 'Failed to load object.';
       if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMsg += ` ${(error as { message?: string }).message}`;
@@ -125,10 +128,31 @@ export default function ObjectDetailPage() {
     }
   };
 
+  useEffect(() => {
+    if (user && objectId) {
+      loadObject();
+    }
+  }, [user, objectId]);
+
+  useEffect(() => {
+    if (object) {
+      setFormData({
+        title: object.title,
+        description: object.description || '',
+        maker: object.maker || '',
+        condition: object.condition || 'fair',
+        visibility: object.isPublic ? 'Public' : 'Private',
+        tags: Array.isArray(object.tags) ? object.tags.join(', ') : '',
+        notes: object.notes || '',
+        year: object.year ?? undefined,
+        shareInCollaborative: object.shareInCollaborative ?? false,
+      });
+    }
+  }, [object]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <Navigation />
         <div className="held-container py-24">
           <div className="text-center">
             <p className="text-gray-600">Loading...</p>
@@ -140,7 +164,6 @@ export default function ObjectDetailPage() {
   if (error || !object) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <Navigation />
         <div className="held-container py-24">
           <div className="text-center">
             <p className="text-red-600 font-mono">{error || 'Object not found'}</p>
@@ -160,51 +183,52 @@ export default function ObjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
       <div className="held-container py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex flex-col items-start w-full">
-            <Button variant="ghost" asChild className="mb-2 pl-2 -ml-2">
-              <Link href="/registry" className="flex items-center">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Registry
-              </Link>
-            </Button>
-            {editing ? (
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
-              />
-            ) : (
-              <h1 className="text-3xl font-serif font-medium mb-4">{object!.title}</h1>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {object!.isPublic && (
-              <Button variant="outline" asChild>
-                <Link href={`/passport/${object!.slug}`} target="_blank" className="whitespace-nowrap">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Passport
+        {/* Header - hide if editing route */}
+        {!(pathname && pathname.includes('/edit')) && (
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col items-start w-full">
+              <Button variant="ghost" asChild className="mb-2 pl-2 -ml-2">
+                <Link href="/registry" className="flex items-center">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Registry
                 </Link>
               </Button>
-            )}
-            <Button variant="outline" onClick={() => setEditing(!editing)}>
-              <Edit className="h-4 w-4 mr-2" />
-              {editing ? 'Cancel' : 'Edit'}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="text-red-600 hover:text-red-700"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
+              {editing ? (
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                />
+              ) : (
+                <></>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              {object!.isPublic && (
+                <Button variant="outline" asChild>
+                  <Link href={`/passport/${object!.slug}`} target="_blank" className="whitespace-nowrap">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Passport
+                  </Link>
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setEditing(!editing)}>
+                <Edit className="h-4 w-4 mr-2" />
+                {editing ? 'Cancel' : 'Edit'}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="text-red-600 hover:text-red-700"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Images */}
           <div>
@@ -277,7 +301,7 @@ export default function ObjectDetailPage() {
                 <input
                   type="number"
                   value={formData.year || ''}
-                  onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })} // Ensure year is undefined if empty
+                  onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
                 />
                 <textarea
@@ -300,7 +324,7 @@ export default function ObjectDetailPage() {
               </>
             ) : (
               <>
-                <h1 className="text-3xl font-serif font-medium mb-4">{object!.title}</h1>
+                {/* Removed duplicate header to prevent double header issue */}
                 <p className="text-gray-600">{object!.description}</p>
                 <p className="text-gray-600">Maker: {object!.maker}</p>
                 <p className="text-gray-600">Condition: {object!.condition}</p>

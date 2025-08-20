@@ -11,8 +11,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
-      
       {/* Hero Section */}
       <section className="held-container py-24 md:py-32">
         <div className="text-center max-w-3xl mx-auto">

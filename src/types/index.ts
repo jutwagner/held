@@ -21,6 +21,7 @@ export interface UserDoc {
     plan: 'plus' | null;
     since: number | null;
     renewsAt: number | null;
+    cancelRequested?: boolean;
   };
   backup: { enabled: boolean; lastRun: number | null };
   security: {
