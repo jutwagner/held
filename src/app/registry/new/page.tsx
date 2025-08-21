@@ -46,7 +46,7 @@ export default function NewObjectPage() {
     try {
       await createObject(user.uid, formData);
       router.push('/registry');
-    } catch (error: unknown) {
+    } catch {
       // Optionally handle error
     } finally {
       setLoading(false);
@@ -87,8 +87,6 @@ export default function NewObjectPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
-      
       <div className="held-container py-8">
         {/* Header */}
         <div className="flex items-center mb-8">

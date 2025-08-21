@@ -14,7 +14,6 @@ import Toast from '@/components/Toast';
 import { updateUser, getUser } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Theme, Density } from '@/types';
-import type { UserDoc } from '@/types';
 
 interface SettingsPageProps {
   initialSection?: SectionKey;
@@ -38,6 +37,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
 
   const [typeTitleSerif, setTypeTitleSerif] = useState(true);
   const [typeMetaMono, setTypeMetaMono] = useState(false);
+  const [isPublicProfile, setIsPublicProfile] = useState(user?.isPublicProfile ?? false);
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -46,10 +46,11 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
       setHandle(user.handle || '');
       setBio(user.bio || '');
       setAvatarUrl(user.avatarUrl || '');
-  setTheme((user.theme as Theme) || 'light');
-  setDensity((user.density as Density) || 'standard');
-  setTypeTitleSerif(user.typeTitleSerif ?? true);
-  setTypeMetaMono(user.typeMetaMono ?? false);
+      setTheme((user.theme as Theme) || 'light');
+      setDensity((user.density as Density) || 'standard');
+      setTypeTitleSerif(user.typeTitleSerif ?? true);
+      setTypeMetaMono(user.typeMetaMono ?? false);
+      setIsPublicProfile(user.isPublicProfile ?? false);
     }
   }, [user]);
 
@@ -58,6 +59,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const handleSave = async () => {
     if (!user) return;
     try {
+      console.log('[DEBUG] Saving isPublicProfile:', isPublicProfile);
       await updateUser(user.uid!, {
         displayName,
         handle,
@@ -67,12 +69,15 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
         typeTitleSerif,
         typeMetaMono,
         density,
+        isPublicProfile,
       });
       const updatedUser = await getUser(user.uid!);
+      console.log('[DEBUG] Updated user after save:', updatedUser);
       if (updatedUser) setUser(updatedUser);
       setDirty(false);
       setToast({ message: 'Settings saved!', type: 'success' });
     } catch (err) {
+      console.error('[DEBUG] Save error:', err);
       setToast({ message: 'Failed to save settings. Please try again.', type: 'error' });
     }
     setTimeout(() => setToast(null), 3000);
@@ -85,11 +90,11 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
         <aside className="hidden md:block w-64 border-r bg-white">
-          <SectionNav section={section} setSection={setSection} />
+          <SectionNav section={section} />
         </aside>
-        {/* Mobile bottom nav */}
+        {/* Mobile bottom nav - persistent */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
-          <SectionNav section={section} setSection={setSection} mobile />
+          <SectionNav section={section} mobile />
         </nav>
         <main className="flex-1 p-4 md:p-8 max-w-2xl mx-auto pb-16 md:pb-8">
           {!hydrated ? (
@@ -102,34 +107,58 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </div>
           ) : (
             <>
-              {section === 'profile' && <ProfileSection user={user ?? undefined} displayName={displayName} setDisplayName={val => { setDisplayName(val); markDirty(); }} handle={handle} setHandle={val => { setHandle(val); markDirty(); }} bio={bio} setBio={val => { setBio(val); markDirty(); }} avatarUrl={avatarUrl} setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }} />}
-              {section === 'appearance' && (
-                <AppearanceSection
-                  theme={theme}
-                  typeTitleSerif={typeTitleSerif}
-                  typeMetaMono={typeMetaMono}
-                  density={density}
-                  onChange={changes => {
-                    if (changes.theme !== undefined) setTheme(changes.theme as Theme);
-                    if (changes.density !== undefined) setDensity(changes.density as Density);
-                    if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
-                    if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
-                    markDirty();
-                  }}
-                />
-              )}
-              {section === 'account' && <AccountSection user={user ?? undefined} />}
-              {section === 'data' && <DataSection user={user ?? undefined} />}
-              {section === 'notifications' && <NotificationsSection user={user ?? undefined} />}
-              {section === 'premium' && <PremiumSection user={user ?? undefined} />}
-              {section === 'danger' && <DangerZoneSection user={user ?? undefined} />}
+              {/* Consolidated settings sections for cleaner UI */}
+              <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Radley, serif' }}>Settings</h1>
+              <ProfileSection
+                user={user ?? undefined}
+                setUser={setUser}
+                displayName={displayName}
+                setDisplayName={val => { setDisplayName(val); markDirty(); }}
+                handle={handle}
+                setHandle={val => { setHandle(val); markDirty(); }}
+                bio={bio}
+                setBio={val => { setBio(val); markDirty(); }}
+                avatarUrl={avatarUrl}
+                setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }}
+                theme={theme}
+                typeTitleSerif={typeTitleSerif}
+                typeMetaMono={typeMetaMono}
+                density={density}
+                isPublicProfile={isPublicProfile}
+                setIsPublicProfile={val => { setIsPublicProfile(val); markDirty(); }}
+                onAppearanceChange={changes => {
+                  if (changes.theme !== undefined) setTheme(changes.theme as Theme);
+                  if (changes.density !== undefined) setDensity(changes.density as Density);
+                  if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
+                  if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
+                  markDirty();
+                }}
+              />
+              <AppearanceSection
+                theme={theme}
+                typeTitleSerif={typeTitleSerif}
+                typeMetaMono={typeMetaMono}
+                density={density}
+                onChange={changes => {
+                  if (changes.theme !== undefined) setTheme(changes.theme as Theme);
+                  if (changes.density !== undefined) setDensity(changes.density as Density);
+                  if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
+                  if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
+                  markDirty();
+                }}
+              />
+              <NotificationsSection user={user ?? undefined} />
+              <AccountSection user={user ?? undefined} />
+              <DataSection user={user ?? undefined} />
+              <PremiumSection user={user ?? undefined} />
+              {/* Held+ logic and public user page toggle are handled in ProfileSection and PremiumSection */}
             </>
           )}
         </main>
         <SaveBar onSave={handleSave} />
         <div className="hidden md:block sticky bottom-0 left-0 right-0 bg-white border-t p-4 z-20">
           <button
-            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-semibold text-base shadow-md active:scale-95 transition"
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-semibold text-base shadow-md active:scale-95 transition font-mono"
             onClick={handleSave}
             disabled={!dirty}
           >

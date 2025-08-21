@@ -1,27 +1,78 @@
-
-
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter, usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { HeldObject } from '@/types';
-import { getObject, deleteObject, updateObject } from '@/lib/firebase-services';
+import { getObject, updateObject } from '@/lib/firebase-services';
+import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
 
-export default function ObjectDetailPage() {
+export default function ObjectDetailPage() { 
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
+  const [imageProgress, setImageProgress] = useState<{ [key: string]: number }>({});
+
+  async function handleImageUpload(file: File) {
+    setUploading(true);
+    setUploadError('');
+    setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
+    try {
+      const imageRef = ref(storage, `objects/${user?.uid}/${Date.now()}_${file.name}`);
+      // Use uploadBytesResumable for progress
+      const uploadTask = uploadBytesResumable(imageRef, file);
+      await new Promise<string>((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snapshot: any) => {
+            const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            setImageProgress(prev => ({ ...prev, [file.name]: percent }));
+          },
+          (error: any) => {
+            setUploadError('Image upload failed.');
+            setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
+            reject(error);
+          },
+          async () => {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
+            setImageProgress(prev => ({ ...prev, [file.name]: 100 }));
+            resolve(url);
+          }
+        );
+      });
+    } catch (err) {
+      setUploadError('Image upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  }
+  const [editing, setEditing] = useState(false);
   const { user } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const pathname = usePathname();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [formData, setFormData] = useState({
+  interface FormData {
+    title: string;
+    description: string;
+    maker: string;
+    condition: string;
+    visibility: string;
+    tags: string;
+    notes: string;
+    year: number | undefined;
+    shareInCollaborative: boolean;
+    category: string;
+    images: string[];
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
     maker: '',
@@ -29,91 +80,18 @@ export default function ObjectDetailPage() {
     visibility: 'Public',
     tags: '',
     notes: '',
-    year: undefined as number | undefined,
-    shareInCollaborative: false, // New field
+    year: undefined,
+    shareInCollaborative: false,
+    category: '',
+    images: [],
   });
-  const [editing, setEditing] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const objectId = params?.id as string;
 
-  const objectId = params.id as string;
-
-  useEffect(() => {
-    if (user && objectId) {
-      loadObject();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, objectId]);
-
-  useEffect(() => {
-    if (object) {
-      setFormData({
-        title: object.title,
-        description: object.description || '',
-        maker: object.maker || '',
-        condition: object.condition || 'fair',
-        visibility: object.isPublic ? 'Public' : 'Private',
-        tags: Array.isArray(object.tags) ? object.tags.join(', ') : '',
-        notes: object.notes || '',
-        year: object.year ?? undefined,
-        shareInCollaborative: object.shareInCollaborative ?? false, // Ensure default value
-      });
-    }
-  }, [object]);
-
-  const handleSave = async () => {
-    if (!object) return;
-    try {
-      const { images, ...rest } = object;
-      const updatedObject = {
-        ...rest,
-        ...formData,
-        tags: formData.tags.split(',').map((tag: string) => tag.trim()), // Convert tags string to array
-        condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor', // Ensure correct type
-        year: formData.year as number | undefined, // Ensure year is undefined if not provided
-      };
-      await updateObject(object.id, updatedObject);
-      setObject({ ...object, ...updatedObject });
-      setEditing(false);
-    } catch (error) {
-      setError('Failed to save object');
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!object) return;
-    try {
-      setDeleting(true);
-      await deleteObject(object.id);
-      router.push('/registry');
-    } catch (error) {
-      setError('Failed to delete object');
-    } finally {
-      setDeleting(false);
-      setDeleteDialogOpen(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-
-
-
-  const loadObject = async () => {
+  async function loadObject() {
     try {
       setLoading(true);
+      setError('');
       const obj = await getObject(objectId);
-      if (!obj) {
-        setError('Object not found');
-        return;
-      }
-      if (obj.userId !== user?.uid) {
-        setError('Access denied');
-        return;
-      }
       setObject(obj);
     } catch (error: unknown) {
       let errorMsg = 'Failed to load object.';
@@ -126,8 +104,131 @@ export default function ObjectDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
+  function handleSave() {
+    async function doSave() {
+      try {
+        setLoading(true);
+        // Convert tags to array
+        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+        await updateObject(objectId, {
+          id: objectId,
+          ...formData,
+          condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
+          tags: tagsArray,
+        });
+        await loadObject();
+        setEditing(false);
+      } catch (err) {
+        setError('Failed to save changes.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    doSave();
+  }
+            // ...rest of component logic...
+  // ...inside the main return statement, where editing UI is rendered...
+  {editing && (
+    <div className="bg-white rounded-xl shadow-lg p-6 animate-fade-in transition-all duration-300">
+      <div className="grid grid-cols-1 gap-5">
+        <div>
+          <label htmlFor="title" className="block text-sm font-semibold mb-1 text-gray-700">Title</label>
+          <input
+            id="title"
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Object title"
+          />
+        </div>
+        <div>
+          <label htmlFor="maker" className="block text-sm font-semibold mb-1 text-gray-700">Maker</label>
+          <input
+            id="maker"
+            type="text"
+            value={formData.maker}
+            onChange={(e) => setFormData({ ...formData, maker: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Herman Miller"
+          />
+        </div>
+        <div>
+          <label htmlFor="condition" className="block text-sm font-semibold mb-1 text-gray-700">Condition</label>
+          <select
+            id="condition"
+            value={formData.condition}
+            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="excellent">Excellent</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
+            <option value="poor">Poor</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="visibility" className="block text-sm font-semibold mb-1 text-gray-700">Visibility</label>
+          <select
+            id="visibility"
+            value={formData.visibility}
+            onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="Public">Public</option>
+            <option value="Private">Private</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="tags" className="block text-sm font-semibold mb-1 text-gray-700">Tags</label>
+          <input
+            id="tags"
+            type="text"
+            value={formData.tags}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Comma separated tags"
+          />
+        </div>
+        <div>
+          <label htmlFor="year" className="block text-sm font-semibold mb-1 text-gray-700">Year</label>
+          <input
+            id="year"
+            type="number"
+            value={formData.year || ''}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., 1956"
+          />
+        </div>
+        <div>
+          <label htmlFor="notes" className="block text-sm font-semibold mb-1 text-gray-700">Notes</label>
+          <textarea
+            id="notes"
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Add any notes about this object..."
+            rows={3}
+          />
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+          <input
+            type="checkbox"
+            id="shareInCollaborative"
+            checked={formData.shareInCollaborative}
+            onChange={(e) => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="shareInCollaborative" className="text-sm text-gray-700">
+            In theCollaborative
+          </label>
+        </div>
+      </div>
+    </div>
+  )}
   useEffect(() => {
     if (user && objectId) {
       loadObject();
@@ -146,6 +247,8 @@ export default function ObjectDetailPage() {
         notes: object.notes || '',
         year: object.year ?? undefined,
         shareInCollaborative: object.shareInCollaborative ?? false,
+        category: object.category || '',
+        images: object.images || [],
       });
     }
   }, [object]);
@@ -184,7 +287,7 @@ export default function ObjectDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="held-container py-8">
-        {/* Header - hide if editing route */}
+        {/* Header - always show title, never double header */}
         {!(pathname && pathname.includes('/edit')) && (
           <div className="flex items-center justify-between mb-8">
             <div className="flex flex-col items-start w-full">
@@ -194,16 +297,9 @@ export default function ObjectDetailPage() {
                   Back to Registry
                 </Link>
               </Button>
-              {editing ? (
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
-                />
-              ) : (
-                <></>
-              )}
+              <h1 className="text-2xl font-bold text-gray-900 mb-1 font-serif">
+                {formData.title || <span className="text-gray-400 italic">Untitled Object</span>}
+              </h1>
             </div>
             <div className="flex items-center space-x-2">
               {object!.isPublic && (
@@ -221,7 +317,7 @@ export default function ObjectDetailPage() {
               <Button 
                 variant="outline" 
                 className="text-red-600 hover:text-red-700"
-                onClick={() => setDeleteDialogOpen(true)}
+                onClick={() => setEditing(false)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
@@ -233,24 +329,102 @@ export default function ObjectDetailPage() {
           {/* Images */}
           <div>
             <h2 className="text-lg font-medium mb-4">Images</h2>
-            {object!.images.length > 0 ? (
+            {editing ? (
               <div className="space-y-4">
-                {object!.images.map((image, index) => (
-                  <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <Image
-                      src={image}
-                      alt={`${object!.title} - Image ${index + 1}`}
-                      width={400}
-                      height={400}
-                      className="w-full h-full object-cover"
-                    />
+                {formData.images && formData.images.length > 0 ? (
+                  formData.images.map((image: string, index: number) => (
+                    <div key={index} className="relative w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
+                      <Image
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        width={800}
+                        height={1200}
+                        className="w-full rounded-xl"
+                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded px-2 py-1 text-xs shadow hover:bg-red-600"
+                        onClick={() => {
+                          const newImages = formData.images.filter((_: string, i: number) => i !== index);
+                          setFormData({ ...formData, images: newImages });
+                        }}
+                      >Remove</button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
+                    <p className="text-gray-500">No images</p>
                   </div>
-                ))}
+                )}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Add or Replace Image</label>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
+                    onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+                    onDrop={async e => {
+                      e.preventDefault(); setDragActive(false);
+                      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                      for (const file of files) {
+                        await handleImageUpload(file);
+                      }
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      disabled={uploading}
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith('image/'));
+                        for (const file of files) {
+                          await handleImageUpload(file);
+                        }
+                      }}
+                    />
+                    <span className="block mt-2 text-gray-500">Drag & drop or select images to upload</span>
+                  </div>
+                  {uploading && (
+                    <div className="mt-2 space-y-1">
+                      {Object.entries(imageProgress).map(([name, percent]) => (
+                        <div key={name} className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">{name}</span>
+                          <div className="w-32 h-2 bg-gray-200 rounded">
+                            <div className="h-2 bg-blue-500 rounded" style={{ width: `${percent}%` }}></div>
+                          </div>
+                          <span className="text-xs text-gray-700">{percent}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
+                </div>
               </div>
             ) : (
-              <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">No images</p>
-              </div>
+              <>
+                {object!.images.length > 0 ? (
+                  <div className="space-y-4">
+                    {object!.images.map((image, index) => (
+                      <div key={index} className="w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
+                        <Image
+                          src={image}
+                          alt={`${object!.title} - Image ${index + 1}`}
+                          width={800}
+                          height={1200}
+                          className="w-full rounded-xl"
+                          style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">No images</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
           {/* Details */}
@@ -262,72 +436,100 @@ export default function ObjectDetailPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.title ? '' : 'Title'}
                 />
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.description ? '' : 'Description'}
                 />
                 <input
                   type="text"
                   value={formData.maker}
                   onChange={(e) => setFormData({ ...formData, maker: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.maker ? '' : 'Maker'}
                 />
-                <select
-                  value={formData.condition}
-                  onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                  className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
-                >
-                  <option value="excellent">Excellent</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                  <option value="poor">Poor</option>
-                </select>
-                <select
-                  value={formData.visibility}
-                  onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
-                  className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
-                >
-                  <option value="Public">Public</option>
-                  <option value="Private">Private</option>
-                </select>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-sm text-gray-700">Condition:</span>
+                  <select
+                    value={formData.condition}
+                    onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                    className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1"
+                  >
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="poor">Poor</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-sm text-gray-700">Public</span>
+                  <button
+                    type="button"
+                    aria-label="Toggle Public/Private"
+                    className={`relative inline-flex h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${formData.visibility === 'Public' ? 'bg-blue-500' : 'bg-gray-300'}`}
+                    onClick={() => setFormData({ ...formData, visibility: formData.visibility === 'Public' ? 'Private' : 'Public' })}
+                  >
+                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${formData.visibility === 'Public' ? 'translate-x-6' : ''}`}></span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.tags ? '' : 'Tags'}
                 />
                 <input
                   type="number"
                   value={formData.year || ''}
                   onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.year ? '' : 'Year'}
                 />
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  placeholder={formData.notes ? '' : 'Notes'}
                 />
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="shareInCollaborative"
-                    checked={formData.shareInCollaborative}
-                    onChange={(e) => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
-                    className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="shareInCollaborative" className="text-sm text-gray-700">
-                    Share in theCollaborative
-                  </label>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-sm text-gray-700">Collaborative</span>
+                  <button
+                    type="button"
+                    aria-label="Toggle Collaborative"
+                    className={`relative inline-flex h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${formData.shareInCollaborative ? 'bg-blue-500' : 'bg-gray-300'}`}
+                    onClick={() => setFormData({ ...formData, shareInCollaborative: !formData.shareInCollaborative })}
+                  >
+                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${formData.shareInCollaborative ? 'translate-x-6' : ''}`}></span>
+                  </button>
+                </div>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-sm text-gray-700">Category</span>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="font-mono bg-gray-100 border border-gray-300 rounded px-2 py-1 w-full"
+                  >
+                    <option value="">Select category</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Lighting">Lighting</option>
+                    <option value="Art">Art</option>
+                    <option value="Decor">Decor</option>
+                    <option value="Textiles">Textiles</option>
+                    <option value="Books">Books</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </>
             ) : (
               <>
-                {/* Removed duplicate header to prevent double header issue */}
-                <p className="text-gray-600">{object!.description}</p>
-                <p className="text-gray-600">Maker: {object!.maker}</p>
-                <p className="text-gray-600">Condition: {object!.condition}</p>
+                <p className="text-gray-600">{object!.description || <span className="text-gray-400 italic">No description</span>}</p>
+                <p className="text-gray-600">Maker: {object!.maker || <span className="text-gray-400 italic">No maker</span>}</p>
+                <p className="text-gray-600">Condition: {object!.condition || <span className="text-gray-400 italic">No condition</span>}</p>
+                <p className="text-gray-600">Category: {object!.category || <span className="text-gray-400 italic">No category</span>}</p>
                 <p className="flex items-center text-gray-600">
                   {object!.isPublic ? (
                     <span className="text-green-600 flex items-center">
@@ -359,9 +561,9 @@ export default function ObjectDetailPage() {
                 ) : (
                   <p className="text-gray-500">No tags available</p>
                 )}
-                <p className="text-gray-600">Notes: {object!.notes}</p>
+                <p className="text-gray-600">Notes: {object!.notes || <span className="text-gray-400 italic">No notes</span>}</p>
                 <p className="text-gray-600">
-                  Share in theCollaborative: {object!.shareInCollaborative ? 'Yes' : 'No'}
+                  In theCollaborative: {object!.shareInCollaborative ? 'Yes' : 'No'}
                 </p>
               </>
             )}
@@ -371,6 +573,11 @@ export default function ObjectDetailPage() {
               <p>ID: {object!.id}</p>
               <p>Slug: {object!.slug}</p>
             </div>
+
+
+
+
+
           </div>
         </div>
         {/* Inline Editing Section */}

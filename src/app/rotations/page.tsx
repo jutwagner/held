@@ -1,25 +1,25 @@
 
 "use client";
-import type { RotationWithObjects } from '@/types';
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
-import { Rotation, HeldObject } from '@/types';
 import { getRotations, getRotationWithObjects } from '@/lib/firebase-services';
-import { Plus, RotateCcw, Eye, EyeOff, Calendar } from 'lucide-react';
+import type { RotationWithObjects, HeldObject } from '@/types';
 import Link from 'next/link';
-import { formatDate } from '@/lib/utils';
 import Image from 'next/image';
+import { Eye, EyeOff, Calendar, Plus } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
+
+import { MobileBottomBar } from '@/components/Navigation';
 
 export default function RotationsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [rotations, setRotations] = useState<Rotation[]>([]);
   const [rotationsWithObjects, setRotationsWithObjects] = useState<RotationWithObjects[]>([]);
   const [loadingRotations, setLoadingRotations] = useState(true);
+
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,7 +38,6 @@ export default function RotationsPage() {
     try {
       setLoadingRotations(true);
       const userRotations = await getRotations(user.uid);
-      setRotations(userRotations);
       // Load objects for each rotation
       const rotationsWithObjs = await Promise.all(
         userRotations.map(async (rotation) => {
@@ -48,7 +47,6 @@ export default function RotationsPage() {
       );
       setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
     } catch (error: unknown) {
-      // Optionally handle error
     } finally {
       setLoadingRotations(false);
     }
@@ -66,21 +64,25 @@ export default function RotationsPage() {
     );
   }
 
+  // Premium logic for limiting usable rotations
+  const isHeldPlus = user?.premium?.plan === 'plus';
+  const maxFreeRotations = 3;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      {/* Header */}
+      <MobileBottomBar />
       <div className="held-container py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-serif font-medium mb-2">Rotations</h1>
             <p className="text-gray-600">
-              Curated snapshots of your collection
+              {rotationsWithObjects.length} rotation{rotationsWithObjects.length !== 1 ? 's' : ''} in your collection
             </p>
           </div>
           <Button asChild className="mt-4 sm:mt-0">
             <Link href="/rotations/new">
               <Plus className="h-4 w-4 mr-2" />
-              Create Rotation
+              Add Rotation
             </Link>
           </Button>
         </div>
@@ -88,27 +90,27 @@ export default function RotationsPage() {
         {/* Rotations Grid */}
         {loadingRotations ? (
           <div className="text-center py-12">
+            <p className="text-gray-600">Loading your rotations...</p>
           </div>
         ) : rotationsWithObjects.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <RotateCcw className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No rotations yet</h3>
-              <p className="text-gray-600 mb-6">
-                Create your first rotation to showcase a curated selection of your objects.
-              </p>
-              <Button asChild>
-                <Link href="/rotations/new">Create Your First Rotation</Link>
-              </Button>
+              <p className="text-gray-500">No rotations yet. Create your first rotation!</p>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rotationsWithObjects.map((rotation) => (
-              <RotationCard key={rotation.id} rotation={rotation} />
-            ))}
+            {rotationsWithObjects.map((rotation, idx) => {
+              // For non Held+ users, blur/disable extra rotations
+              const isDisabled = !isHeldPlus && idx >= maxFreeRotations;
+              return (
+                <RotationCard
+                  key={rotation.id}
+                  rotation={rotation}
+                  disabled={isDisabled}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -116,45 +118,45 @@ export default function RotationsPage() {
   );
 }
 
-function RotationCard({ rotation }: { rotation: RotationWithObjects }) {
-  return (
-    <Link href={`/rotations/${rotation.id}`}>
-      <div className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">
-        {/* Header */}
+
+// Reusable premium logic for disabling features
+export function isRotationDisabled(idx: number, isHeldPlus: boolean, maxFree: number) {
+  return !isHeldPlus && idx >= maxFree;
+}
+
+function RotationCard({ rotation, disabled = false }: { rotation: RotationWithObjects; disabled?: boolean }) {
+  if (disabled) {
+    return (
+      <div className="held-card p-6 transition-shadow cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
+        {/* Absolute CTA overlay, card is visible but not clickable */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.85)' }}>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-700 text-base font-semibold mb-2">Held+ required</span>
+            <a
+              href="/settings/premium"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
+              style={{ pointerEvents: 'auto' }}
+            >
+              Upgrade to Held+
+            </a>
+          </div>
+        </div>
+        {/* ...existing card content... */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-lg">{rotation.name}</h3>
           <div className="flex items-center space-x-2">
-            {rotation.isPublic ? (
-              <Eye className="h-4 w-4 text-green-600" />
-            ) : (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            )}
+            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
           </div>
         </div>
-
-        {/* Description */}
         {rotation.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {rotation.description}
-          </p>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{rotation.description}</p>
         )}
-
-        {/* Objects Preview */}
         <div className="mb-4">
           <div className="flex -space-x-2">
             {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
-              <div
-                key={obj.id}
-                className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden"
-              >
+              <div key={obj.id} className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden">
                 {obj.images.length > 0 ? (
-                  <Image
-                    src={obj.images[0]}
-                    alt={obj.title}
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
+                  <Image src={obj.images[0]} alt={obj.title} width={48} height={48} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <span className="text-gray-400 text-xs">?</span>
@@ -164,28 +166,68 @@ function RotationCard({ rotation }: { rotation: RotationWithObjects }) {
             ))}
             {rotation.objects.length > 4 && (
               <div className="w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
-                <span className="text-gray-600 text-xs font-medium">
-                  +{rotation.objects.length - 4}
-                </span>
+                <span className="text-gray-600 text-xs font-medium">+{rotation.objects.length - 4}</span>
               </div>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-2">
-            {rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}
-          </p>
+          <p className="text-sm text-gray-500 mt-2">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
         </div>
-
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center space-x-1">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(rotation.createdAt)}</span>
+          </div>
+          {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <Link href={`/rotations/${rotation.id}`}>
+      <div className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-medium text-lg">{rotation.name}</h3>
+          <div className="flex items-center space-x-2">
+            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+          </div>
+        </div>
+        {/* Description */}
+        {rotation.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{rotation.description}</p>
+        )}
+        {/* Objects Preview */}
+        <div className="mb-4">
+          <div className="flex -space-x-2">
+            {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
+              <div key={obj.id} className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden">
+                {obj.images.length > 0 ? (
+                  <Image src={obj.images[0]} alt={obj.title} width={48} height={48} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">?</span>
+                  </div>
+                )}
+              </div>
+            ))}
+            {rotation.objects.length > 4 && (
+              <div className="w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
+                <span className="text-gray-600 text-xs font-medium">+{rotation.objects.length - 4}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mt-2">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
+        </div>
         {/* Footer */}
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             <Calendar className="h-3 w-3" />
             <span>{formatDate(rotation.createdAt)}</span>
           </div>
-          {rotation.isPublic && (
-            <span className="text-green-600 text-xs">Public</span>
-          )}
+          {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
       </div>
     </Link>
   );
 }
+

@@ -108,11 +108,12 @@ export default function PassportPage() {
             {object.images.length > 0 ? (
               <div className="space-y-4">
                 {object.images.map((image, index) => (
-                  <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <div key={index} className="w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
                     <img
                       src={image}
                       alt={`${object.title} - Image ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full rounded-xl"
+                      style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
                     />
                   </div>
                 ))}

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { HeldObject } from '@/types';
 
 interface PostCardProps {
@@ -9,11 +10,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {post.images && post.images.length > 0 && (
-        <div className="w-full aspect-square overflow-hidden"> {/* Ensures a 1:1 aspect ratio */}
-          <img
+        <div className="w-full relative overflow-hidden flex items-center justify-center" style={{ background: '#f3f4f6', minHeight: '320px', borderRadius: '1rem' }}>
+          <Image
             src={post.images[0]}
             alt={post.title}
-            className="w-full h-full object-cover" // Ensures the image covers the square area
+            width={800}
+            height={600}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: '1rem', maxWidth: '100%' }}
+            className="rounded-xl"
+            sizes="100vw"
+            priority
           />
         </div>
       )}

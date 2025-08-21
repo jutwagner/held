@@ -26,16 +26,12 @@ const icons = {
 
 const sections = [
   { key: 'profile', label: 'Profile' },
-  { key: 'appearance', label: 'Appearance' },
-  { key: 'account', label: 'Password' },
   { key: 'data', label: 'Data' },
-  { key: 'notifications', label: 'Notifications' },
   { key: 'premium', label: 'Held+' },
-  { key: 'danger', label: 'Danger' },
 ];
 
 export type SectionKey = keyof typeof icons;
-export default function SectionNav({ section, setSection, mobile = false }: { section: SectionKey; setSection: (s: SectionKey) => void; mobile?: boolean }) {
+export default function SectionNav({ section, mobile = false }: { section: SectionKey; mobile?: boolean }) {
   return (
     <nav
       className={

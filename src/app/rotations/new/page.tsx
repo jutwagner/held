@@ -7,19 +7,19 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { createRotation } from '@/lib/firebase-services';
-import { getObjects } from '@/lib/firebase-services';
+import { createRotation, getObjects, getRotations } from '@/lib/firebase-services';
 import { CreateRotationData, HeldObject } from '@/types';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewRotationPage() {
+  const [error, setError] = useState<string>('');
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [objects, setObjects] = useState<HeldObject[]>([]);
   const [selectedObjects, setSelectedObjects] = useState<string[]>([]);
+  const [rotationCount, setRotationCount] = useState<number>(0);
 
   const [formData, setFormData] = useState<CreateRotationData>({
     name: '',
@@ -31,8 +31,19 @@ export default function NewRotationPage() {
   useEffect(() => {
     if (user) {
       loadObjects();
+      loadRotations();
     }
   }, [user]);
+
+  const loadRotations = async () => {
+    if (!user || typeof user.uid !== 'string') return;
+    try {
+      const userRotations = await getRotations(user.uid);
+      setRotationCount(userRotations.length);
+    } catch (error) {
+      setRotationCount(0);
+    }
+  };
 
   const loadObjects = async () => {
     if (!user || typeof user.uid !== 'string') return;
@@ -44,37 +55,36 @@ export default function NewRotationPage() {
     }
   };
 
+  const isHeldPlus = user?.premium?.plan === 'plus';
+  const maxFreeRotations = 3;
+  const reachedLimit = !isHeldPlus && rotationCount >= maxFreeRotations;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  if (!user || typeof user.uid !== 'string') return;
-
+    if (!user || typeof user.uid !== 'string') return;
+    if (reachedLimit) {
+      setError('Upgrade to Held+ to create more than 3 rotations.');
+      return;
+    }
     if (!formData.name.trim()) {
       setError('Name is required');
       return;
     }
-
     if (selectedObjects.length === 0) {
       setError('Please select at least one object');
       return;
     }
-
     if (selectedObjects.length > 7) {
       setError('You can only select up to 7 objects per rotation');
       return;
     }
-
     setLoading(true);
     setError('');
-
     try {
       const rotationData = {
         ...formData,
         objectIds: selectedObjects,
       };
-      
-      console.log('User ID:', user?.uid);
-      console.log('Rotation Data:', rotationData);
-
       await createRotation(user.uid, rotationData);
       router.push('/rotations');
     } catch (error: unknown) {
@@ -107,8 +117,6 @@ export default function NewRotationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navigation />
-      
       <div className="held-container py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
@@ -125,6 +133,13 @@ export default function NewRotationPage() {
           {/* Form */}
           <div>
             <div className="held-card p-8">
+              {reachedLimit && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
+                  <p className="text-sm text-yellow-700 font-semibold">
+                    This is cool. Get Held+
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-md">
@@ -214,7 +229,7 @@ export default function NewRotationPage() {
 
                 {/* Submit */}
                 <div className="flex gap-4 pt-4">
-                  <Button type="submit" disabled={loading} className="flex-1">
+                  <Button type="submit" disabled={loading || reachedLimit} className="flex-1">
                     {loading ? 'Creating...' : 'Create Rotation'}
                   </Button>
                   <Button type="button" variant="outline" asChild>

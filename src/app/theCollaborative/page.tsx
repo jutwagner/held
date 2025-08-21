@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { getPublicPosts, getPublicRotations } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
-import Navigation from '@/components/Navigation';
 import type { HeldObject, Rotation } from '@/types';
 import { addRotation } from '@/scripts/addRotation';
+
+import { MobileBottomBar } from '@/components/Navigation';
 
 export default function TheCollaborativePage() {
   const [tab, setTab] = useState<'registry' | 'rotations'>('registry');
@@ -35,6 +36,7 @@ export default function TheCollaborativePage() {
 
   return (
     <>
+      <MobileBottomBar />
       <header className="bg-white shadow">
         <div className="held-container py-4 flex flex-col sm:flex-row items-center justify-between">
           <h1 className="text-2xl font-serif font-bold mb-2 sm:mb-0">theCollaborative</h1>
@@ -65,7 +67,9 @@ export default function TheCollaborativePage() {
             ) : (
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <div key={post.id} className="bg-white rounded-xl shadow p-4">
+                    <PostCard post={post} />
+                  </div>
                 ))}
               </div>
             )

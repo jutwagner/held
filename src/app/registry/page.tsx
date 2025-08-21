@@ -7,10 +7,12 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
-import { getObjects, createObject } from '@/lib/firebase-services';
-import { Plus, Search, Filter, Eye, EyeOff } from 'lucide-react';
+import { getObjects } from '@/lib/firebase-services';
+import { Plus, Search, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { formatDate, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
+
+import { MobileBottomBar } from '@/components/Navigation';
 
 export default function RegistryPage() {
   const { user, loading } = useAuth();
@@ -73,21 +75,7 @@ export default function RegistryPage() {
     setFilteredObjects(filtered);
   };
 
-  const handleAddObject = async (newObjectData: HeldObject) => {
-    if (!user || typeof user.uid !== 'string') return;
 
-    try {
-      const createObjectData = {
-        ...newObjectData,
-        images: newObjectData.images.map((url) => new File([], url)), // Convert URLs to empty File objects
-      };
-      await createObject(user.uid, createObjectData); // Save the new object
-      await loadObjects(); // Refresh the objects list
-      console.log('Object added and registry updated:', createObjectData); // Debug log
-    } catch {
-      console.error('Error adding object');
-    }
-  };
 
   if (loading || !user) {
     return (
@@ -104,6 +92,7 @@ export default function RegistryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <MobileBottomBar />
       <div className="held-container py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -186,12 +175,12 @@ function ObjectCard({ object }: { object: HeldObject }) {
     <Link href={`/registry/${object.id}`}>
       <div className={`${cardClassName} held-card p-6 hover:shadow-lg transition-shadow cursor-pointer`}>
         {/* Image */}
-        <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
+        <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
           {object.images.length > 0 ? (
             <img
               src={object.images[0]}
               alt={object.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
