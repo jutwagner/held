@@ -1,47 +1,78 @@
+
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Package, RotateCcw, Eye } from 'lucide-react';
 
 export default function HomePage() {
   const { user } = useAuth();
+  const [hydrated, setHydrated] = React.useState(false);
+  const [heroImg, setHeroImg] = useState<string | null>(null);
+  useEffect(() => {
+    setHydrated(true);
+    // Pick a random hero image on mount (0.png to 14.png)
+    const idx = Math.floor(Math.random() * 15); // 0 to 14 inclusive
+    setHeroImg(`/img/hero/${idx}.png`);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="held-container py-24 md:py-32">
+      <section className="held-container py-8 md:py-22">
         <div className="text-center max-w-3xl mx-auto">
+          <div
+            className="mx-auto mb-8 w-full"
+            style={{
+              maxWidth: '512px',
+              height: '256px',
+              background: heroImg ? 'none' : 'linear-gradient(90deg, #f3f3f3 25%, #e2e2e2 50%, #f3f3f3 75%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}
+          >
+            {heroImg && (
+              <img
+                src={heroImg}
+                alt="Hero"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '0.75rem' }}
+                loading="eager"
+              />
+            )}
+          </div>
           <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6">
             The quiet home for the things you hold
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            A private, beautiful way to catalog and share the physical objects that matter to you. 
+            A way to catalog and share the objects that matter to you. 
             No social pressure, no algorithms&mdash;just your collection, your way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {user ? (
-              <Button asChild size="lg">
-                <Link href="/registry">
-                  View Your Registry
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <>
+            {hydrated ? (
+              user ? (
                 <Button asChild size="lg">
-                  <Link href="/auth/signup">
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <Link href="/registry">
+                    Your Registry
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/auth/signin">Sign In</Link>
-                </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button asChild size="lg">
+                    <Link href="/auth/signup">
+                      Get Started
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg">
+                    <Link href="/auth/signin">Sign In</Link>
+                  </Button>
+                </>
+              )
+            ) : null}
           </div>
         </div>
       </section>

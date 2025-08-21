@@ -304,9 +304,9 @@ export default function ObjectDetailPage() {
             <div className="flex items-center space-x-2">
               {object!.isPublic && (
                 <Button variant="outline" asChild>
-                  <Link href={`/passport/${object!.slug}`} target="_blank" className="whitespace-nowrap">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Passport
+                  <Link href={`/passport/${object!.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
+                    <Image src={require('@/img/passport.svg')} alt="Passport" width={20} height={20} className="mr-2" />
+                    Passport
                   </Link>
                 </Button>
               )}

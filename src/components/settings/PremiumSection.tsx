@@ -1,4 +1,5 @@
 import React from 'react';
+import { DocumentSnapshot } from 'firebase/firestore';
 import PremiumUpsell from './PremiumUpsell';
 import { UserDoc } from '@/types';
 import UpdatePaymentForm from './UpdatePaymentForm';
@@ -7,6 +8,9 @@ import { loadStripe } from '@stripe/stripe-js';
 import InvoiceHistory from './InvoiceHistory';
 
 export default function PremiumSection({ user }: { user?: UserDoc }) {
+  // Hydration guard: only show client-only status after hydration
+  const [hydrated, setHydrated] = React.useState(false);
+  React.useEffect(() => { setHydrated(true); }, []);
   // Force UI to show 'Active' for a few seconds after re-subscribe
   const [forceActive, setForceActive] = React.useState(false);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
@@ -40,13 +44,12 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
       } else {
         alert(data.error || 'Unable to cancel subscription.');
       }
-    } catch (err) {
+    } catch {
       alert('Unable to cancel subscription.');
     }
     setCancelLoading(false);
   };
   // Helper to update UI after payment without full reload
-  const [justUpgraded, setJustUpgraded] = React.useState(false);
   // Only show card form after clicking Re-Subscribe or if not active
   const [showCardForm, setShowCardForm] = React.useState(false);
   const [localUser, setLocalUser] = React.useState<UserDoc | undefined>(user);
@@ -54,14 +57,17 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
     setLocalUser(user);
     if (!user?.uid) return;
     // Listen for Firestore changes to this user
-    const unsubscribe = (window as any).heldFirebase
-      ? (window as any).heldFirebase.firestore().collection('users').doc(user.uid)
-          .onSnapshot((doc: any) => {
-            setLocalUser(doc.data());
+    // Use 'unknown' for window and doc, then typecast as needed
+    const heldFirebase = (window as unknown as { heldFirebase?: unknown }).heldFirebase;
+    const unsubscribe = heldFirebase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? (heldFirebase as any).firestore().collection('users').doc(user.uid)
+          .onSnapshot((doc: DocumentSnapshot) => {
+            setLocalUser(doc.data() as UserDoc);
           })
-      : undefined;
+      : null;
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (typeof unsubscribe === 'function') unsubscribe();
     };
   }, [user?.uid]);
 
@@ -74,32 +80,43 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         cancelRequested: false,
       },
     } : prev);
-    setJustUpgraded(true);
     setForceActive(true);
     setShowCardForm(false);
     setTimeout(() => {
-      setJustUpgraded(false);
       setForceActive(false);
     }, 5000);
   };
   // Helper to check if expired
   const isExpired = user?.premium.renewsAt && user.premium.renewsAt < Date.now();
   const isActive = user?.premium.active && !isExpired;
+    // SSR-safe date formatting
+    const formatDate = (timestamp?: number | string) => {
+      if (!timestamp) return '-';
+      const date = new Date(Number(timestamp));
+      // Use YYYY-MM-DD for SSR safety
+      return date.toISOString().slice(0, 10);
+    };
 
   return (
     <section aria-labelledby="heldplus-header" className="mb-8">
       <div className="bg-gray-100 rounded-xl p-6 shadow mb-4">
         <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2">
           Held+
-          {forceActive ? (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
-          ) : localUser?.premium.active && localUser?.premium.cancelRequested ? (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-800 ml-2">
-              Active Until {localUser?.premium?.renewsAt ? new Date(Number(localUser.premium.renewsAt)).toLocaleDateString() : '-'}
-            </span>
-          ) : localUser?.premium.active ? (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
-          ) : null}
+          {hydrated ? (
+            forceActive ? (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
+            ) : localUser?.premium.active && localUser?.premium.cancelRequested ? (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-800 ml-2">
+                Active Until {formatDate(localUser?.premium?.renewsAt ?? undefined)}
+              </span>
+            ) : localUser?.premium.active ? (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
+            ) : null
+          ) : (
+            localUser?.premium.active ? (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
+            ) : null
+          )}
           {isExpired && !localUser?.premium.active && (
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 ml-2">Expired</span>
           )}
@@ -109,8 +126,8 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
 
 
   <div className="font-semibold mb-1">Plan: {localUser?.premium?.plan}</div>
-  <div className="text-sm text-gray-600 mb-1">Since: {localUser?.premium?.since ? new Date(Number(localUser.premium.since)).toLocaleDateString() : '-'}</div>
-  <div className="text-sm text-gray-600 mb-3">Renews: {localUser?.premium?.renewsAt ? new Date(Number(localUser.premium.renewsAt)).toLocaleDateString() : '-'}</div>
+  <div className="text-sm text-gray-600 mb-1">Since: {formatDate(localUser?.premium?.since ?? undefined)}</div>
+  <div className="text-sm text-gray-600 mb-3">Renews: {formatDate(localUser?.premium?.renewsAt ?? undefined)}</div>
         
 
       <div className="text-base text-gray-700 mb-4 font-medium">
@@ -282,7 +299,7 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
       {user && !isActive && isExpired && (
         <div className="bg-red-50 border border-red-200 rounded p-4 mb-4 text-red-700 font-semibold text-center">
           Your Held+ subscription has expired. Please renew to continue enjoying premium features.
-          <div className="text-sm text-gray-600 mt-2">Expired: {user?.premium?.renewsAt ? new Date(Number(user.premium.renewsAt)).toLocaleDateString() : '-'}</div>
+          <div className="text-sm text-gray-600 mt-2">Expired: {formatDate(user?.premium?.renewsAt ?? undefined)}</div>
         </div>
       )}
       {!user && (

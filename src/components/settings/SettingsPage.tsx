@@ -149,8 +149,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
               />
               <NotificationsSection user={user ?? undefined} />
               <AccountSection user={user ?? undefined} />
-              <DataSection user={user ?? undefined} />
-              <PremiumSection user={user ?? undefined} />
               {/* Held+ logic and public user page toggle are handled in ProfileSection and PremiumSection */}
             </>
           )}

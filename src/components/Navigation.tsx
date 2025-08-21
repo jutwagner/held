@@ -131,11 +131,11 @@ export function MobileBottomBar() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex justify-around py-2">
       <Link href="/registry" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M9 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="2"/></svg>
+        <img src="/img/registry.svg" alt="Registry" width={28} height={28} className="mb-1" />
         <span className="text-xs mt-1">Registry</span>
       </Link>
       <Link href="/rotations" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/><path d="M12 7v5" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+        <img src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="mb-1" />
         <span className="text-xs mt-1">Rotations</span>
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
