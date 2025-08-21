@@ -77,101 +77,100 @@ export default function RegistryPage() {
 
 
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <Navigation />
-        <div className="held-container py-24">
-          <div className="text-center">
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <MobileBottomBar />
-      <div className="held-container py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-serif font-medium mb-2">Registry</h1>
-            <p className="text-gray-600">
-              {objects.length} object{objects.length !== 1 ? 's' : ''} in your collection
-            </p>
-          </div>
-          <Button asChild className="mt-4 sm:mt-0">
-            <Link href="/registry/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Object
-            </Link>
-          </Button>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search objects, makers, or tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button
-            variant={showPublicOnly ? "default" : "outline"}
-            onClick={() => setShowPublicOnly(!showPublicOnly)}
-            className="flex items-center"
-          >
-            {showPublicOnly ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-            {showPublicOnly ? 'Public Only' : 'All Objects'}
-          </Button>
-        </div>
-
-        {/* Objects Grid */}
-        {loadingObjects ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-4 min-h-[390px] flex flex-col justify-between animate-pulse">
-                <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
-                <div className="h-6 bg-gray-200 rounded w-2/3 mb-2" />
-                <div className="h-4 bg-gray-100 rounded w-1/2 mb-4" />
-                <div className="h-4 bg-gray-100 rounded w-1/3" />
+    <>
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <MobileBottomBar />
+        <div className="held-container py-8">
+          {loading || !user ? (
+            <div className="py-24">
+              <div className="text-center">
+                <p className="text-gray-600">Loading...</p>
               </div>
-            ))}
-          </div>
-        ) : filteredObjects.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No objects found</h3>
-              <p className="text-gray-600 mb-6">
-                {objects.length === 0 
-                  ? "Start building your collection by adding your first object."
-                  : "Try adjusting your search or filters."
-                }
-              </p>
-              {objects.length === 0 && (
-                <Button asChild>
-                  <Link href="/registry/new">Add Your First Object</Link>
-                </Button>
-              )}
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredObjects.map((obj) => (
-              <ObjectCard key={obj.id} object={obj} />
-            ))}
-          </div>
-        )}
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-serif font-medium mb-2">Registry</h1>
+                  <p className="text-gray-600">
+                    {objects.length} object{objects.length !== 1 ? 's' : ''} in your collection
+                  </p>
+                </div>
+                <Button asChild className="mt-4 sm:mt-0">
+                  <Link href="/registry/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Object
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search objects, makers, or tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button
+                  variant={showPublicOnly ? "default" : "outline"}
+                  onClick={() => setShowPublicOnly(!showPublicOnly)}
+                  className="flex items-center"
+                >
+                  {showPublicOnly ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                  {showPublicOnly ? 'Public Only' : 'All Objects'}
+                </Button>
+              </div>
+
+              {/* Objects Grid */}
+              {loadingObjects ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-lg shadow p-4 min-h-[390px] flex flex-col justify-between animate-pulse">
+                      <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
+                      <div className="h-6 bg-gray-200 rounded w-2/3 mb-2" />
+                      <div className="h-4 bg-gray-100 rounded w-1/2 mb-4" />
+                      <div className="h-4 bg-gray-100 rounded w-1/3" />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredObjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Plus className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">No objects found</h3>
+                    <p className="text-gray-600 mb-6">
+                      {objects.length === 0 
+                        ? "Start building your collection by adding your first object."
+                        : "Try adjusting your search or filters."
+                      }
+                    </p>
+                    {objects.length === 0 && (
+                      <Button asChild>
+                        <Link href="/registry/new">Add Your First Object</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredObjects.map((obj) => (
+                    <ObjectCard key={obj.id} object={obj} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

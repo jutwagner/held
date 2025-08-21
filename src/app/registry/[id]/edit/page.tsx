@@ -34,31 +34,61 @@ const EditObjectPage: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: fetch object data by ID and setFormData
-    // For now, use placeholder data
-    setFormData({
-      title: '',
-      category: '',
-      maker: '',
-      year: undefined,
-      value: undefined,
-      condition: 'good',
-      tags: [],
-      notes: '',
-      images: [],
-      isPublic: false,
-      shareInCollaborative: false,
-    });
+    async function fetchObject() {
+      if (!objectId) return;
+      setLoading(true);
+      try {
+        const obj = await import('@/lib/firebase-services').then(mod => mod.getObject(objectId));
+        if (obj) {
+          setFormData({
+            title: obj.title || '',
+            category: obj.category || '',
+            maker: obj.maker || '',
+            year: obj.year,
+            value: obj.value,
+            condition: obj.condition || 'good',
+            tags: Array.isArray(obj.tags) ? obj.tags : [],
+            notes: obj.notes || '',
+            images: obj.images || [],
+            isPublic: obj.isPublic || false,
+            shareInCollaborative: obj.shareInCollaborative || false,
+          });
+        }
+      } catch {
+        setFormData(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchObject();
   }, [objectId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setUploading(true);
+    setUploadError(null);
+    try {
+      // Optionally compress/convert images here
+      setFormData(prev => prev ? { ...prev, images: [...prev.images, ...files.map(f => URL.createObjectURL(f))] } : prev);
+    } catch (err) {
+      setUploadError('Image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData || !objectId) return;
     setLoading(true);
-    // TODO: update object in backend
-    setTimeout(() => {
+    try {
+  await import('@/lib/firebase-services').then(mod => mod.updateObject(objectId, { ...formData, id: objectId, condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor' }));
+      router.push(`/registry/${objectId}`);
+    } catch (err) {
+      setUploadError('Failed to save changes');
+    } finally {
       setLoading(false);
-      router.push('/registry');
-    }, 1000);
+    }
   };
 
   if (!formData) return <div className="held-container py-8">Loading…</div>;

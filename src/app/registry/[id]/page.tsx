@@ -305,28 +305,40 @@ export default function ObjectDetailPage() {
             <div className="flex items-center space-x-2">
               {object && user && object.userId === user.uid && (
                 <>
-                  <Button variant="outline" onClick={() => setEditing(!editing)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    {editing ? 'Cancel' : 'Edit'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => {/* add delete logic here */}}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
+                    {object && object.isPublic && (
+                      <Button variant="outline" asChild>
+                        <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
+                          <Image src={passportSvg} alt="Passport" width={20} height={20} className="mr-2" />
+                          Passport
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="outline" onClick={() => setEditing(!editing)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      {editing ? 'Cancel' : 'Edit'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={async () => {
+                        setLoading(true);
+                        setError('');
+                        try {
+                          await import('@/lib/firebase-services').then(mod => mod.deleteObject(objectId));
+                          window.location.href = '/registry';
+                        } catch (err) {
+                          setError('Failed to delete object.');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
                 </>
               )}
-              {object && object.isPublic && (
-                <Button variant="outline" asChild>
-                  <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
-                    <Image src={passportSvg} alt="Passport" width={20} height={20} className="mr-2" />
-                    Passport
-                  </Link>
-                </Button>
-              )}
+  {/* ...existing code... */}
             </div>
           </div>
         )}
@@ -335,64 +347,219 @@ export default function ObjectDetailPage() {
           {/* Images */}
           <div>
             <h2 className="text-lg font-medium mb-4">Images</h2>
-            {object && object.images.length > 0 ? (
+            {editing ? (
               <div className="space-y-4">
-                {object.images.map((image, index) => (
-                  <div key={index} className="w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
-                    <Image
-                      src={image}
-                      alt={`${object.title} - Image ${index + 1}`}
-                      width={800}
-                      height={1200}
-                      className="w-full rounded-xl"
-                      style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
-                    />
+                {formData.images.length > 0 ? (
+                  formData.images.map((image, index) => (
+                    <div key={index} className="relative w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center group" style={{ minHeight: 260 }}>
+                      <Image
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        width={800}
+                        height={1200}
+                        className="w-full rounded-xl transition-transform duration-200 group-hover:scale-105"
+                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 opacity-80 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== index) })}
+                        aria-label="Delete image"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">No images</p>
                   </div>
-                ))}
+                )}
+                <div
+                  className={`mt-4 border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
+                  onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                  onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+                  onDrop={e => {
+                    e.preventDefault(); setDragActive(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                  onClick={() => document.getElementById('image-upload-input')?.click()}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Upload image"
+                >
+                  <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" className="mb-2 text-blue-500" viewBox="0 0 24 24"><path d="M12 16v-8m0 0l-4 4m4-4l4 4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  <span className="text-gray-700 font-medium">Drag & drop or click to upload</span>
+                  <input
+                    id="image-upload-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                  />
+                  {uploading && <p className="text-blue-600 mt-2">Uploading...</p>}
+                  {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
+                </div>
               </div>
             ) : (
-              <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">No images</p>
-              </div>
+              object && object.images.length > 0 ? (
+                <div className="space-y-4">
+                  {object.images.map((image, index) => (
+                    <div key={index} className="w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
+                      <Image
+                        src={image}
+                        alt={`${object.title} - Image ${index + 1}`}
+                        width={800}
+                        height={1200}
+                        className="w-full rounded-xl"
+                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                  <p className="text-gray-500">No images</p>
+                </div>
+              )
             )}
           </div>
           {/* Details */}
           <div className="space-y-6">
-            <p className="text-gray-600">{object?.description || <span className="text-gray-400 italic">No description</span>}</p>
-            <p className="text-gray-600">Maker: {object?.maker || <span className="text-gray-400 italic">No maker</span>}</p>
-            <p className="text-gray-600">Condition: {object?.condition || <span className="text-gray-400 italic">No condition</span>}</p>
-            <p className="text-gray-600">Category: {object?.category || <span className="text-gray-400 italic">No category</span>}</p>
-            <p className="flex items-center text-gray-600">
-              {object?.isPublic ? (
-                <span className="text-green-600 flex items-center">Public</span>
-              ) : (
-                <span className="text-red-600 flex items-center">Private</span>
-              )}
-            </p>
-            {Array.isArray(object?.tags) && object.tags.length > 0 ? (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {object.tags.slice(0, 3).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+            {editing ? (
+              <>
+                <textarea
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Description"
+                  rows={3}
+                />
+                <input
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.maker}
+                  onChange={e => setFormData({ ...formData, maker: e.target.value })}
+                  placeholder="Maker"
+                />
+                <select
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.condition}
+                  onChange={e => setFormData({ ...formData, condition: e.target.value })}
+                >
+                  <option value="">Condition</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="fair">Fair</option>
+                  <option value="poor">Poor</option>
+                </select>
+                <input
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.category}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  placeholder="Category"
+                />
+                <input
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.tags}
+                  onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="Comma separated tags"
+                />
+                <textarea
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.notes}
+                  onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Notes"
+                  rows={2}
+                />
+                <input
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="number"
+                  value={formData.year || ''}
+                  onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+                  placeholder="Year"
+                />
+                <div className="flex items-center space-x-4 mt-2">
+                  <label className="flex items-center cursor-pointer">
+                    <span className="mr-2 text-sm text-gray-700">Public</span>
+                    <input
+                      type="checkbox"
+                      checked={formData.visibility === 'Public'}
+                      onChange={e => setFormData({ ...formData, visibility: e.target.checked ? 'Public' : 'Private' })}
+                      className="sr-only"
+                    />
+                    <span className={`relative inline-block w-10 h-6 rounded-full transition bg-gray-300 ${formData.visibility === 'Public' ? 'bg-blue-500' : ''}`}>
+                      <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${formData.visibility === 'Public' ? 'translate-x-4' : ''}`}></span>
+                    </span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <span className="mr-2 text-sm text-gray-700">Share in Collaborative</span>
+                    <input
+                      type="checkbox"
+                      checked={formData.shareInCollaborative}
+                      onChange={e => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <span className={`relative inline-block w-10 h-6 rounded-full transition bg-gray-300 ${formData.shareInCollaborative ? 'bg-blue-500' : ''}`}>
+                      <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${formData.shareInCollaborative ? 'translate-x-4' : ''}`}></span>
+                    </span>
+                  </label>
+                </div>
+              </>
             ) : (
-              <p className="text-gray-500">No tags available</p>
+              <>
+                <p className="text-gray-600">{object?.description || <span className="text-gray-400 italic">Description</span>}</p>
+                <p className="text-gray-600">Maker: {object?.maker || <span className="text-gray-400 italic">Maker</span>}</p>
+                <p className="text-gray-600">Condition: {object?.condition || <span className="text-gray-400 italic">Condition</span>}</p>
+                <p className="text-gray-600">Category: {object?.category || <span className="text-gray-400 italic">Category</span>}</p>
+                <p className="flex items-center text-gray-600">
+                  <span className="flex items-center mr-4">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1 text-blue-500" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.05 12a9.94 9.94 0 0 1 19.9 0 9.94 9.94 0 0 1-19.9 0z"/></svg>
+                    {object?.isPublic ? (
+                      <span className="text-green-600">Public</span>
+                    ) : (
+                      <span className="text-red-600">Private</span>
+                    )}
+                  </span>
+                  <span className="flex items-center">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1 text-blue-500" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.05 12a9.94 9.94 0 0 1 19.9 0 9.94 9.94 0 0 1-19.9 0z"/></svg>
+                    {object?.shareInCollaborative ? (
+                      <span className="text-green-600">Shared in Collaborative</span>
+                    ) : (
+                      <span className="text-gray-500">Not Shared</span>
+                    )}
+                  </span>
+                </p>
+                {Array.isArray(object?.tags) && object.tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {object.tags.slice(0, 3).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">Tags</p>
+                )}
+                <p className="text-gray-600">Notes: {object?.notes || <span className="text-gray-400 italic">Notes</span>}</p>
+                <p className="text-gray-600">Year: {object?.year || <span className="text-gray-400 italic">Year</span>}</p>
+                <p className="text-gray-600">
+                  In theCollaborative: {object?.shareInCollaborative ? 'Yes' : 'No'}
+                </p>
+                <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono">
+                  <p>Created: {object ? new Date(object.createdAt).toLocaleDateString() : ''}</p>
+                  <p>Updated: {object ? new Date(object.updatedAt).toLocaleDateString() : ''}</p>
+                  <p>ID: {object?.id}</p>
+                  <p>Slug: {object?.slug}</p>
+                </div>
+              </>
             )}
-            <p className="text-gray-600">Notes: {object?.notes || <span className="text-gray-400 italic">No notes</span>}</p>
-            <p className="text-gray-600">
-              In theCollaborative: {object?.shareInCollaborative ? 'Yes' : 'No'}
-            </p>
-            <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono">
-              <p>Created: {object ? new Date(object.createdAt).toLocaleDateString() : ''}</p>
-              <p>Updated: {object ? new Date(object.updatedAt).toLocaleDateString() : ''}</p>
-              <p>ID: {object?.id}</p>
-              <p>Slug: {object?.slug}</p>
-            </div>
           </div>
         </div>
         {/* Inline Editing Section */}
