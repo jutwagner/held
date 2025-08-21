@@ -8,10 +8,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import InvoiceHistory from './InvoiceHistory';
 
 export default function PremiumSection({ user }: { user?: UserDoc }) {
-  // Hydration guard: only show client-only status after hydration
+  // All state declarations at the very top
   const [hydrated, setHydrated] = React.useState(false);
-  React.useEffect(() => { setHydrated(true); }, []);
-  // Force UI to show 'Active' for a few seconds after re-subscribe
   const [forceActive, setForceActive] = React.useState(false);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
   const [cancelLoading, setCancelLoading] = React.useState(false);
@@ -20,6 +18,50 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
   const [updateLoading, setUpdateLoading] = React.useState(false);
   const [updateSuccess, setUpdateSuccess] = React.useState(false);
   const [updateError, setUpdateError] = React.useState<string | null>(null);
+  const [showCardForm, setShowCardForm] = React.useState(false);
+  const [localUser, setLocalUser] = React.useState<UserDoc | undefined>(user);
+
+  // All effects after state declarations
+  React.useEffect(() => { setHydrated(true); }, []);
+
+  React.useEffect(() => {
+    setLocalUser(user);
+    if (!user?.uid) return;
+    // Listen for Firestore changes to this user
+    // Use 'unknown' for window and doc, then typecast as needed
+    const heldFirebase = (window as unknown as { heldFirebase?: unknown }).heldFirebase;
+    const unsubscribe = heldFirebase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? (heldFirebase as any).firestore().collection('users').doc(user.uid)
+          .onSnapshot((doc: DocumentSnapshot) => {
+            setLocalUser(doc.data() as UserDoc);
+          })
+      : null;
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [user?.uid]);
+
+  // Fallback: clear cancelRequested if premium is active
+  React.useEffect(() => {
+    if (localUser?.premium?.active && localUser?.premium?.cancelRequested && user?.uid) {
+      fetch('/api/update-premium-cancel-requested', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid, cancelRequested: false }),
+      })
+        .then(() => {
+          setLocalUser(prev => prev ? {
+            ...prev,
+            premium: {
+              ...prev.premium,
+              cancelRequested: false,
+            },
+          } : prev);
+        });
+    }
+  }, [localUser?.premium?.active, localUser?.premium?.cancelRequested, user?.uid]);
+
   const handleCancel = async () => {
     setCancelLoading(true);
     // Optimistically update localUser for instant UI feedback
@@ -49,27 +91,6 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
     }
     setCancelLoading(false);
   };
-  // Helper to update UI after payment without full reload
-  // Only show card form after clicking Re-Subscribe or if not active
-  const [showCardForm, setShowCardForm] = React.useState(false);
-  const [localUser, setLocalUser] = React.useState<UserDoc | undefined>(user);
-  React.useEffect(() => {
-    setLocalUser(user);
-    if (!user?.uid) return;
-    // Listen for Firestore changes to this user
-    // Use 'unknown' for window and doc, then typecast as needed
-    const heldFirebase = (window as unknown as { heldFirebase?: unknown }).heldFirebase;
-    const unsubscribe = heldFirebase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? (heldFirebase as any).firestore().collection('users').doc(user.uid)
-          .onSnapshot((doc: DocumentSnapshot) => {
-            setLocalUser(doc.data() as UserDoc);
-          })
-      : null;
-    return () => {
-      if (typeof unsubscribe === 'function') unsubscribe();
-    };
-  }, [user?.uid]);
 
   const handleUpgradeSuccess = () => {
     setLocalUser(prev => prev ? {
@@ -80,44 +101,61 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         cancelRequested: false,
       },
     } : prev);
+    // Also update Firestore to clear cancelRequested
+    if (user?.uid) {
+      try {
+        fetch('/api/update-premium-cancel-requested', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: user.uid, cancelRequested: false }),
+        });
+      } catch (err) {
+        // Ignore error for now
+      }
+    }
     setForceActive(true);
     setShowCardForm(false);
     setTimeout(() => {
       setForceActive(false);
     }, 5000);
   };
+
   // Helper to check if expired
   const isExpired = user?.premium.renewsAt && user.premium.renewsAt < Date.now();
   const isActive = user?.premium.active && !isExpired;
-    // SSR-safe date formatting
-    const formatDate = (timestamp?: number | string) => {
-      if (!timestamp) return '-';
-      const date = new Date(Number(timestamp));
-      // Use YYYY-MM-DD for SSR safety
-      return date.toISOString().slice(0, 10);
-    };
+  // SSR-safe date formatting
+  const formatDate = (timestamp?: number | string) => {
+    if (!timestamp) return '-';
+    const date = new Date(Number(timestamp));
+    // Use YYYY-MM-DD for SSR safety
+    return date.toISOString().slice(0, 10);
+  };
+
+  if (!hydrated) {
+    return <div className="text-gray-400 text-sm">Loading premium…</div>;
+  }
 
   return (
     <section aria-labelledby="heldplus-header" className="mb-8">
       <div className="bg-gray-100 rounded-xl p-6 shadow mb-4">
+        {/* DEBUG: Show premium status values */}
+        <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-900">
+          <strong>DEBUG:</strong> premium.active: {String(localUser?.premium?.active)} | premium.cancelRequested: {String(localUser?.premium?.cancelRequested)} | premium.plan: {String(localUser?.premium?.plan)}
+        </div>
         <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2">
           Held+
-          {hydrated ? (
+          {hydrated && (
             forceActive ? (
               <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
             ) : localUser?.premium.active && localUser?.premium.cancelRequested ? (
               <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-800 ml-2">
                 Active Until {formatDate(localUser?.premium?.renewsAt ?? undefined)}
               </span>
-            ) : localUser?.premium.active ? (
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
-            ) : null
-          ) : (
-            localUser?.premium.active ? (
+            ) : localUser?.premium.active && !localUser?.premium.cancelRequested ? (
               <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
             ) : null
           )}
-          {isExpired && !localUser?.premium.active && (
+          {hydrated && isExpired && !localUser?.premium.active && (
             <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 ml-2">Expired</span>
           )}
         </h2>

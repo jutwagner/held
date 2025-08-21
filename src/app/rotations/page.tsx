@@ -18,20 +18,21 @@ export default function RotationsPage() {
   const router = useRouter();
   const [rotationsWithObjects, setRotationsWithObjects] = useState<RotationWithObjects[]>([]);
   const [loadingRotations, setLoadingRotations] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
 
-
+  useEffect(() => { setHydrated(true); }, []);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && hydrated) {
       router.push('/auth/signin');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, hydrated]);
 
   useEffect(() => {
-    if (user) {
+    if (user && hydrated) {
       loadRotations();
     }
-  }, [user]);
+  }, [user, hydrated]);
 
   const loadRotations = async () => {
     if (!user || typeof user.uid !== 'string') return;
@@ -51,7 +52,7 @@ export default function RotationsPage() {
     }
   };
 
-  if (loading || !user) {
+  if (!hydrated || loading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <div className="held-container py-24">
@@ -64,7 +65,7 @@ export default function RotationsPage() {
   }
 
   // Premium logic for limiting usable rotations
-  const isHeldPlus = user?.premium?.plan === 'plus';
+  const isHeldPlus = !!user?.premium?.active;
   const maxFreeRotations = 3;
 
   return (
@@ -137,30 +138,30 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
     return (
       <div className="held-card p-6 transition-shadow cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
         {/* Absolute CTA overlay, card is visible but not clickable */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.85)' }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto',  background: 'rgba(255,255,255,0.85)' }}>
           <div className="flex flex-col items-center">
-            <span className="text-gray-700 text-base font-semibold mb-2">Held+ required</span>
+            <span className="text-gray-700 text-base font-semibold mb-2">Held+</span> 
             <Link
               href="/settings/premium"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg  font-semibold shadow hover:bg-blue-700 transition-all text-sm"
               style={{ pointerEvents: 'auto' }}
             >
-              Upgrade to Held+
+              Go
             </Link>
           </div>
         </div>
         {/* ...existing card content... */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-lg">{rotation.name}</h3>
-          <div className="flex items-center space-x-2">
-            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+        <div className="flex items-center justify-between mb-4 blur">
+          <h3 className="font-medium text-lg blur">{rotation.name}</h3>
+          <div className="flex items-center space-x-2 blur">
+            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600 blur" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
           </div>
         </div>
         {rotation.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{rotation.description}</p>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2 blur">{rotation.description}</p>
         )}
-        <div className="mb-4">
-          <div className="flex -space-x-2">
+        <div className="mb-4 blur">
+          <div className="flex -space-x-2 blur">
             {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
               <div key={obj.id} className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden">
                 {obj.images.length > 0 ? (
@@ -173,15 +174,15 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
               </div>
             ))}
             {rotation.objects.length > 4 && (
-              <div className="w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
+              <div className=" blur w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
                 <span className="text-gray-600 text-xs font-medium">+{rotation.objects.length - 4}</span>
               </div>
             )}
           </div>
           <p className="text-sm text-gray-500 mt-2">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-1">
+        <div className="flex items-center justify-between text-sm text-gray-500 blur">
+          <div className="flex items-center space-x-1 blur">
             <Calendar className="h-3 w-3" />
             <span>{formatDate(rotation.createdAt)}</span>
           </div>

@@ -25,7 +25,8 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   useEffect(() => {
     setHydrated(true);
   }, []);
-  const { user, setUser } = useAuth();
+  // Call useAuth only once
+  const { user, setUser, loading } = useAuth();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [section, setSection] = useState<SectionKey>(initialSection || 'profile');
   const [displayName, setDisplayName] = useState('');
@@ -82,9 +83,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
     }
     setTimeout(() => setToast(null), 3000);
   };
-
-  // SSR-safe: Only use context user/loading for initial render
-  const { loading } = useAuth();
   return (
     <div>
       {toast && <Toast message={toast.message} type={toast.type} />}
