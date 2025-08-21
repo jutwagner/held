@@ -38,22 +38,28 @@ export default function TheCollaborativePage() {
     <>
       <MobileBottomBar />
       <header className="bg-white shadow">
-        <div className="held-container py-4 flex flex-col sm:flex-row items-center justify-between">
-          <h1 className="text-2xl font-serif font-bold mb-2 sm:mb-0">theCollaborative</h1>
-          <div className="flex gap-8 border-b border-gray-200 mt-2">
-            <div
-              className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'registry' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
-              onClick={() => setTab('registry')}
-            >
-              Public Registry
-            </div>
-            <div
-              className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'rotations' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
-              onClick={() => setTab('rotations')}
-            >
-              Public Rotations
-            </div>
-          </div>
+        <div className="held-container py-8">
+          {loading ? (
+            <p className="text-center text-gray-500">Loading…</p>
+          ) : (
+            <>
+              <h1 className="text-2xl font-serif font-bold mb-2 sm:mb-0">theCollaborative</h1>
+              <div className="flex gap-8 border-b border-gray-200 mt-2">
+                <div
+                  className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'registry' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
+                  onClick={() => setTab('registry')}
+                >
+                  Public Registry
+                </div>
+                <div
+                  className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'rotations' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
+                  onClick={() => setTab('rotations')}
+                >
+                  Public Rotations
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
