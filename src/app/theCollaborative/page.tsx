@@ -83,7 +83,7 @@ export default function TheCollaborativePage() {
             rotations.length === 0 ? (
               <p className="text-center text-gray-500">No public rotations available.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-6">
                 {rotations.map((rotation) => (
                   <div key={rotation.id} className="bg-white rounded-lg shadow p-6 flex flex-col justify-between hover:shadow-lg transition-shadow cursor-pointer">
                     <h3 className="font-serif font-medium text-lg mb-2">{rotation.name}</h3>

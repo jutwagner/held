@@ -17,6 +17,7 @@ export default function PassportPage() {
 
   useEffect(() => {
     if (slug) {
+      console.log('[DEBUG] PassportPage slug:', slug);
       loadObject();
     }
   }, [slug]);
@@ -25,6 +26,7 @@ export default function PassportPage() {
     try {
       setLoading(true);
       const obj = await getObjectBySlug(slug);
+      console.log('[DEBUG] PassportPage getObjectBySlug result:', obj);
       if (!obj) {
         return;
       }

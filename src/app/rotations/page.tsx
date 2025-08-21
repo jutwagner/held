@@ -46,7 +46,6 @@ export default function RotationsPage() {
         })
       );
       setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
-    } catch (error: unknown) {
     } finally {
       setLoadingRotations(false);
     }
@@ -132,9 +131,6 @@ export default function RotationsPage() {
 
 
 // Reusable premium logic for disabling features
-export function isRotationDisabled(idx: number, isHeldPlus: boolean, maxFree: number) {
-  return !isHeldPlus && idx >= maxFree;
-}
 
 function RotationCard({ rotation, disabled = false }: { rotation: RotationWithObjects; disabled?: boolean }) {
   if (disabled) {
@@ -144,13 +140,13 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.85)' }}>
           <div className="flex flex-col items-center">
             <span className="text-gray-700 text-base font-semibold mb-2">Held+ required</span>
-            <a
+            <Link
               href="/settings/premium"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
               style={{ pointerEvents: 'auto' }}
             >
               Upgrade to Held+
-            </a>
+            </Link>
           </div>
         </div>
         {/* ...existing card content... */}

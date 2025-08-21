@@ -188,10 +188,14 @@ function ObjectCard({ object }: { object: HeldObject }) {
               src={object.images[0]}
               alt={object.title}
               className="w-full h-full object-cover rounded-lg"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/img/placeholder.svg';
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-400 text-sm">No image</span>
+              <img src="/img/placeholder.svg" alt="No image" className="w-12 h-12 opacity-40" />
             </div>
           )}
         </div>

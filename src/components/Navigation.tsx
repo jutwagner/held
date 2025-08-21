@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 export default function Navigation() {
@@ -45,6 +46,7 @@ export default function Navigation() {
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
+                      <DialogTitle><VisuallyHidden>Add to Held</VisuallyHidden></DialogTitle>
                       <h3 className="text-2xl font-bold mb-4 tracking-tight text-gray-900 text-center">Add to Held</h3>
                       <p className="text-sm text-gray-500 mb-2 text-center">Choose what you want to add:</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">

@@ -1,11 +1,19 @@
 import React from 'react';
 
+interface Invoice {
+  id: string;
+  created: number;
+  amount_paid: number;
+  currency: string;
+  hosted_invoice_url: string;
+}
+
 interface InvoiceHistoryProps {
   uid?: string;
 }
 
 const InvoiceHistory: React.FC<InvoiceHistoryProps> = ({ uid }) => {
-  const [invoices, setInvoices] = React.useState<any[]>([]);
+  const [invoices, setInvoices] = React.useState<Invoice[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -18,11 +26,11 @@ const InvoiceHistory: React.FC<InvoiceHistoryProps> = ({ uid }) => {
       body: JSON.stringify({ uid }),
     })
       .then(res => res.json())
-      .then(data => {
+      .then((data: { invoices?: Invoice[] }) => {
         setInvoices(data.invoices || []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch(() => {
         setError('Unable to fetch invoice history');
         setLoading(false);
       });

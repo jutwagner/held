@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getUserByHandle, getRotations } from "@/lib/firebase-services";
-import { HeldObject, UserDoc } from "@/types";
+import { UserDoc, Rotation } from "@/types";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function PublicUserPage() {
   const params = useParams();
   const handle = params?.USER as string;
   const [user, setUser] = useState<UserDoc | null>(null);
-  const [rotations, setRotations] = useState<any[]>([]);
+  const [rotations, setRotations] = useState<Rotation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function PublicUserPage() {
       if (userDoc && userDoc.isPublicProfile) {
         console.log('[DEBUG] isPublicProfile is TRUE, showing public page');
         setUser(userDoc);
-        const userRotations = await getRotations(userDoc.uid);
+  const userRotations = await getRotations(userDoc.uid ?? "");
         setRotations(userRotations);
       } else {
         console.log('[DEBUG] isPublicProfile is FALSE or user not found, showing private page');
@@ -56,7 +57,7 @@ export default function PublicUserPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="held-container py-12">
         <div className="flex flex-col items-center mb-10">
-          <img src={user.avatarUrl || "/icon-144x144.png"} alt={user.displayName} className="w-24 h-24 rounded-full mb-4" />
+          <Image src={user.avatarUrl || "/icon-144x144.png"} alt={user.displayName} width={96} height={96} className="w-24 h-24 rounded-full mb-4" />
           <h1 className="text-4xl font-serif font-bold mb-2">{user.displayName}</h1>
           <p className="text-lg text-gray-600 mb-2">@{user.handle}</p>
           {user.bio && <p className="text-base text-gray-700 mb-2 max-w-xl text-center">{user.bio}</p>}
@@ -67,11 +68,11 @@ export default function PublicUserPage() {
             <p className="text-gray-500">No rotations yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {rotations.map((rotation: any) => (
+              {rotations.map((rotation: Rotation) => (
                 <Link key={rotation.id} href={`/rotations/${rotation.id}`} className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">
                   <h3 className="text-xl font-serif font-semibold mb-2">{rotation.name}</h3>
                   <p className="text-gray-600 mb-2">{rotation.description}</p>
-                  <p className="text-sm text-gray-500">{rotation.objects?.length || 0} object{rotation.objects?.length !== 1 ? "s" : ""}</p>
+                  <p className="text-sm text-gray-500">{rotation.objectIds?.length || 0} object{rotation.objectIds?.length !== 1 ? "s" : ""}</p>
                 </Link>
               ))}
             </div>
