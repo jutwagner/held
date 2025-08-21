@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { getFirestore, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
-import Navigation from '@/components/Navigation';
 import { getObject } from '@/lib/firebase-services';
 import { HeldObject } from '@/types';
 
@@ -27,26 +26,19 @@ function RotationPageClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
 
-  // Move conditional rendering below hooks
-
   useEffect(() => {
-  // Debug log removed for production
     if (id) {
       const fetchRotation = async () => {
         try {
-          // Debug log removed for production
           const docRef = doc(db, 'rotations', id as string);
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            // Debug log removed for production
             setRotation(docSnap.data());
           } else {
-  // Error log removed for production
             setError('Rotation not found');
           }
-        } catch (err) {
-            // Error log removed for production
+        } catch {
           setError('Failed to fetch rotation');
         } finally {
           setLoading(false);
@@ -55,7 +47,7 @@ function RotationPageClient({ id }: { id: string }) {
 
       fetchRotation();
     }
-  }, [id, getObject]);
+  }, [id]);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -82,43 +74,90 @@ function RotationPageClient({ id }: { id: string }) {
   }
 
   if (!rotation) {
-  // Error log removed for production
     return <p>No rotation data available</p>;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <header className="bg-white shadow">
-        <div className="held-container py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{rotation.name || 'Unnamed Rotation'}</h1>
-          <p className="text-gray-500">{rotation.description || 'No description available'}</p>
+      {/* Sticky Group Header */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b shadow-sm">
+        <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-4">
+              {objects.slice(0, 5).map((object, idx) => (
+                <img
+                  key={idx}
+                  src={object.images[0] || '/placeholder.png'}
+                  alt={object.title}
+                  className="w-12 h-12 rounded-full border-2 border-white shadow"
+                  style={{ zIndex: 10 - idx }}
+                />
+              ))}
+              {objects.length > 5 && (
+                <span className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xs font-mono text-gray-600 border-2 border-white shadow">+{objects.length - 5}</span>
+              )}
+            </div>
+            <div>
+              <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1">{rotation.name || 'Unnamed Rotation'}</h1>
+              <p className="text-gray-500 text-base font-mono">{rotation.description || 'No description available'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
+          </div>
         </div>
       </header>
 
-      <main className="held-container py-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-lg font-medium mb-4">Details</h2>
-          <p className="text-gray-600 mb-4">Public: {rotation.isPublic ? 'Yes' : 'No'}</p>
-          <p className="text-gray-600">Object IDs:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {objects.map((object, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <img
-                  src={object.images[0] || '/placeholder.png'}
-                  alt={object.title}
-                  className="w-full h-48 object-cover rounded-md mb-2"
-                />
-                <h3 className="text-lg font-medium mb-1">{object.title}</h3>
-                <p className="text-sm text-gray-600">{object.maker || 'Unknown Maker'}</p>
-                <p className="text-sm text-gray-600">{object.year || 'Year Unknown'}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Floating Object Nav */}
+      <nav className="sticky top-20 z-20 bg-white/80 backdrop-blur border-b border-gray-100 py-2 flex gap-2 justify-center shadow-sm">
+        {objects.map((object, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              const el = document.getElementById(`object-${idx}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
+            title={object.title}
+          >
+            <img src={object.images[0] || '/placeholder.png'} alt={object.title} className="w-full h-full object-cover" />
+          </button>
+        ))}
+      </nav>
 
-        <div>
-          <h2 className="text-lg font-medium mb-4">Additional Information</h2>
-          <p className="text-gray-600">More details can go here...</p>
+      <main className="held-container py-12">
+        {/* Deep dive into each object */}
+        <div className="flex flex-col gap-16">
+          {objects.map((object, index) => (
+            <section id={`object-${index}`} key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
+              <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
+                <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-2xl">
+                  <img
+                    src={object.images[0] || '/placeholder.png'}
+                    alt={object.title}
+                    className="w-full max-w-3xl rounded-xl object-contain"
+                    style={{ maxHeight: '480px', background: '#f8fafc' }}
+                  />
+                </div>
+              </div>
+              <div className="flex-1 flex flex-col justify-center items-start w-full">
+                <h3 className="text-3xl font-serif font-semibold mb-2 text-gray-900 tracking-tight">{object.title}</h3>
+                <p className="text-lg text-gray-600 mb-1 font-mono">{object.maker || <span className="italic text-gray-400">Unknown Maker</span>}</p>
+                <p className="text-base text-gray-500 mb-2 font-mono">{object.year || <span className="italic text-gray-400">Year Unknown</span>}</p>
+                {object.notes && <p className="text-base text-gray-700 mt-2 whitespace-pre-line font-sans leading-relaxed">{object.notes}</p>}
+                {Array.isArray(object.tags) && object.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {object.tags.slice(0, 6).map((tag, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-mono shadow">{tag}</span>
+                    ))}
+                    {object.tags.length > 6 && (
+                      <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-mono">+{object.tags.length - 6} more</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </div>
