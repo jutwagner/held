@@ -191,14 +191,57 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
       </div>
     );
   }
+  const { user } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const router = useRouter();
+  const canDelete = user && (user.uid === rotation.userId || rotation.isPublic);
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setConfirmOpen(false);
+    setDeleting(true);
+    try {
+      await import('@/lib/firebase-services').then(mod => mod.deleteRotation(rotation.id));
+      router.refresh();
+    } catch (err) {
+      alert('Failed to delete rotation.');
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
     <Link href={`/rotations/${rotation.id}`}>
-  <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:-translate-y-1">
+      <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:-translate-y-1">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-lg">{rotation.name}</h3>
           <div className="flex items-center space-x-2">
             {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+            {/* Show delete button for own or public rotations */}
+            {canDelete && (
+              <>
+                <button
+                  className="ml-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition disabled:opacity-50"
+                  onClick={e => { e.preventDefault(); setConfirmOpen(true); }}
+                  disabled={deleting}
+                  title="Delete rotation"
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+                {confirmOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                      <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
+                      <p className="mb-4">Are you sure you want to delete <span className="font-bold">{rotation.name}</span>? This cannot be undone.</p>
+                      <div className="flex justify-end gap-2">
+                        <button className="px-4 py-2 rounded bg-gray-200" onClick={e => { e.preventDefault(); setConfirmOpen(false); }}>Cancel</button>
+                        <button className="px-4 py-2 rounded bg-red-600 text-white" onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete'}</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
         {/* Description */}
