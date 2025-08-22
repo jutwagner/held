@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { isHeldPlus } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -349,7 +350,7 @@ export default function NewObjectPage() {
                 </label>
               </div>
               {/* Held+ Provenance Section */}
-              {user?.premium?.active && user?.premium?.plan === 'plus' ? (
+              {isHeldPlus(user) ? (
                 <div className="mt-8 border-t pt-8">
                   <h2 className="text-lg font-bold mb-4 text-blue-700">Provenance (Held+)</h2>
                   {/* ...existing provenance fields UI... */}

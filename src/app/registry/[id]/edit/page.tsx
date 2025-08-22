@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { subscribeObjects } from '@/lib/firebase-services';
+import type { HeldObject } from '@/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
@@ -44,42 +46,38 @@ const EditObjectPage: React.FC = () => {
   const [coaFile, setCoaFile] = useState<File | null>(null);
 
   useEffect(() => {
-    async function fetchObject() {
-      if (!objectId) return;
-      setLoading(true);
-      try {
-        const obj = await import('@/lib/firebase-services').then(mod => mod.getObject(objectId));
-        if (obj) {
-          setFormData({
-            title: obj.title || '',
-            category: obj.category || '',
-            maker: obj.maker || '',
-            year: obj.year,
-            value: obj.value,
-            condition: obj.condition || 'good',
-            tags: Array.isArray(obj.tags) ? obj.tags : [],
-            notes: obj.notes || '',
-            images: obj.images || [],
-            isPublic: obj.isPublic || false,
-            shareInCollaborative: obj.shareInCollaborative || false,
-            chain: obj.chain ? JSON.stringify(obj.chain, null, 2) : '',
-            serialNumber: obj.serialNumber || '',
-            acquisitionDate: typeof obj.acquisitionDate === 'string' ? obj.acquisitionDate : (obj.acquisitionDate instanceof Date ? obj.acquisitionDate.toISOString().slice(0, 10) : ''),
-            certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
-            origin: obj.origin || '',
-            conditionHistory: obj.conditionHistory ? JSON.stringify(obj.conditionHistory, null, 2) : '',
-            transferMethod: obj.transferMethod || '',
-            associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
-            provenanceNotes: obj.provenanceNotes || '',
-          });
-        }
-      } catch {
-        setFormData(null);
-      } finally {
-        setLoading(false);
+    if (!objectId) return;
+    setLoading(true);
+    // Subscribe to real-time updates for this object
+    const unsubscribe = subscribeObjects(objectId, (objs: HeldObject[]) => {
+      const obj = objs.find((o: HeldObject) => o.id === objectId);
+      if (obj) {
+        setFormData({
+          title: obj.title || '',
+          category: obj.category || '',
+          maker: obj.maker || '',
+          year: obj.year,
+          value: obj.value,
+          condition: obj.condition || 'good',
+          tags: Array.isArray(obj.tags) ? obj.tags : [],
+          notes: obj.notes || '',
+          images: obj.images || [],
+          isPublic: obj.isPublic || false,
+          shareInCollaborative: obj.shareInCollaborative || false,
+          chain: obj.chain ? JSON.stringify(obj.chain, null, 2) : '',
+          serialNumber: obj.serialNumber || '',
+          acquisitionDate: typeof obj.acquisitionDate === 'string' ? obj.acquisitionDate : (obj.acquisitionDate instanceof Date ? obj.acquisitionDate.toISOString().slice(0, 10) : ''),
+          certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
+          origin: obj.origin || '',
+          conditionHistory: obj.conditionHistory ? JSON.stringify(obj.conditionHistory, null, 2) : '',
+          transferMethod: obj.transferMethod || '',
+          associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
+          provenanceNotes: obj.provenanceNotes || '',
+        });
       }
-    }
-    fetchObject();
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, [objectId]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

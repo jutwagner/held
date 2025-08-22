@@ -5,7 +5,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { HeldObject } from '@/types';
-import { getObject, updateObject } from '@/lib/firebase-services';
+import { subscribeObjects, updateObject } from '@/lib/firebase-services';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import Link from 'next/link';
@@ -92,24 +92,15 @@ export default function ObjectDetailPage() {
   });
   const objectId = params?.id as string;
 
-  async function loadObject() {
-    try {
-      setLoading(true);
-      setError('');
-      const obj = await getObject(objectId);
-      setObject(obj);
-    } catch (error: unknown) {
-      let errorMsg = 'Failed to load object.';
-      if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMsg += ` ${(error as { message?: string }).message}`;
-      } else {
-        errorMsg += ` ${(error as string)}`;
-      }
-      setError(errorMsg);
-    } finally {
+  useEffect(() => {
+    if (!objectId) return;
+    setLoading(true);
+    // Fetch object by ID (one-time fetch)
+    import('@/lib/firebase-services').then(mod => mod.getObject(objectId)).then(obj => {
+      setObject(obj ?? null);
       setLoading(false);
-    }
-  }
+    });
+  }, [objectId]);
 
   function handleSave() {
     async function doSave() {
@@ -131,7 +122,7 @@ export default function ObjectDetailPage() {
           chain: chainArr,
           certificateOfAuthenticity: formData.certificateOfAuthenticity || '',
         });
-        await loadObject();
+  // Object loading now handled by subscribeObjects
         setEditing(false);
       } catch (err) {
         setError('Failed to save changes.');
@@ -244,7 +235,7 @@ export default function ObjectDetailPage() {
   )}
   useEffect(() => {
     if (user && objectId) {
-      loadObject();
+  // Object loading now handled by subscribeObjects
     }
   }, [user, objectId]);
 

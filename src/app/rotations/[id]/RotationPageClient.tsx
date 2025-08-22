@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getFirestore, doc, getDoc, DocumentData } from 'firebase/firestore';
+import { subscribeRotations } from '@/lib/firebase-services';
 import { initializeApp } from 'firebase/app';
 import { getObject } from '@/lib/firebase-services';
 import { HeldObject } from '@/types';
@@ -25,29 +26,56 @@ function RotationPageClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
+  // Get current user from AuthContext (replace with your actual context/hook)
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    // Replace with your actual auth logic
+    if (typeof window !== 'undefined') {
+      const storedUser = window.localStorage.getItem('heldUser');
+      if (storedUser) setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   useEffect(() => {
-    if (id) {
-      const fetchRotation = async () => {
-        try {
-          const docRef = doc(db, 'rotations', id as string);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            setRotation(docSnap.data());
-          } else {
-            setError('Rotation not found');
-          }
-        } catch {
-          setError('Failed to fetch rotation');
-        } finally {
+    if (!id) return;
+    setLoading(true);
+    async function fetchRotation() {
+      try {
+        const rot = await getObject(id);
+        if (!rot) {
+          setError('Rotation not found');
+          setLoading(false);
+          return;
+        }
+        // If public, show it
+        if (rot.isPublic === true) {
+          setRotation(rot);
+          setLoading(false);
+          return;
+        }
+        // If user owns it, subscribe for updates
+        if (user && rot.userId === user.uid) {
+          const unsubscribe = subscribeRotations(user.uid, (rots) => {
+            const ownedRot = rots.find(r => r.id === id);
+            if (ownedRot) {
+              setRotation(ownedRot);
+            } else {
+              setError('Rotation not found');
+            }
+            setLoading(false);
+          });
+          return () => unsubscribe();
+        } else {
+          setError('You do not have permission to view this rotation');
           setLoading(false);
         }
-      };
-
-      fetchRotation();
+      } catch (err) {
+        setError('Error loading rotation');
+        setLoading(false);
+      }
     }
-  }, [id]);
+    fetchRotation();
+  }, [id, user]);
 
   useEffect(() => {
     const fetchObjects = async () => {

@@ -1,4 +1,9 @@
+
 'use client';
+// Global Held+ membership checker
+export function isHeldPlus(user: UserDoc | null | undefined): boolean {
+  return !!user && !!user.premium && user.premium.active === true && (user.premium.plan === 'plus' || user.premium.plan === 'heldplus');
+}
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 // import type { Dispatch, SetStateAction } from 'react';
@@ -31,13 +36,13 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserDoc | null>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('held_user');
-      if (cached) return JSON.parse(cached);
-    }
-    return null;
-  });
+  // Always start with null for SSR safety
+  const [user, setUser] = useState<UserDoc | null>(null);
+  // Hydration guard: only render children after client hydration
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -56,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           avatarUrl: result.user.photoURL || '',
         });
       }
-    } catch (error) {
+    } catch {
       throw new Error('Google sign-in failed.');
     }
   };
@@ -74,11 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             avatarUrl: firebaseUser.photoURL || '',
           });
         }
+        console.log('[DEBUG] AuthContext setUser called with:', userData);
         setUser(userData);
         if (typeof window !== 'undefined') {
           localStorage.setItem('held_user', JSON.stringify(userData));
         }
       } else {
+        console.log('[DEBUG] AuthContext setUser called with: null');
         setUser(null);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('held_user');
@@ -148,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {hydrated ? children : null}
     </AuthContext.Provider>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { getPublicPosts } from '@/lib/firebase-services';
+import { subscribePublicPosts } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
 import Navigation from '@/components/Navigation';
 import type { HeldObject } from '@/types';
@@ -11,12 +11,10 @@ export default function TheCollaborativePage() {
   const [posts, setPosts] = useState<HeldObject[]>([]);
 
   useEffect(() => {
-    async function fetchPosts() {
-      const publicPosts = await getPublicPosts();
+    const unsubscribe = subscribePublicPosts((publicPosts) => {
       setPosts(publicPosts);
-    }
-
-    fetchPosts();
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -28,7 +26,7 @@ export default function TheCollaborativePage() {
       <Navigation />
       <header className="bg-white shadow">
         <div className="held-container py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">theCollaborative</h1>
+          <h1 className="text-2xl font-bold font-serif">theCollaborative</h1>
           <p className="text-gray-500">Explore public posts from the collaborative</p>
         </div>
       </header>

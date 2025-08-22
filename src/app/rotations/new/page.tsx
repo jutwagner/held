@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { createRotation, getObjects, getRotations } from '@/lib/firebase-services';
+import { createRotation, subscribeObjects, subscribeRotations } from '@/lib/firebase-services';
 import { CreateRotationData, HeldObject } from '@/types';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import Link from 'next/link';
@@ -28,32 +28,22 @@ export default function NewRotationPage() {
     isPublic: false,
   });
 
+
   useEffect(() => {
-    if (user) {
-      loadObjects();
-      loadRotations();
-    }
+    if (!user || typeof user.uid !== 'string') return;
+    // Subscribe to user's objects
+    const unsubscribeObjects = subscribeObjects(user.uid, (objs) => {
+      setObjects(objs);
+    });
+    // Subscribe to user's rotations
+    const unsubscribeRotations = subscribeRotations(user.uid, (rots) => {
+      setRotationCount(rots.length);
+    });
+    return () => {
+      unsubscribeObjects();
+      unsubscribeRotations();
+    };
   }, [user]);
-
-  const loadRotations = async () => {
-    if (!user || typeof user.uid !== 'string') return;
-    try {
-      const userRotations = await getRotations(user.uid);
-      setRotationCount(userRotations.length);
-    } catch (error) {
-      setRotationCount(0);
-    }
-  };
-
-  const loadObjects = async () => {
-    if (!user || typeof user.uid !== 'string') return;
-    try {
-      const userObjects = await getObjects(user.uid);
-      setObjects(userObjects);
-    } catch (error) {
-      console.error('Error loading objects:', error);
-    }
-  };
 
   const isHeldPlus = !!user?.premium?.active;
   const maxFreeRotations = 3;

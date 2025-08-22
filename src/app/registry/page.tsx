@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
-import { getObjects } from '@/lib/firebase-services';
+import { subscribeObjects } from '@/lib/firebase-services';
 import { Plus, Search, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
@@ -30,30 +30,21 @@ export default function RegistryPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user) {
-      loadObjects();
-    }
+    if (!user || typeof user.uid !== 'string') return;
+    setLoadingObjects(true);
+    // Subscribe to real-time updates
+    const unsubscribe = subscribeObjects(user.uid, (userObjects) => {
+      setObjects(userObjects);
+      setLoadingObjects(false);
+    });
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
     filterObjects();
   }, [objects, searchTerm, showPublicOnly]);
 
-  const loadObjects = async () => {
-    if (!user || typeof user.uid !== 'string') return;
-
-    try {
-      setLoadingObjects(true);
-      console.log('Loading objects for user:', user.uid); // Debug log
-      const userObjects = await getObjects(user.uid);
-      console.log('Loaded objects:', userObjects); // Debug log
-      setObjects(userObjects);
-    } catch {
-      console.error('Error loading objects');
-    } finally {
-      setLoadingObjects(false);
-    }
-  };
+  // loadObjects removed; now handled by subscribeObjects
 
   const filterObjects = () => {
     let filtered = objects;

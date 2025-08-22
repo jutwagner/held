@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { getRotations, getRotationWithObjects } from '@/lib/firebase-services';
+import { subscribeRotations, getRotationWithObjects } from '@/lib/firebase-services';
 import type { RotationWithObjects, HeldObject } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -29,16 +29,10 @@ export default function RotationsPage() {
   }, [user, loading, router, hydrated]);
 
   useEffect(() => {
-    if (user && hydrated) {
-      loadRotations();
-    }
-  }, [user, hydrated]);
-
-  const loadRotations = async () => {
-    if (!user || typeof user.uid !== 'string') return;
-    try {
-      setLoadingRotations(true);
-      const userRotations = await getRotations(user.uid);
+    if (!user || !hydrated || typeof user.uid !== 'string') return;
+    setLoadingRotations(true);
+    // Subscribe to real-time updates for rotations
+    const unsubscribe = subscribeRotations(user.uid, async (userRotations) => {
       // Load objects for each rotation
       const rotationsWithObjs = await Promise.all(
         userRotations.map(async (rotation) => {
@@ -47,10 +41,12 @@ export default function RotationsPage() {
         })
       );
       setRotationsWithObjects(rotationsWithObjs.filter((r): r is RotationWithObjects => r !== null));
-    } finally {
       setLoadingRotations(false);
-    }
-  };
+    });
+    return () => unsubscribe();
+  }, [user, hydrated]);
+
+  // loadRotations removed; now handled by subscribeRotations
 
   if (!hydrated || loading || !user) {
     return (

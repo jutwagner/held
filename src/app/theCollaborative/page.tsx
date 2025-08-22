@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getPublicPosts, getPublicRotations } from '@/lib/firebase-services';
+import { subscribePublicPosts, subscribePublicRotations } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
 import type { HeldObject, Rotation } from '@/types';
 import { addRotation } from '@/scripts/addRotation';
@@ -72,19 +72,23 @@ export default function TheCollaborativePage() {
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      if (tab === 'registry') {
-        const publicPosts = await getPublicPosts();
+    setLoading(true);
+    let unsubscribe: (() => void) | null = null;
+    if (tab === 'registry') {
+      unsubscribe = subscribePublicPosts((publicPosts) => {
         const collaborativePosts = publicPosts.filter(post => post.shareInCollaborative);
         setPosts(collaborativePosts);
-      } else {
-        const publicRotations = await getPublicRotations();
+        setLoading(false);
+      });
+    } else {
+      unsubscribe = subscribePublicRotations((publicRotations) => {
         setRotations(publicRotations);
-      }
-      setLoading(false);
+        setLoading(false);
+      });
     }
-    fetchData();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [tab]);
 
   return (

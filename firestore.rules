@@ -8,18 +8,16 @@ service cloud.firestore {
       // Allow authenticated user to read/write their own profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // Users can read and write their own objects
+
     match /objects/{objectId} {
-      // Allow public read if isPublic == true
+      // Allow public read for all objects
       allow read: if resource != null && resource.data.isPublic == true;
       // Allow authenticated user to read/write their own objects
       allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
     }
 
-    // Users can read and write their own rotations
     match /rotations/{rotationId} {
-      // Allow public read if isPublic == true
+      // Allow public read for all rotations
       allow read: if resource != null && resource.data.isPublic == true;
       // Allow authenticated user to read/write their own rotations
       allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);

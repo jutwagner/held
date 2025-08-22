@@ -34,6 +34,9 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
+  QuerySnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import {
   ref,
@@ -103,15 +106,19 @@ export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> 
 // ...existing code...
 
 // Get public rotations
-export const getPublicRotations = async (): Promise<Rotation[]> => {
+// Real-time listener for public rotations (returns unsubscribe function)
+export function subscribePublicRotations(callback: (rotations: Rotation[]) => void): () => void {
   const rotationsRef = collection(db, 'rotations');
   const q = query(rotationsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as Rotation[];
-};
+  const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+    const rotations = querySnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Rotation[];
+    callback(rotations);
+  });
+  return unsubscribe;
+}
 // Update user profile
 export const updateUser = async (uid: string, data: Partial<UserDoc>) => {
   const userRef = doc(db, 'users', uid);
@@ -207,20 +214,23 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
   const docRef = await addDoc(collection(db, 'objects'), objectData);
   return { id: docRef.id, ...objectData } as HeldObject;
 };
-export const getObjects = async (userId: string): Promise<HeldObject[]> => {
+// Real-time listener for user objects (returns unsubscribe function)
+export function subscribeObjects(userId: string, callback: (objects: HeldObject[]) => void): () => void {
   const objectsRef = collection(db, 'objects');
   const q = query(
     objectsRef,
     where('userId', '==', userId),
     orderBy('createdAt', 'desc')
   );
-  
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as HeldObject[];
-};
+  const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+    const objects = querySnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as HeldObject[];
+    callback(objects);
+  });
+  return unsubscribe;
+}
 
 export const getObject = async (id: string): Promise<HeldObject | null> => {
   const objectRef = doc(db, 'objects', id);
@@ -287,20 +297,24 @@ export const deleteObject = async (id: string): Promise<void> => {
 };
 
 // Rotation services
-export const getRotations = async (userId: string): Promise<Rotation[]> => {
+// Real-time listener for user rotations (returns unsubscribe function)
+export function subscribeRotations(userId: string, callback: (rotations: Rotation[]) => void): () => void {
   const rotationsRef = collection(db, 'rotations');
-  const q = query(
-    rotationsRef,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
-  
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as Rotation[];
-};
+  let q;
+  if (userId) {
+    q = query(rotationsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+  } else {
+    q = query(rotationsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
+  }
+  const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+    const rotations = querySnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Rotation[];
+    callback(rotations);
+  });
+  return unsubscribe;
+}
 
 export const getRotation = async (id: string): Promise<Rotation | null> => {
   const rotationRef = doc(db, 'rotations', id);
@@ -348,7 +362,7 @@ export const createRotation = async (userId: string, data: CreateRotationData): 
     name: data.name,
     description: data.description,
     objectIds: data.objectIds,
-    isPublic: data.isPublic,
+    isPublic: typeof data.isPublic === 'boolean' ? data.isPublic : true,
     slug,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -420,13 +434,16 @@ export const deleteRotation = async (id: string): Promise<void> => {
 };
 
 // Public posts
-export const getPublicPosts = async (): Promise<HeldObject[]> => {
+// Real-time listener for public posts (returns unsubscribe function)
+export function subscribePublicPosts(callback: (objects: HeldObject[]) => void): () => void {
   const objectsRef = collection(db, 'objects');
   const q = query(objectsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
-
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as HeldObject[];
-};
+  const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+    const objects = querySnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as HeldObject[];
+    callback(objects);
+  });
+  return unsubscribe;
+}
