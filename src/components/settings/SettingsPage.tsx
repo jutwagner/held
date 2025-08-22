@@ -25,7 +25,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   useEffect(() => {
     setHydrated(true);
   }, []);
-  // Call useAuth only once
+
   const { user, setUser, loading } = useAuth();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [section, setSection] = useState<SectionKey>(initialSection || 'profile');
@@ -35,7 +35,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [theme, setTheme] = useState<Theme>('light');
   const [density, setDensity] = useState<Density>('standard');
-
   const [typeTitleSerif, setTypeTitleSerif] = useState(true);
   const [typeMetaMono, setTypeMetaMono] = useState(false);
   const [isPublicProfile, setIsPublicProfile] = useState(user?.isPublicProfile ?? false);
@@ -60,7 +59,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const handleSave = async () => {
     if (!user) return;
     try {
-      console.log('[DEBUG] Saving isPublicProfile:', isPublicProfile);
       await updateUser(user.uid!, {
         displayName,
         handle,
@@ -73,16 +71,15 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
         isPublicProfile,
       });
       const updatedUser = await getUser(user.uid!);
-      console.log('[DEBUG] Updated user after save:', updatedUser);
       if (updatedUser) setUser(updatedUser);
       setDirty(false);
       setToast({ message: 'Settings saved!', type: 'success' });
     } catch (err) {
-      console.error('[DEBUG] Save error:', err);
       setToast({ message: 'Failed to save settings. Please try again.', type: 'error' });
     }
     setTimeout(() => setToast(null), 3000);
   };
+
   return (
     <div>
       {toast && <Toast message={toast.message} type={toast.type} />}
@@ -105,7 +102,6 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </div>
           ) : (
             <>
-              {/* Consolidated settings sections for cleaner UI */}
               <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Radley, serif' }}>Settings</h1>
               <ProfileSection
                 user={user ?? undefined}
@@ -132,22 +128,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
                   markDirty();
                 }}
               />
-              <AppearanceSection
-                theme={theme}
-                typeTitleSerif={typeTitleSerif}
-                typeMetaMono={typeMetaMono}
-                density={density}
-                onChange={changes => {
-                  if (changes.theme !== undefined) setTheme(changes.theme as Theme);
-                  if (changes.density !== undefined) setDensity(changes.density as Density);
-                  if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
-                  if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
-                  markDirty();
-                }}
-              />
-              <NotificationsSection user={user ?? undefined} />
               <AccountSection user={user ?? undefined} />
-              {/* Held+ logic and public user page toggle are handled in ProfileSection and PremiumSection */}
             </>
           )}
         </main>

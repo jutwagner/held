@@ -187,12 +187,38 @@ export default function PassportPage() {
               </div>
             )}
 
-            {/* Footer */}
+            {/* Sell on eBay Button */}
             <div className="pt-8 border-t border-gray-200">
-              <div className="flex items-center justify-between text-sm text-gray-500">
+              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                 <span>Held by {object.userId}</span>
                 <span>{formatDate(object.createdAt)}</span>
               </div>
+              {/* Compose full description for eBay pre-fill */}
+              {(() => {
+                const details = [
+                  `Title: ${object.title}`,
+                  object.maker ? `Maker: ${object.maker}` : '',
+                  object.year ? `Year: ${object.year}` : '',
+                  object.value ? `Value: $${object.value}` : '',
+                  object.category ? `Category: ${object.category}` : '',
+                  object.condition ? `Condition: ${object.condition}` : '',
+                  Array.isArray(object.tags) && object.tags.length > 0 ? `Tags: ${object.tags.join(', ')}` : '',
+                  object.notes ? `Notes: ${object.notes}` : '',
+                  object.description ? `Description: ${object.description}` : '',
+                  object.images && object.images.length > 0 ? `Images: ${object.images.join(', ')}` : '',
+                ].filter(Boolean).join('\n');
+                const ebayUrl = `https://www.ebay.com/sl/sell?title=${encodeURIComponent(object.title)}&desc=${encodeURIComponent(details)}&price=${encodeURIComponent(object.value || '')}`;
+                return (
+                  <a
+                    href={ebayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
+                  >
+                    Sell this item on eBay
+                  </a>
+                );
+              })()}
             </div>
           </div>
         </div>
