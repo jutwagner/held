@@ -314,8 +314,9 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
             )}
           </>
         )}
-        {!localUser?.premium.active && showCardForm && (
-          <PremiumUpsell user={localUser} showCheckoutForm={showCardForm} onSuccess={handleUpgradeSuccess} />
+        {/* Always show the credit card form for non-premium users */}
+        {!localUser?.premium.active && (
+          <PremiumUpsell user={localUser} showCheckoutForm={true} onSuccess={handleUpgradeSuccess} />
         )}
         {localUser?.premium.active && localUser?.premium.cancelRequested && showCardForm && (
           <>

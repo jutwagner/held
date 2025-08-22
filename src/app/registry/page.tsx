@@ -205,7 +205,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
           {object.maker && (
             <p className="text-sm text-gray-600 mb-2">{object.maker}</p>
           )}
-          {/* Chain of Ownership (always visible) */}
+          {/* Chain of Ownership (always visible) * /}
           <div className="mt-2">
             <span className="font-semibold text-xs text-blue-700">Chain of Ownership:</span>
             {Array.isArray(object.chain) && object.chain.length > 0 ? (
@@ -222,7 +222,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
               <span className="text-gray-400 italic ml-2">No chain of ownership</span>
             )}
           </div>
-          {/* Certificate of Authenticity (always visible) */}
+          {/* Certificate of Authenticity (always visible) 
           <div className="mt-2">
             <span className="font-semibold text-xs text-blue-700">COA:</span>
             {object.certificateOfAuthenticity ? (
@@ -237,6 +237,8 @@ function ObjectCard({ object }: { object: HeldObject }) {
               <span className="text-gray-400 italic ml-2">No certificate</span>
             )}
           </div>
+          */}
+
           <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
             <span className="font-mono">
               {object.year && !isNaN(object.year) ? `${object.year}` : "N/A"}

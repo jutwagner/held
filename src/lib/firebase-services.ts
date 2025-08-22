@@ -1,3 +1,17 @@
+// Get user by handle (for vanity URLs)
+export const getUserByHandle = async (handle: string): Promise<UserDoc | null> => {
+  // Decode and strip '@' from handle
+  let cleanHandle = decodeURIComponent(handle);
+  if (cleanHandle.startsWith('@')) cleanHandle = cleanHandle.slice(1);
+  const usersRef = collection(db, 'users');
+  const q = query(usersRef, where('handle', '==', cleanHandle));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const docSnap = querySnapshot.docs[0];
+    return { uid: docSnap.id, ...docSnap.data() } as UserDoc;
+  }
+  return null;
+};
 // Get user by UID
 export const getUser = async (uid: string): Promise<UserDoc | null> => {
   const userRef = doc(db, 'users', uid);
