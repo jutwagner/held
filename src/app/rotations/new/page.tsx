@@ -55,7 +55,7 @@ export default function NewRotationPage() {
     }
   };
 
-  const isHeldPlus = user?.premium?.plan === 'plus';
+  const isHeldPlus = !!user?.premium?.active;
   const maxFreeRotations = 3;
   const reachedLimit = !isHeldPlus && rotationCount >= maxFreeRotations;
 

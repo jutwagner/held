@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Firebase configuration (ensure this matches your Firebase project)
 const firebaseConfig = {
@@ -18,26 +18,24 @@ const db = getFirestore(app);
 // Example rotation data
 const rotations = [
   {
-    id: 'rotation1',
     userId: 'user1',
     name: 'Sample Rotation 1',
     description: 'This is a sample rotation.',
     objectIds: ['object1', 'object2'],
     isPublic: true,
     slug: 'sample-rotation-1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   },
   {
-    id: 'rotation2',
     userId: 'user2',
     name: 'Sample Rotation 2',
     description: 'This is another sample rotation.',
     objectIds: ['object3', 'object4'],
     isPublic: false,
     slug: 'sample-rotation-2',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   },
 ];
 
@@ -46,12 +44,12 @@ const addRotations = async () => {
   try {
     const collectionRef = collection(db, 'rotations');
     for (const rotation of rotations) {
-      await addDoc(collectionRef, rotation);
-  // Debug log removed for production
+      const docRef = await addDoc(collectionRef, rotation);
+      console.log(`Added rotation with ID: ${docRef.id}`);
     }
-  // Debug log removed for production
+    console.log('All rotations added successfully.');
   } catch (error) {
-  // Error log removed for production
+    console.error('Error adding rotations:', error);
   }
 };
 

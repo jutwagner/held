@@ -136,7 +136,7 @@ export default function RotationsPage() {
 function RotationCard({ rotation, disabled = false }: { rotation: RotationWithObjects; disabled?: boolean }) {
   if (disabled) {
     return (
-      <div className="held-card p-6 transition-shadow cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
+  <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl transition-all duration-200 cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
         {/* Absolute CTA overlay, card is visible but not clickable */}
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto',  background: 'rgba(255,255,255,0.85)' }}>
           <div className="flex flex-col items-center">
@@ -161,21 +161,21 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           <p className="text-gray-600 text-sm mb-4 line-clamp-2 blur">{rotation.description}</p>
         )}
         <div className="mb-4 blur">
-          <div className="flex -space-x-2 blur">
+          <div className="flex -space-x-6 blur">
             {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
-              <div key={obj.id} className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden">
+              <div key={obj.id} className="w-16 h-16 bg-gray-100 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 overflow-hidden transition-transform duration-200 hover:scale-105 hover:ring-blue-400">
                 {obj.images.length > 0 ? (
-                  <Image src={obj.images[0]} alt={obj.title} width={48} height={48} className="w-full h-full object-cover" />
+                  <Image src={obj.images[0]} alt={obj.title} width={64} height={64} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">?</span>
+                    <span className="text-gray-400 text-base">?</span>
                   </div>
                 )}
               </div>
             ))}
             {rotation.objects.length > 4 && (
-              <div className=" blur w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
-                <span className="text-gray-600 text-xs font-medium">+{rotation.objects.length - 4}</span>
+              <div className="blur w-16 h-16 bg-gray-200 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 flex items-center justify-center">
+                <span className="text-gray-600 text-base font-medium">+{rotation.objects.length - 4}</span>
               </div>
             )}
           </div>
@@ -184,7 +184,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className="flex items-center justify-between text-sm text-gray-500 blur">
           <div className="flex items-center space-x-1 blur">
             <Calendar className="h-3 w-3" />
-            <span>{formatDate(rotation.createdAt)}</span>
+            <span>{formatDate((rotation.createdAt instanceof Date ? rotation.createdAt : rotation.createdAt?.toDate?.()) ?? new Date())}</span>
           </div>
           {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
@@ -193,7 +193,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
   }
   return (
     <Link href={`/rotations/${rotation.id}`}>
-      <div className="held-card p-6 hover:shadow-lg transition-shadow cursor-pointer">
+  <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:-translate-y-1">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-lg">{rotation.name}</h3>
@@ -207,21 +207,21 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         )}
         {/* Objects Preview */}
         <div className="mb-4">
-          <div className="flex -space-x-2">
+          <div className="flex -space-x-6">
             {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
-              <div key={obj.id} className="w-12 h-12 bg-gray-100 rounded-full border-2 border-white overflow-hidden">
+              <div key={obj.id} className="w-16 h-16 bg-gray-100 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 overflow-hidden transition-transform duration-200 hover:scale-105 hover:ring-blue-400">
                 {obj.images.length > 0 ? (
-                  <Image src={obj.images[0]} alt={obj.title} width={48} height={48} className="w-full h-full object-cover" />
+                  <Image src={obj.images[0]} alt={obj.title} width={64} height={64} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">?</span>
+                    <span className="text-gray-400 text-base">?</span>
                   </div>
                 )}
               </div>
             ))}
             {rotation.objects.length > 4 && (
-              <div className="w-12 h-12 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
-                <span className="text-gray-600 text-xs font-medium">+{rotation.objects.length - 4}</span>
+              <div className="w-16 h-16 bg-gray-200 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 flex items-center justify-center">
+                <span className="text-gray-600 text-base font-medium">+{rotation.objects.length - 4}</span>
               </div>
             )}
           </div>
@@ -231,7 +231,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             <Calendar className="h-3 w-3" />
-            <span>{formatDate(rotation.createdAt)}</span>
+            <span>{formatDate((rotation.createdAt instanceof Date ? rotation.createdAt : rotation.createdAt?.toDate?.()) ?? new Date())}</span>
           </div>
           {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>

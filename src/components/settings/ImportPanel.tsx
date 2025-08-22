@@ -1,8 +1,25 @@
-import React from 'react';
-import { UserDoc } from '@/types';
+import React, { useEffect, useState } from 'react';
+import { UserDoc } from '../../types';
 
-export default function ImportPanel({ user }: { user: UserDoc }) {
+interface ImportPanelProps {
+  user: UserDoc;
+}
+
+export default function ImportPanel({ user }: ImportPanelProps) {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
   // TODO: Import logic, diff preview, confirm apply
+  if (!user || !hydrated) {
+    return (
+      <div className="mb-4">
+        <div className="bg-gray-200 h-10 w-32 rounded animate-pulse mb-2" />
+        <div className="bg-gray-200 h-10 w-32 rounded animate-pulse mb-2" />
+        <div className="text-gray-400 text-sm">Loading data…</div>
+      </div>
+    );
+  }
   return (
     <div className="mb-4">
       <input type="file" accept="application/json" className="mb-2" />

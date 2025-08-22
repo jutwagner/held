@@ -30,6 +30,7 @@ export interface UserDoc {
   };
   email?: string;
   uid?: string;
+  isPublicProfile?: boolean;
 }
 export interface User {
   uid: string;
@@ -68,8 +69,8 @@ export interface Rotation {
   objectIds: string[];
   isPublic: boolean;
   slug: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | any;
+  updatedAt: Date | any;
 }
 
 export interface RotationWithObjects extends Rotation {
