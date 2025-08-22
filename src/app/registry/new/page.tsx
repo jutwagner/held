@@ -44,10 +44,18 @@ export default function NewObjectPage() {
     setLoading(true);
 
     try {
-      await createObject(user.uid, formData);
+      const result = await createObject(user.uid, formData);
+      console.log('Object created:', result);
       router.push('/registry');
-    } catch {
-      // Optionally handle error
+    } catch (err) {
+      console.error('Error creating object:', err);
+      if (err instanceof Error) {
+        console.error('Error message:', err.message);
+        if (err.stack) console.error('Stack:', err.stack);
+      } else {
+        console.error('Error details:', JSON.stringify(err));
+      }
+      alert('Failed to create object. See console for details.');
     } finally {
       setLoading(false);
     }
@@ -340,6 +348,163 @@ export default function NewObjectPage() {
                   Share this object in theCollaborative
                 </label>
               </div>
+              {/* Held+ Provenance Section */}
+              {user?.premium?.active && user?.premium?.plan === 'plus' ? (
+                <div className="mt-8 border-t pt-8">
+                  <h2 className="text-lg font-bold mb-4 text-blue-700">Provenance (Held+)</h2>
+                  {/* ...existing provenance fields UI... */}
+                  {/* Serial Number, Acquisition Date, COA, Origin, etc. */}
+                  <Input
+                    value={formData.serialNumber || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                    placeholder="Serial Number"
+                  />
+                  <Input
+                    value={formData.acquisitionDate || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, acquisitionDate: e.target.value }))}
+                    placeholder="Acquisition Date (YYYY-MM-DD)"
+                  />
+                  {/* COA image upload */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Certificate of Authenticity (Image or URL)</label>
+                    <Input
+                      value={formData.certificateOfAuthenticity || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, certificateOfAuthenticity: e.target.value }))}
+                      placeholder="Certificate of Authenticity (URL or ref)"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // You should upload the file and get a URL, but for now just set a placeholder string
+                          setFormData(prev => ({ ...prev, certificateOfAuthenticity: '[Image uploaded]' }));
+                        }
+                      }}
+                      className="mt-2"
+                    />
+                  </div>
+                  <Input
+                    value={formData.origin || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, origin: e.target.value }))}
+                    placeholder="Origin (place/manufacturer)"
+                  />
+                  <Input
+                    value={formData.transferMethod || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, transferMethod: e.target.value }))}
+                    placeholder="Transfer Method (sale, gift, etc.)"
+                  />
+                  <Input
+                    value={formData.associatedDocuments ? formData.associatedDocuments.join(', ') : ''}
+                    onChange={e => setFormData(prev => ({ ...prev, associatedDocuments: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+                    placeholder="Associated Documents (comma separated URLs/refs)"
+                  />
+                  <Textarea
+                    value={formData.provenanceNotes || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, provenanceNotes: e.target.value }))}
+                    placeholder="Provenance Notes"
+                    rows={2}
+                  />
+                  {/* Chain of Ownership - dynamic UI */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Chain of Ownership</label>
+                    {Array.isArray(formData.chain) && formData.chain.length === 0 && (
+                      <p className="text-gray-400 italic mb-2">No chain of ownership yet.</p>
+                    )}
+                    {(Array.isArray(formData.chain) ? formData.chain : []).map((owner, idx) => (
+                      <div key={idx} className="flex gap-2 mb-2 items-center">
+                        <Input
+                          value={owner.owner || ''}
+                          onChange={e => {
+                            const updated = Array.isArray(formData.chain) ? [...formData.chain] : [];
+                            updated[idx].owner = e.target.value;
+                            setFormData(prev => ({ ...prev, chain: updated }));
+                          }}
+                          placeholder="Owner name"
+                        />
+                        <Input
+                          type="date"
+                          value={owner.acquiredAt || ''}
+                          onChange={e => {
+                            const updated = Array.isArray(formData.chain) ? [...formData.chain] : [];
+                            updated[idx].acquiredAt = e.target.value;
+                            setFormData(prev => ({ ...prev, chain: updated }));
+                          }}
+                          placeholder="Acquisition date"
+                        />
+                        <Input
+                          value={owner.notes || ''}
+                          onChange={e => {
+                            const updated = Array.isArray(formData.chain) ? [...formData.chain] : [];
+                            updated[idx].notes = e.target.value;
+                            setFormData(prev => ({ ...prev, chain: updated }));
+                          }}
+                          placeholder="Notes"
+                        />
+                        <Button type="button" variant="outline" onClick={() => {
+                          setFormData(prev => ({ ...prev, chain: Array.isArray(prev.chain) ? prev.chain.filter((_, i) => i !== idx) : [] }));
+                        }}>Remove</Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" onClick={() => {
+                      setFormData(prev => ({ ...prev, chain: [...(Array.isArray(prev.chain) ? prev.chain : []), { owner: '', acquiredAt: '', notes: '' }] }));
+                    }}>
+                      + Add Owner
+                    </Button>
+                  </div>
+                  {/* Condition History - simple JSON for now */}
+                  <Textarea
+                    value={JSON.stringify(Array.isArray(formData.conditionHistory) ? formData.conditionHistory : [], null, 2)}
+                    onChange={e => {
+                      try {
+                        const parsed = JSON.parse(e.target.value);
+                        if (Array.isArray(parsed)) {
+                          setFormData(prev => ({ ...prev, conditionHistory: parsed }));
+                        }
+                      } catch {
+                        // ignore parse errors
+                      }
+                    }}
+                    placeholder='Condition History (JSON: [{"date":"YYYY-MM-DD","condition":"good","notes":""}])'
+                    rows={2}
+                  />
+                </div>
+              ) : (
+                <div className="mt-8 border-t pt-8 relative select-none">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm" style={{ pointerEvents: 'auto' }}>
+                    <span className="text-gray-700 text-base font-semibold mb-2">Held+ Provenance</span>
+                    <Link
+                      href="/settings/premium"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      Upgrade to Held+
+                    </Link>
+                    <span className="text-gray-500 text-xs mt-2">Unlock provenance tracking, chain of ownership, COA, and more.</span>
+                  </div>
+                  <div className="blur pointer-events-none select-none">
+                    <h2 className="text-lg font-bold mb-4 text-blue-700">Provenance (Held+)</h2>
+                    <Input disabled placeholder="Serial Number" />
+                    <Input disabled placeholder="Acquisition Date (YYYY-MM-DD)" />
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Certificate of Authenticity (Image or URL)</label>
+                      <Input disabled placeholder="Certificate of Authenticity (URL or ref)" />
+                      <input type="file" disabled className="mt-2" />
+                    </div>
+                    <Input disabled placeholder="Origin (place/manufacturer)" />
+                    <Input disabled placeholder="Transfer Method (sale, gift, etc.)" />
+                    <Input disabled placeholder="Associated Documents (comma separated URLs/refs)" />
+                    <Textarea disabled placeholder="Provenance Notes" rows={2} />
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Chain of Ownership</label>
+                      <p className="text-gray-400 italic mb-2">No chain of ownership yet.</p>
+                      <Button type="button" variant="outline" disabled>+ Add Owner</Button>
+                    </div>
+                    <Textarea disabled placeholder='Condition History (JSON: [{"date":"YYYY-MM-DD","condition":"good","notes":""}])' rows={2} />
+                  </div>
+                </div>
+              )}
 
               {/* Submit */}
               <div className="flex gap-4 pt-4">

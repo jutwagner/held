@@ -59,6 +59,16 @@ export interface HeldObject {
   updatedAt: Date;
   description?: string;
   shareInCollaborative?: boolean; // New field
+  // Provenance fields
+  chain?: Array<{ owner: string; acquiredAt?: Date; notes?: string }>;
+  serialNumber?: string;
+  acquisitionDate?: Date;
+  certificateOfAuthenticity?: string;
+  origin?: string;
+  conditionHistory?: Array<{ date: Date; condition: string; notes?: string }>;
+  transferMethod?: string;
+  associatedDocuments?: string[];
+  provenanceNotes?: string;
 }
 
 export interface Rotation {
@@ -89,6 +99,16 @@ export interface CreateObjectData {
   images: File[];
   isPublic: boolean;
   shareInCollaborative?: boolean; // New field
+  // Held+ Provenance fields
+  chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
+  serialNumber?: string;
+  acquisitionDate?: string;
+  certificateOfAuthenticity?: string;
+  origin?: string;
+  conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
+  transferMethod?: string;
+  associatedDocuments?: string[];
+  provenanceNotes?: string;
 }
 
 export interface UpdateObjectData {
@@ -105,6 +125,16 @@ export interface UpdateObjectData {
   shareInCollaborative?: boolean;
   updatedAt?: Date;
   slug?: string;
+  // Held+ Provenance fields
+  chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
+  serialNumber?: string;
+  acquisitionDate?: string;
+  certificateOfAuthenticity?: string;
+  origin?: string;
+  conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
+  transferMethod?: string;
+  associatedDocuments?: string[];
+  provenanceNotes?: string;
 }
 
 export interface CreateRotationData {

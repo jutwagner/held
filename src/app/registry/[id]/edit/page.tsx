@@ -20,6 +20,15 @@ type UpdateObjectData = {
   images: string[];
   isPublic: boolean;
   shareInCollaborative: boolean;
+  chain?: string; // JSON string for now
+  serialNumber?: string;
+  acquisitionDate?: string;
+  certificateOfAuthenticity?: string;
+  origin?: string;
+  conditionHistory?: string; // JSON string for now
+  transferMethod?: string;
+  associatedDocuments?: string;
+  provenanceNotes?: string;
 };
 
 const EditObjectPage: React.FC = () => {
@@ -32,6 +41,7 @@ const EditObjectPage: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [coaFile, setCoaFile] = useState<File | null>(null);
 
   useEffect(() => {
     async function fetchObject() {
@@ -52,6 +62,15 @@ const EditObjectPage: React.FC = () => {
             images: obj.images || [],
             isPublic: obj.isPublic || false,
             shareInCollaborative: obj.shareInCollaborative || false,
+            chain: obj.chain ? JSON.stringify(obj.chain, null, 2) : '',
+            serialNumber: obj.serialNumber || '',
+            acquisitionDate: typeof obj.acquisitionDate === 'string' ? obj.acquisitionDate : (obj.acquisitionDate instanceof Date ? obj.acquisitionDate.toISOString().slice(0, 10) : ''),
+            certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
+            origin: obj.origin || '',
+            conditionHistory: obj.conditionHistory ? JSON.stringify(obj.conditionHistory, null, 2) : '',
+            transferMethod: obj.transferMethod || '',
+            associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
+            provenanceNotes: obj.provenanceNotes || '',
           });
         }
       } catch {
@@ -82,7 +101,25 @@ const EditObjectPage: React.FC = () => {
     if (!formData || !objectId) return;
     setLoading(true);
     try {
-  await import('@/lib/firebase-services').then(mod => mod.updateObject(objectId, { ...formData, id: objectId, condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor' }));
+      let coaUrl = formData.certificateOfAuthenticity;
+      if (coaFile) {
+        const { uploadCOAImage } = await import('@/lib/firebase-services');
+        coaUrl = await uploadCOAImage(coaFile, objectId);
+      }
+      await import('@/lib/firebase-services').then(mod => mod.updateObject(objectId, {
+        ...formData,
+        id: objectId,
+        condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
+        chain: formData.chain ? JSON.parse(formData.chain) : [],
+        serialNumber: formData.serialNumber,
+        acquisitionDate: formData.acquisitionDate,
+        certificateOfAuthenticity: coaUrl,
+        origin: formData.origin,
+        conditionHistory: formData.conditionHistory ? JSON.parse(formData.conditionHistory) : [],
+        transferMethod: formData.transferMethod,
+        associatedDocuments: (formData.associatedDocuments ?? '').split(',').map(s => s.trim()).filter(Boolean),
+        provenanceNotes: formData.provenanceNotes,
+      }));
       router.push(`/registry/${objectId}`);
     } catch (err) {
       setUploadError('Failed to save changes');
@@ -207,6 +244,123 @@ const EditObjectPage: React.FC = () => {
                 <button type="button" aria-label="Toggle Collaborative" className={`relative inline-flex h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${formData.shareInCollaborative ? 'bg-blue-500' : 'bg-gray-300'}`} onClick={() => setFormData({ ...formData, shareInCollaborative: !formData.shareInCollaborative })}>
                   <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${formData.shareInCollaborative ? 'translate-x-6' : ''}`}></span>
                 </button>
+              </div>
+              {/* Provenance Fields */}
+              <div className="mt-8 grid grid-cols-1 gap-4">
+                <Input
+                  value={formData.serialNumber || ''}
+                  onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
+                  placeholder="Serial Number"
+                />
+                <Input
+                  value={formData.acquisitionDate || ''}
+                  onChange={e => setFormData({ ...formData, acquisitionDate: e.target.value })}
+                  placeholder="Acquisition Date (YYYY-MM-DD)"
+                />
+                {/* COA image upload */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Certificate of Authenticity (Image or URL)</label>
+                  <Input
+                    value={typeof formData.certificateOfAuthenticity === 'string' ? formData.certificateOfAuthenticity : ''}
+                    onChange={e => setFormData({ ...formData, certificateOfAuthenticity: e.target.value })}
+                    placeholder="Certificate of Authenticity (URL or ref)"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setCoaFile(file);
+                      }
+                    }}
+                    className="mt-2"
+                  />
+                </div>
+                <Input
+                  value={formData.origin || ''}
+                  onChange={e => setFormData({ ...formData, origin: e.target.value })}
+                  placeholder="Origin (place/manufacturer)"
+                />
+                <Input
+                  value={formData.transferMethod || ''}
+                  onChange={e => setFormData({ ...formData, transferMethod: e.target.value })}
+                  placeholder="Transfer Method (sale, gift, etc.)"
+                />
+                <Input
+                  value={formData.associatedDocuments || ''}
+                  onChange={e => setFormData({ ...formData, associatedDocuments: e.target.value })}
+                  placeholder="Associated Documents (comma separated URLs/refs)"
+                />
+                <Textarea
+                  value={formData.provenanceNotes || ''}
+                  onChange={e => setFormData({ ...formData, provenanceNotes: e.target.value })}
+                  placeholder="Provenance Notes"
+                  rows={2}
+                />
+                {/* Chain of Ownership - dynamic UI */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Chain of Ownership</label>
+                  {(() => {
+                    let chainArr: any[] = [];
+                    try { chainArr = formData.chain ? JSON.parse(formData.chain) : []; } catch { chainArr = []; }
+                    return (
+                      <>
+                        {chainArr.length === 0 && (
+                          <p className="text-gray-400 italic mb-2">No chain of ownership yet.</p>
+                        )}
+                        {chainArr.map((owner, idx) => (
+                          <div key={idx} className="flex gap-2 mb-2 items-center">
+                            <Input
+                              value={owner.owner || ''}
+                              onChange={e => {
+                                const updated = [...chainArr];
+                                updated[idx].owner = e.target.value;
+                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
+                              }}
+                              placeholder="Owner name"
+                            />
+                            <Input
+                              type="date"
+                              value={owner.acquiredAt || ''}
+                              onChange={e => {
+                                const updated = [...chainArr];
+                                updated[idx].acquiredAt = e.target.value;
+                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
+                              }}
+                              placeholder="Acquisition date"
+                            />
+                            <Input
+                              value={owner.notes || ''}
+                              onChange={e => {
+                                const updated = [...chainArr];
+                                updated[idx].notes = e.target.value;
+                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
+                              }}
+                              placeholder="Notes"
+                            />
+                            <Button type="button" variant="outline" onClick={() => {
+                              const updated = chainArr.filter((_, i) => i !== idx);
+                              setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
+                            }}>Remove</Button>
+                          </div>
+                        ))}
+                        <Button type="button" variant="outline" onClick={() => {
+                          const updated = [...chainArr, { owner: '', acquiredAt: '', notes: '' }];
+                          setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
+                        }}>
+                          + Add Owner
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </div>
+                <Textarea
+                  value={formData.conditionHistory || ''}
+                  onChange={e => setFormData({ ...formData, conditionHistory: e.target.value })}
+                  placeholder='Condition History (JSON: [{"date":"YYYY-MM-DD","condition":"good","notes":""}])'
+                  rows={2}
+                />
               </div>
               <div className="flex justify-end mt-8">
                 <Button type="submit">Save Changes</Button>

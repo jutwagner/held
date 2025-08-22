@@ -60,17 +60,19 @@ export default function ObjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   interface FormData {
-    title: string;
-    description: string;
-    maker: string;
-    condition: string;
-    visibility: string;
-    tags: string;
-    notes: string;
-    year: number | undefined;
-    shareInCollaborative: boolean;
-    category: string;
-    images: string[];
+  title: string;
+  description: string;
+  maker: string;
+  condition: string;
+  visibility: string;
+  tags: string;
+  notes: string;
+  year: number | undefined;
+  shareInCollaborative: boolean;
+  category: string;
+  images: string[];
+  chain?: string;
+  certificateOfAuthenticity?: string;
   }
 
   const [formData, setFormData] = useState<FormData>({
@@ -85,6 +87,8 @@ export default function ObjectDetailPage() {
     shareInCollaborative: false,
     category: '',
     images: [],
+    chain: '',
+    certificateOfAuthenticity: '',
   });
   const objectId = params?.id as string;
 
@@ -113,11 +117,19 @@ export default function ObjectDetailPage() {
         setLoading(true);
         // Convert tags to array
         const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+        let chainArr: any[] = [];
+        try {
+          chainArr = formData.chain ? JSON.parse(formData.chain) : [];
+        } catch {
+          chainArr = [];
+        }
         await updateObject(objectId, {
           id: objectId,
           ...formData,
           condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
           tags: tagsArray,
+          chain: chainArr,
+          certificateOfAuthenticity: formData.certificateOfAuthenticity || '',
         });
         await loadObject();
         setEditing(false);
@@ -250,6 +262,8 @@ export default function ObjectDetailPage() {
         shareInCollaborative: object.shareInCollaborative ?? false,
         category: object.category || '',
         images: object.images || [],
+        chain: object.chain ? JSON.stringify(object.chain, null, 2) : '',
+        certificateOfAuthenticity: object.certificateOfAuthenticity || '',
       });
     }
   }, [object]);
@@ -432,21 +446,24 @@ export default function ObjectDetailPage() {
           <div className="space-y-6">
             {editing ? (
               <>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Description</label>
                 <textarea
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Description"
                   rows={3}
                 />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Maker</label>
                 <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.maker}
                   onChange={e => setFormData({ ...formData, maker: e.target.value })}
                   placeholder="Maker"
                 />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Condition</label>
                 <select
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.condition}
                   onChange={e => setFormData({ ...formData, condition: e.target.value })}
                 >
@@ -456,33 +473,37 @@ export default function ObjectDetailPage() {
                   <option value="fair">Fair</option>
                   <option value="poor">Poor</option>
                 </select>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Category</label>
                 <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.category}
                   onChange={e => setFormData({ ...formData, category: e.target.value })}
                   placeholder="Category"
                 />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Tags</label>
                 <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.tags}
                   onChange={e => setFormData({ ...formData, tags: e.target.value })}
                   placeholder="Comma separated tags"
                 />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Notes</label>
                 <textarea
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   value={formData.notes}
                   onChange={e => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Notes"
                   rows={2}
                 />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Year</label>
                 <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   type="number"
                   value={formData.year || ''}
                   onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                   placeholder="Year"
                 />
-                <div className="flex items-center space-x-4 mt-2">
+                <div className="flex items-center space-x-4 mt-2 mb-2">
                   <label className="flex items-center cursor-pointer">
                     <span className="mr-2 text-sm text-gray-700">Public</span>
                     <input
@@ -508,6 +529,26 @@ export default function ObjectDetailPage() {
                     </span>
                   </label>
                 </div>
+                {/* Provenance (Held+) */}
+                {user?.premium?.active && user?.premium?.plan === 'plus' && (
+                  <>
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Chain of Ownership</label>
+                    <textarea
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.chain || ''}
+                      onChange={e => setFormData({ ...formData, chain: e.target.value })}
+                      placeholder='[{"owner":"Name","acquiredAt":"YYYY-MM-DD","notes":""}]'
+                      rows={2}
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Certificate of Authenticity (COA)</label>
+                    <input
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.certificateOfAuthenticity || ''}
+                      onChange={e => setFormData({ ...formData, certificateOfAuthenticity: e.target.value })}
+                      placeholder='COA URL or description'
+                    />
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -552,6 +593,43 @@ export default function ObjectDetailPage() {
                 <p className="text-gray-600">
                   In theCollaborative: {object?.shareInCollaborative ? 'Yes' : 'No'}
                 </p>
+                {/* Provenance (Held+) */}
+                {user?.premium?.active && user?.premium?.plan === 'plus' && (
+                  <>
+                    {/* Chain of Ownership (always visible) */}
+                    <div className="mt-2">
+                      <span className="font-semibold text-xs text-blue-700">Chain of Ownership:</span>
+                      {Array.isArray(object?.chain) && object.chain.length > 0 ? (
+                        <ul className="mt-1 mb-2 text-xs text-gray-700">
+                          {object.chain.map((owner, idx) => (
+                            <li key={idx} className="flex gap-2 items-center">
+                              <span className="font-mono">{owner.owner || <span className="text-gray-400 italic">Unknown</span>}</span>
+                              <span className="text-gray-500">{owner.acquiredAt ? `(${owner.acquiredAt})` : ''}</span>
+                              {owner.notes && <span className="text-gray-400">{owner.notes}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-gray-400 italic ml-2">No chain of ownership</span>
+                      )}
+                    </div>
+                    {/* Certificate of Authenticity (always visible) */}
+                    <div className="mt-2">
+                      <span className="font-semibold text-xs text-blue-700">COA:</span>
+                      {object?.certificateOfAuthenticity ? (
+                        typeof object.certificateOfAuthenticity === 'string' && object.certificateOfAuthenticity.startsWith('http') ? (
+                          <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-2">View Certificate</a>
+                        ) : typeof object.certificateOfAuthenticity === 'string' ? (
+                          <span className="ml-2">{object.certificateOfAuthenticity}</span>
+                        ) : (
+                          <span className="ml-2">[Image uploaded]</span>
+                        )
+                      ) : (
+                        <span className="text-gray-400 italic ml-2">No certificate</span>
+                      )}
+                    </div>
+                  </>
+                )}
                 <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono">
                   <p>Created: {object ? new Date(object.createdAt).toLocaleDateString() : ''}</p>
                   <p>Updated: {object ? new Date(object.updatedAt).toLocaleDateString() : ''}</p>

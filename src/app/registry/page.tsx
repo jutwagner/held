@@ -205,8 +205,39 @@ function ObjectCard({ object }: { object: HeldObject }) {
           {object.maker && (
             <p className="text-sm text-gray-600 mb-2">{object.maker}</p>
           )}
-          
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          {/* Chain of Ownership (always visible) */}
+          <div className="mt-2">
+            <span className="font-semibold text-xs text-blue-700">Chain of Ownership:</span>
+            {Array.isArray(object.chain) && object.chain.length > 0 ? (
+              <ul className="mt-1 mb-2 text-xs text-gray-700">
+                {object.chain.map((owner, idx) => (
+                  <li key={idx} className="flex gap-2 items-center">
+                    <span className="font-mono">{owner.owner || <span className="text-gray-400 italic">Unknown</span>}</span>
+                    <span className="text-gray-500">{owner.acquiredAt ? `(${owner.acquiredAt})` : ''}</span>
+                    {owner.notes && <span className="text-gray-400">{owner.notes}</span>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-gray-400 italic ml-2">No chain of ownership</span>
+            )}
+          </div>
+          {/* Certificate of Authenticity (always visible) */}
+          <div className="mt-2">
+            <span className="font-semibold text-xs text-blue-700">COA:</span>
+            {object.certificateOfAuthenticity ? (
+              typeof object.certificateOfAuthenticity === 'string' && object.certificateOfAuthenticity.startsWith('http') ? (
+                <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-2">View Certificate</a>
+              ) : typeof object.certificateOfAuthenticity === 'string' ? (
+                <span className="ml-2">{object.certificateOfAuthenticity}</span>
+              ) : (
+                <span className="ml-2">[Image uploaded]</span>
+              )
+            ) : (
+              <span className="text-gray-400 italic ml-2">No certificate</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
             <span className="font-mono">
               {object.year && !isNaN(object.year) ? `${object.year}` : "N/A"}
             </span>

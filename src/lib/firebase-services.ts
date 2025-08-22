@@ -27,6 +27,13 @@ import {
   getDownloadURL,
   deleteObject as deleteStorageObject,
 } from 'firebase/storage';
+
+// Upload COA image and return its download URL
+export async function uploadCOAImage(file: File, objectId: string): Promise<string> {
+  const storageRef = ref(storage, `coa/${objectId}/${Date.now()}_${file.name}`);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
+}
 import { db, storage } from './firebase';
 import {
   HeldObject,
@@ -139,6 +146,53 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
 };
 
 // Object services
+// Create a new object in Firestore
+export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
+  // Prepare images: upload if File, keep string URLs
+  let imageUrls: string[] = [];
+  if (Array.isArray(data.images) && data.images.length > 0) {
+    for (const img of data.images) {
+      if (typeof img === 'string') {
+        imageUrls.push(img);
+      } else if (img instanceof File) {
+        // Upload image to storage
+        const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${img.name}`);
+        await uploadBytes(storageRef, img);
+        const url = await getDownloadURL(storageRef);
+        imageUrls.push(url);
+      }
+    }
+  }
+
+  // Prepare COA: if string, use as is; if File, upload
+  let coaUrl: string | undefined = undefined;
+  if (data.certificateOfAuthenticity) {
+    if (typeof data.certificateOfAuthenticity === 'string') {
+      coaUrl = data.certificateOfAuthenticity;
+    } // If you want to support File, add upload logic here
+  }
+
+  // Prepare object data
+  const objectData: any = {
+    ...data,
+    userId,
+    images: imageUrls,
+    slug: generateSlug(data.title),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  // Only add certificateOfAuthenticity if defined
+  if (coaUrl !== undefined) {
+    objectData.certificateOfAuthenticity = coaUrl;
+  }
+  // Remove File objects from images if present
+  if (objectData.images && objectData.images.some((img: any) => img instanceof File)) {
+    objectData.images = imageUrls;
+  }
+  // Write to Firestore
+  const docRef = await addDoc(collection(db, 'objects'), objectData);
+  return { id: docRef.id, ...objectData } as HeldObject;
+};
 export const getObjects = async (userId: string): Promise<HeldObject[]> => {
   const objectsRef = collection(db, 'objects');
   const q = query(
