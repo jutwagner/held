@@ -5,7 +5,7 @@ import RotationPageClient from './RotationPageClient';
 
 export default function Page() {
   const params = useParams();
-  const { id } = params;
+  const id = params && typeof params === 'object' ? (params as Record<string, string>).id : undefined;
 
   if (typeof id !== 'string') {
     throw new Error('Invalid id parameter');
