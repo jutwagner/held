@@ -29,7 +29,7 @@ export interface UserDoc {
     sessions: { id: string; device: string; lastActive: number }[];
   };
   email?: string;
-  uid?: string;
+  uid: string;
   isPublicProfile?: boolean;
 }
 export interface User {
@@ -79,8 +79,8 @@ export interface Rotation {
   objectIds: string[];
   isPublic: boolean;
   slug: string;
-  createdAt: Date | import('firebase/firestore').Timestamp;
-  updatedAt: Date | import('firebase/firestore').Timestamp;
+  createdAt: Date | import('firebase/firestore').Timestamp | import('firebase/firestore').FieldValue;
+  updatedAt: Date | import('firebase/firestore').Timestamp | import('firebase/firestore').FieldValue;
 }
 
 export interface RotationWithObjects extends Rotation {
