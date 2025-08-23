@@ -53,7 +53,7 @@ export default function NewRotationPage() {
     e.preventDefault();
     if (!user || typeof user.uid !== 'string') return;
     if (reachedLimit) {
-      setError('Upgrade to Held+ to create more than 3 rotations.');
+  setError('Upgrade to Held+ to create more than 3 rotations.');
       return;
     }
     if (!formData.name.trim()) {

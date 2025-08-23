@@ -1,5 +1,6 @@
 
 
+
 import { getUserByHandle } from '@/lib/firebase-services';
 import { notFound } from 'next/navigation';
 
@@ -20,7 +21,10 @@ export default async function Page({ params }: { params: { handle: string } }) {
         <img
           src={user.avatarUrl || '/placeholder.png'}
           alt={user.displayName || user.handle}
+          width={128}
+          height={128}
           className="w-32 h-32 rounded-full border-4 border-blue-200 shadow mb-4"
+          style={{ objectFit: 'cover', display: 'block' }}
         />
         <h1 className="text-4xl font-serif font-bold text-gray-900">{user.displayName || user.handle}</h1>
         <p className="text-lg text-gray-600 font-mono">@{user.handle}</p>

@@ -15,42 +15,42 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Example rotation data
-const rotations = [
-  {
-    userId: 'user1',
-    name: 'Sample Rotation 1',
-    description: 'This is a sample rotation.',
-    objectIds: ['object1', 'object2'],
-    isPublic: true,
-    slug: 'sample-rotation-1',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  },
-  {
-    userId: 'user2',
-    name: 'Sample Rotation 2',
-    description: 'This is another sample rotation.',
-    objectIds: ['object3', 'object4'],
-    isPublic: false,
-    slug: 'sample-rotation-2',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  },
-];
-
-// Function to add rotations to Firestore
-const addRotations = async () => {
-  try {
-    const collectionRef = collection(db, 'rotations');
-    for (const rotation of rotations) {
-      const docRef = await addDoc(collectionRef, rotation);
-      console.log(`Added rotation with ID: ${docRef.id}`);
-    }
-    console.log('All rotations added successfully.');
-  } catch (error) {
-    console.error('Error adding rotations:', error);
-  }
-};
-
-addRotations();
+// // Example rotation data
+// const rotations = [
+//   {
+//     userId: 'user1',
+//     name: 'Sample Rotation 1',
+//     description: 'This is a sample rotation.',
+//     objectIds: ['object1', 'object2'],
+//     isPublic: true,
+//     slug: 'sample-rotation-1',
+//     createdAt: serverTimestamp(),
+//     updatedAt: serverTimestamp(),
+//   },
+//   {
+//     userId: 'user2',
+//     name: 'Sample Rotation 2',
+//     description: 'This is another sample rotation.',
+//     objectIds: ['object3', 'object4'],
+//     isPublic: false,
+//     slug: 'sample-rotation-2',
+//     createdAt: serverTimestamp(),
+//     updatedAt: serverTimestamp(),
+//   },
+// ];
+//
+// // Function to add rotations to Firestore
+// const addRotations = async () => {
+//   try {
+//     const collectionRef = collection(db, 'rotations');
+//     for (const rotation of rotations) {
+//       const docRef = await addDoc(collectionRef, rotation);
+//       console.log(`Added rotation with ID: ${docRef.id}`);
+//     }
+//     console.log('All rotations added successfully.');
+//   } catch (error) {
+//     console.error('Error adding rotations:', error);
+//   }
+// };
+//
+// addRotations();

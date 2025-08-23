@@ -1,11 +1,12 @@
 'use client';
+'/* eslint-disable @next/next/no-img-element */'
 
 import { useEffect, useState } from 'react';
-import { getFirestore, doc, getDoc, DocumentData } from 'firebase/firestore';
-import { subscribeRotations } from '@/lib/firebase-services';
+import { getFirestore } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
-import { getObject } from '@/lib/firebase-services';
+import { getObject, getRotation, subscribeRotations } from '@/lib/firebase-services';
 import { HeldObject } from '@/types';
+import type { RotationWithObjects } from '@/types';
 
 // Firebase configuration (replace with your actual config)
 const firebaseConfig = {
@@ -19,15 +20,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// db is not used
 
 function RotationPageClient({ id }: { id: string }) {
-  const [rotation, setRotation] = useState<DocumentData | null>(null);
+  const [rotation, setRotation] = useState<RotationWithObjects | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
   // Get current user from AuthContext (replace with your actual context/hook)
-  const [user, setUser] = useState<any>(null);
+  type HeldUser = { uid: string; [key: string]: unknown } | null;
+  const [user, setUser] = useState<HeldUser>(null);
   useEffect(() => {
     // Replace with your actual auth logic
     if (typeof window !== 'undefined') {
@@ -41,7 +43,7 @@ function RotationPageClient({ id }: { id: string }) {
     setLoading(true);
     async function fetchRotation() {
       try {
-        const rot = await getObject(id);
+        const rot = await getRotation(id);
         if (!rot) {
           setError('Rotation not found');
           setLoading(false);
@@ -49,7 +51,7 @@ function RotationPageClient({ id }: { id: string }) {
         }
         // If public, show it
         if (rot.isPublic === true) {
-          setRotation(rot);
+          setRotation({ ...rot, objects: [] });
           setLoading(false);
           return;
         }
@@ -58,7 +60,7 @@ function RotationPageClient({ id }: { id: string }) {
           const unsubscribe = subscribeRotations(user.uid, (rots) => {
             const ownedRot = rots.find(r => r.id === id);
             if (ownedRot) {
-              setRotation(ownedRot);
+              setRotation({ ...ownedRot, objects: [] });
             } else {
               setError('Rotation not found');
             }
@@ -70,8 +72,8 @@ function RotationPageClient({ id }: { id: string }) {
           setLoading(false);
         }
       } catch (err) {
-        setError('Error loading rotation');
-        setLoading(false);
+  setError('Error loading rotation');
+  setLoading(false);
       }
     }
     fetchRotation();
@@ -81,12 +83,12 @@ function RotationPageClient({ id }: { id: string }) {
     const fetchObjects = async () => {
       if (Array.isArray(rotation?.objectIds)) {
         const fetchedObjects = await Promise.all(
-          rotation.objectIds.map(async (id) => {
+          rotation.objectIds.map(async (id: string) => {
             const object = await getObject(id);
             return object;
           })
         );
-        setObjects(fetchedObjects.filter((obj): obj is HeldObject => obj !== null));
+        setObjects(fetchedObjects.filter((obj: HeldObject | null): obj is HeldObject => obj !== null));
       }
     };
 
@@ -94,7 +96,57 @@ function RotationPageClient({ id }: { id: string }) {
   }, [rotation?.objectIds]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 animate-pulse">
+        <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
+          <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-4">
+                {[...Array(5)].map((_, idx) => (
+                  <div key={idx} className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow" />
+                ))}
+              </div>
+              <div>
+                <div className="h-8 w-48 bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-64 bg-gray-100 rounded" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow">&nbsp;</span>
+            </div>
+          </div>
+        </header>
+        <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2 flex gap-2 justify-center">
+          {[...Array(5)].map((_, idx) => (
+            <div key={idx} className="w-20 h-20 rounded-full bg-gray-200 border-2 border-blue-200 shadow" />
+          ))}
+        </nav>
+        <main className="held-container py-12">
+          <div className="flex flex-col gap-16">
+            {[...Array(2)].map((_, index) => (
+              <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
+                <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
+                  <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
+                    <div className="w-full max-w-3xl h-64 bg-gray-200 rounded-xl" />
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col justify-center items-start w-full">
+                  <div className="h-8 w-64 bg-gray-200 rounded mb-2" />
+                  <div className="h-4 w-32 bg-gray-100 rounded mb-1" />
+                  <div className="h-4 w-24 bg-gray-100 rounded mb-2" />
+                  <div className="h-4 w-80 bg-gray-100 rounded mt-2" />
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {[...Array(4)].map((_, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-mono shadow">&nbsp;</span>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (error) {
@@ -113,6 +165,7 @@ function RotationPageClient({ id }: { id: string }) {
           <div className="flex items-center gap-4">
             <div className="flex -space-x-4">
               {objects.slice(0, 5).map((object, idx) => (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   key={idx}
                   src={object.images[0] || '/placeholder.png'}

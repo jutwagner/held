@@ -79,8 +79,8 @@ export interface Rotation {
   objectIds: string[];
   isPublic: boolean;
   slug: string;
-  createdAt: Date | any;
-  updatedAt: Date | any;
+  createdAt: Date | import('firebase/firestore').Timestamp;
+  updatedAt: Date | import('firebase/firestore').Timestamp;
 }
 
 export interface RotationWithObjects extends Rotation {

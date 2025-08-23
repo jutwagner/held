@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import app from '@/lib/firebase';
+import Image from 'next/image';
 
 export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl: string; setAvatarUrl: (url: string) => void }) {
-  const [preview, setPreview] = useState<string>(avatarUrl || '/default-avatar.png');
+  const fallbackAvatar = '/img/placeholder.svg';
+  const [preview, setPreview] = useState<string>(avatarUrl && avatarUrl.trim() ? avatarUrl : fallbackAvatar);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +28,7 @@ export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl:
       const url = await getDownloadURL(storageRef);
       setAvatarUrl(url);
       setPreview(url);
-    } catch (err) {
+    } catch {
       // Optionally show error
       setPreview(avatarUrl || '/default-avatar.png');
     }
@@ -36,10 +38,15 @@ export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl:
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative group">
-        <img
+        <Image
           src={preview}
           alt="Avatar"
-          className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-lg transition-transform duration-200 group-hover:scale-105"
+          width={96}
+          height={96}
+          className="rounded-full object-cover border-2 border-gray-300 shadow-lg transition-transform duration-200 group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = fallbackAvatar;
+          }}
         />
         <button
           type="button"

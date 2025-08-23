@@ -22,22 +22,22 @@ type UpdateObjectData = {
   images: string[];
   isPublic: boolean;
   shareInCollaborative: boolean;
-  chain?: string; // JSON string for now
+  chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
   serialNumber?: string;
   acquisitionDate?: string;
   certificateOfAuthenticity?: string;
   origin?: string;
-  conditionHistory?: string; // JSON string for now
-  transferMethod?: string;
-  associatedDocuments?: string;
+  conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
+  associatedDocuments?: string[];
   provenanceNotes?: string;
+  transferMethod?: string;
 };
 
-const EditObjectPage: React.FC = () => {
+export default function EditObjectPage() {
   const { user } = useAuth();
-  const router = useRouter();
   const params = useSearchParams();
-  const objectId = params.get('id');
+  const objectId = params?.get('id');
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<UpdateObjectData | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -48,7 +48,6 @@ const EditObjectPage: React.FC = () => {
   useEffect(() => {
     if (!objectId) return;
     setLoading(true);
-    // Subscribe to real-time updates for this object
     const unsubscribe = subscribeObjects(objectId, (objs: HeldObject[]) => {
       const obj = objs.find((o: HeldObject) => o.id === objectId);
       if (obj) {
@@ -64,15 +63,28 @@ const EditObjectPage: React.FC = () => {
           images: obj.images || [],
           isPublic: obj.isPublic || false,
           shareInCollaborative: obj.shareInCollaborative || false,
-          chain: obj.chain ? JSON.stringify(obj.chain, null, 2) : '',
+          chain: Array.isArray(obj.chain)
+            ? obj.chain.map(c => ({
+                owner: c.owner || '',
+                acquiredAt:
+                  typeof c.acquiredAt === 'string'
+                    ? c.acquiredAt
+                    : c.acquiredAt instanceof Date
+                    ? c.acquiredAt.toISOString().slice(0, 10)
+                    : '',
+                notes: c.notes || ''
+              }))
+            : [],
           serialNumber: obj.serialNumber || '',
           acquisitionDate: typeof obj.acquisitionDate === 'string' ? obj.acquisitionDate : (obj.acquisitionDate instanceof Date ? obj.acquisitionDate.toISOString().slice(0, 10) : ''),
           certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
           origin: obj.origin || '',
-          conditionHistory: obj.conditionHistory ? JSON.stringify(obj.conditionHistory, null, 2) : '',
-          transferMethod: obj.transferMethod || '',
-          associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
+          conditionHistory: Array.isArray(obj.conditionHistory)
+            ? obj.conditionHistory.map(ch => ({ date: typeof ch.date === 'string' ? ch.date : (ch.date instanceof Date ? ch.date.toISOString().slice(0, 10) : ''), condition: ch.condition, notes: ch.notes }))
+            : [],
+          associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments : [],
           provenanceNotes: obj.provenanceNotes || '',
+          transferMethod: obj.transferMethod || '',
         });
       }
       setLoading(false);
@@ -85,7 +97,6 @@ const EditObjectPage: React.FC = () => {
     setUploading(true);
     setUploadError(null);
     try {
-      // Optionally compress/convert images here
       setFormData(prev => prev ? { ...prev, images: [...prev.images, ...files.map(f => URL.createObjectURL(f))] } : prev);
     } catch (err) {
       setUploadError('Image upload failed');
@@ -108,14 +119,14 @@ const EditObjectPage: React.FC = () => {
         ...formData,
         id: objectId,
         condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
-        chain: formData.chain ? JSON.parse(formData.chain) : [],
+        chain: formData.chain ?? [],
         serialNumber: formData.serialNumber,
         acquisitionDate: formData.acquisitionDate,
         certificateOfAuthenticity: coaUrl,
         origin: formData.origin,
-        conditionHistory: formData.conditionHistory ? JSON.parse(formData.conditionHistory) : [],
+        conditionHistory: formData.conditionHistory ?? [],
         transferMethod: formData.transferMethod,
-        associatedDocuments: (formData.associatedDocuments ?? '').split(',').map(s => s.trim()).filter(Boolean),
+        associatedDocuments: formData.associatedDocuments ?? [],
         provenanceNotes: formData.provenanceNotes,
       }));
       router.push(`/registry/${objectId}`);
@@ -286,8 +297,8 @@ const EditObjectPage: React.FC = () => {
                   placeholder="Transfer Method (sale, gift, etc.)"
                 />
                 <Input
-                  value={formData.associatedDocuments || ''}
-                  onChange={e => setFormData({ ...formData, associatedDocuments: e.target.value })}
+                  value={formData.associatedDocuments ? formData.associatedDocuments.join(', ') : ''}
+                  onChange={e => setFormData({ ...formData, associatedDocuments: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                   placeholder="Associated Documents (comma separated URLs/refs)"
                 />
                 <Textarea
@@ -299,66 +310,37 @@ const EditObjectPage: React.FC = () => {
                 {/* Chain of Ownership - dynamic UI */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Chain of Ownership</label>
-                  {(() => {
-                    let chainArr: any[] = [];
-                    try { chainArr = formData.chain ? JSON.parse(formData.chain) : []; } catch { chainArr = []; }
-                    return (
-                      <>
-                        {chainArr.length === 0 && (
-                          <p className="text-gray-400 italic mb-2">No chain of ownership yet.</p>
-                        )}
-                        {chainArr.map((owner, idx) => (
-                          <div key={idx} className="flex gap-2 mb-2 items-center">
-                            <Input
-                              value={owner.owner || ''}
-                              onChange={e => {
-                                const updated = [...chainArr];
-                                updated[idx].owner = e.target.value;
-                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
-                              }}
-                              placeholder="Owner name"
-                            />
-                            <Input
-                              type="date"
-                              value={owner.acquiredAt || ''}
-                              onChange={e => {
-                                const updated = [...chainArr];
-                                updated[idx].acquiredAt = e.target.value;
-                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
-                              }}
-                              placeholder="Acquisition date"
-                            />
-                            <Input
-                              value={owner.notes || ''}
-                              onChange={e => {
-                                const updated = [...chainArr];
-                                updated[idx].notes = e.target.value;
-                                setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
-                              }}
-                              placeholder="Notes"
-                            />
-                            <Button type="button" variant="outline" onClick={() => {
-                              const updated = chainArr.filter((_, i) => i !== idx);
-                              setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
-                            }}>Remove</Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" onClick={() => {
-                          const updated = [...chainArr, { owner: '', acquiredAt: '', notes: '' }];
-                          setFormData(prev => prev ? { ...prev, chain: JSON.stringify(updated, null, 2) } : prev);
-                        }}>
-                          + Add Owner
-                        </Button>
-                      </>
-                    );
-                  })()}
+                  {formData.chain && formData.chain.length > 0 ? (
+                    <ul className="space-y-2">
+                      {formData.chain.map((entry, idx) => (
+                        <li key={idx} className="flex gap-2 items-center">
+                          <Input
+                            value={entry.owner}
+                            onChange={e => {
+                              const updated = [...formData.chain!];
+                              updated[idx].owner = e.target.value;
+                              setFormData({ ...formData, chain: updated });
+                            }}
+                            placeholder="Owner"
+                          />
+                          <Input
+                            value={entry.acquiredAt}
+                            onChange={e => {
+                              const updated = [...formData.chain!];
+                              updated[idx].acquiredAt = e.target.value;
+                              setFormData({ ...formData, chain: updated });
+                            }}
+                            placeholder="Date (YYYY-MM-DD)"
+                          />
+                          <Button type="button" variant="destructive" onClick={() => setFormData({ ...formData, chain: formData.chain!.filter((_, i) => i !== idx) })}>Remove</Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">No chain of ownership entries</p>
+                  )}
+                  <Button type="button" variant="outline" className="mt-2" onClick={() => setFormData({ ...formData, chain: [...(formData.chain ?? []), { owner: '', acquiredAt: '', notes: '' }] })}>Add Entry</Button>
                 </div>
-                <Textarea
-                  value={formData.conditionHistory || ''}
-                  onChange={e => setFormData({ ...formData, conditionHistory: e.target.value })}
-                  placeholder='Condition History (JSON: [{"date":"YYYY-MM-DD","condition":"good","notes":""}])'
-                  rows={2}
-                />
               </div>
               <div className="flex justify-end mt-8">
                 <Button type="submit">Save Changes</Button>
@@ -369,8 +351,4 @@ const EditObjectPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-// Removed DisplayObjectDetails, now handled in main form
-
-export default EditObjectPage;
+}

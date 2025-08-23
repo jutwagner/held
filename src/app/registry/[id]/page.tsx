@@ -1,11 +1,13 @@
 'use client';
+// Chain of Ownership entry type
+type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
 
 import { useEffect, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { HeldObject } from '@/types';
-import { subscribeObjects, updateObject } from '@/lib/firebase-services';
+import { updateObject } from '@/lib/firebase-services';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import Link from 'next/link';
@@ -58,21 +60,43 @@ export default function ObjectDetailPage() {
   const pathname = usePathname();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
+  // Skeleton placeholder for layout shift prevention
+  const Skeleton = () => (
+    <div className="animate-pulse bg-white rounded-xl shadow-lg p-6 min-h-[400px]">
+      <div className="grid grid-cols-1 gap-5">
+        <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-4" />
+        <div className="h-40 bg-gray-200 rounded w-full mb-4" />
+        <div className="h-6 bg-gray-200 rounded w-1/4 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
+      </div>
+    </div>
+  );
   const [error, setError] = useState<string>('');
   interface FormData {
-  title: string;
-  description: string;
-  maker: string;
-  condition: string;
-  visibility: string;
-  tags: string;
-  notes: string;
-  year: number | undefined;
-  shareInCollaborative: boolean;
-  category: string;
-  images: string[];
-  chain?: string;
-  certificateOfAuthenticity?: string;
+    title: string;
+    description: string;
+    maker: string;
+    condition: string;
+    visibility: string;
+    tags: string;
+    notes: string;
+    year: number | undefined;
+    shareInCollaborative: boolean;
+    category: string;
+    images: string[];
+    chain?: string;
+    certificateOfAuthenticity?: string;
+    serialNumber?: string;
+    acquisitionDate?: string;
+    origin?: string;
+  conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
+    transferMethod?: string;
+    associatedDocuments?: string;
+    provenanceNotes?: string;
   }
 
   const [formData, setFormData] = useState<FormData>({
@@ -87,8 +111,15 @@ export default function ObjectDetailPage() {
     shareInCollaborative: false,
     category: '',
     images: [],
-    chain: '',
-    certificateOfAuthenticity: '',
+  chain: '',
+  certificateOfAuthenticity: '',
+  serialNumber: '',
+  acquisitionDate: '',
+  origin: '',
+  conditionHistory: [],
+  transferMethod: '',
+  associatedDocuments: '',
+  provenanceNotes: '',
   });
   const objectId = params?.id as string;
 
@@ -108,11 +139,19 @@ export default function ObjectDetailPage() {
         setLoading(true);
         // Convert tags to array
         const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
-        let chainArr: any[] = [];
+        type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
+        let chainArr: ChainEntry[] = [];
         try {
           chainArr = formData.chain ? JSON.parse(formData.chain) : [];
         } catch {
           chainArr = [];
+        }
+  // Use conditionHistory array directly
+  const conditionHistoryArr = Array.isArray(formData.conditionHistory) ? formData.conditionHistory : [];
+        // Parse associatedDocuments
+        let associatedDocumentsArr: string[] = [];
+        if (formData.associatedDocuments) {
+          associatedDocumentsArr = formData.associatedDocuments.split(',').map(d => d.trim()).filter(Boolean);
         }
         await updateObject(objectId, {
           id: objectId,
@@ -121,6 +160,8 @@ export default function ObjectDetailPage() {
           tags: tagsArray,
           chain: chainArr,
           certificateOfAuthenticity: formData.certificateOfAuthenticity || '',
+          conditionHistory: conditionHistoryArr,
+          associatedDocuments: associatedDocumentsArr,
         });
   // Object loading now handled by subscribeObjects
         setEditing(false);
@@ -133,106 +174,6 @@ export default function ObjectDetailPage() {
     doSave();
   }
             // ...rest of component logic...
-  // ...inside the main return statement, where editing UI is rendered...
-  {editing && (
-    <div className="bg-white rounded-xl shadow-lg p-6 animate-fade-in transition-all duration-300">
-      <div className="grid grid-cols-1 gap-5">
-        <div>
-          <label htmlFor="title" className="block text-sm font-semibold mb-1 text-gray-700">Title</label>
-          <input
-            id="title"
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Object title"
-          />
-        </div>
-        <div>
-          <label htmlFor="maker" className="block text-sm font-semibold mb-1 text-gray-700">Maker</label>
-          <input
-            id="maker"
-            type="text"
-            value={formData.maker}
-            onChange={(e) => setFormData({ ...formData, maker: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="e.g., Herman Miller"
-          />
-        </div>
-        <div>
-          <label htmlFor="condition" className="block text-sm font-semibold mb-1 text-gray-700">Condition</label>
-          <select
-            id="condition"
-            value={formData.condition}
-            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="excellent">Excellent</option>
-            <option value="good">Good</option>
-            <option value="fair">Fair</option>
-            <option value="poor">Poor</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="visibility" className="block text-sm font-semibold mb-1 text-gray-700">Visibility</label>
-          <select
-            id="visibility"
-            value={formData.visibility}
-            onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Public">Public</option>
-            <option value="Private">Private</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="tags" className="block text-sm font-semibold mb-1 text-gray-700">Tags</label>
-          <input
-            id="tags"
-            type="text"
-            value={formData.tags}
-            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Comma separated tags"
-          />
-        </div>
-        <div>
-          <label htmlFor="year" className="block text-sm font-semibold mb-1 text-gray-700">Year</label>
-          <input
-            id="year"
-            type="number"
-            value={formData.year || ''}
-            onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="e.g., 1956"
-          />
-        </div>
-        <div>
-          <label htmlFor="notes" className="block text-sm font-semibold mb-1 text-gray-700">Notes</label>
-          <textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Add any notes about this object..."
-            rows={3}
-          />
-        </div>
-        <div className="flex items-center space-x-2 mt-2">
-          <input
-            type="checkbox"
-            id="shareInCollaborative"
-            checked={formData.shareInCollaborative}
-            onChange={(e) => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="shareInCollaborative" className="text-sm text-gray-700">
-            In theCollaborative
-          </label>
-        </div>
-      </div>
-    </div>
-  )}
   useEffect(() => {
     if (user && objectId) {
   // Object loading now handled by subscribeObjects
@@ -263,9 +204,7 @@ export default function ObjectDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <div className="held-container py-24">
-          <div className="text-center">
-            <p className="text-gray-600">Loading...</p>
-          </div>
+          <Skeleton />
         </div>
       </div>
     );
@@ -520,23 +459,239 @@ export default function ObjectDetailPage() {
                     </span>
                   </label>
                 </div>
-                {/* Provenance (Held+) */}
-                {user?.premium?.active && user?.premium?.plan === 'plus' && (
+                {/* Provenance (Held+) - All fields */}
+                {user?.premium?.active && typeof user?.premium?.plan === 'string' && user.premium.plan.includes('plus') && (
                   <>
                     <label className="block text-sm font-semibold mb-1 text-gray-700">Chain of Ownership</label>
-                    <textarea
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.chain || ''}
-                      onChange={e => setFormData({ ...formData, chain: e.target.value })}
-                      placeholder='[{"owner":"Name","acquiredAt":"YYYY-MM-DD","notes":""}]'
-                      rows={2}
-                    />
+                    <div className="space-y-2 mb-2">
+                      {(() => {
+                        let chainArr: ChainEntry[] = [];
+                        if (Array.isArray(formData.chain)) {
+                          chainArr = formData.chain;
+                        } else if (typeof formData.chain === 'string' && formData.chain.trim()) {
+                          try {
+                            chainArr = JSON.parse(formData.chain);
+                          } catch {}
+                        }
+                        return chainArr.map((entry: { owner: string; acquiredAt?: string; notes?: string }, idx: number) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.owner || ''}
+                            placeholder="Owner"
+                            onChange={e => {
+                              const updated = chainArr.map((x, i) => i === idx ? { ...x, owner: e.target.value } : x);
+                              setFormData({ ...formData, chain: JSON.stringify(updated) });
+                            }}
+                          />
+                          <input
+                            type="date"
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.acquiredAt || ''}
+                            onChange={e => {
+                              const updated = chainArr.map((x, i) => i === idx ? { ...x, acquiredAt: e.target.value } : x);
+                              setFormData({ ...formData, chain: JSON.stringify(updated) });
+                            }}
+                          />
+                          <input
+                            type="text"
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.notes || ''}
+                            placeholder="Notes"
+                            onChange={e => {
+                              const updated = chainArr.map((x, i) => i === idx ? { ...x, notes: e.target.value } : x);
+                              setFormData({ ...formData, chain: JSON.stringify(updated) });
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="text-red-500 px-2"
+                            onClick={() => {
+                              const updated = chainArr.filter((_, i) => i !== idx);
+                              setFormData({ ...formData, chain: JSON.stringify(updated) });
+                            }}
+                            aria-label="Remove entry"
+                          >
+                            &minus;
+                          </button>
+                        </div>
+                        ));
+                      })()}
+                      <button
+                        type="button"
+                        className="text-blue-600 text-xs px-2 py-1 border border-blue-200 rounded"
+                        onClick={() => {
+                          let chainArr: ChainEntry[] = [];
+                          if (Array.isArray(formData.chain)) {
+                            chainArr = formData.chain;
+                          } else if (typeof formData.chain === 'string' && formData.chain.trim()) {
+                            try {
+                              chainArr = JSON.parse(formData.chain);
+                            } catch {}
+                          }
+                          setFormData({
+                            ...formData,
+                            chain: JSON.stringify([
+                              ...chainArr,
+                              { owner: '', acquiredAt: '', notes: '' }
+                            ])
+                          });
+                        }}
+                      >
+                        + Add Chain Entry
+                      </button>
+                    </div>
                     <label className="block text-sm font-semibold mb-1 text-gray-700">Certificate of Authenticity (COA)</label>
+                    <div className="mb-2">
+                      {formData.certificateOfAuthenticity && typeof formData.certificateOfAuthenticity === 'string' && formData.certificateOfAuthenticity.startsWith('http') && (
+                        <img src={formData.certificateOfAuthenticity} alt="COA" className="max-h-32 mb-2 rounded border" />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="block text-xs mb-2"
+                        onChange={async e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const imageRef = ref(storage, `coa/${objectId || 'new'}-${Date.now()}_${file.name}`);
+                            const uploadTask = uploadBytesResumable(imageRef, file);
+                            await new Promise<string>((resolve, reject) => {
+                              uploadTask.on('state_changed',
+                                undefined,
+                                (error) => reject(error),
+                                async () => {
+                                  const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                  setFormData({ ...formData, certificateOfAuthenticity: url });
+                                  resolve(url);
+                                }
+                              );
+                            });
+                          } catch (err) {
+                            alert('Image upload failed');
+                          }
+                        }}
+                      />
+                      <input
+                        type="text"
+                        className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={typeof formData.certificateOfAuthenticity === 'string' && !formData.certificateOfAuthenticity.startsWith('http') ? formData.certificateOfAuthenticity : ''}
+                        onChange={e => setFormData({ ...formData, certificateOfAuthenticity: e.target.value })}
+                        placeholder="COA description (optional)"
+                      />
+                    </div>
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Serial Number</label>
                     <input
                       className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.certificateOfAuthenticity || ''}
-                      onChange={e => setFormData({ ...formData, certificateOfAuthenticity: e.target.value })}
-                      placeholder='COA URL or description'
+                      value={formData.serialNumber || ''}
+                      onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
+                      placeholder='Serial Number'
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Acquisition Date</label>
+                    <input
+                      type="date"
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.acquisitionDate || ''}
+                      onChange={e => setFormData({ ...formData, acquisitionDate: e.target.value })}
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Origin</label>
+                    <input
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.origin || ''}
+                      onChange={e => setFormData({ ...formData, origin: e.target.value })}
+                      placeholder='Origin'
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Condition History</label>
+                    <div className="space-y-2 mb-2">
+                      {(Array.isArray(formData.conditionHistory) ? formData.conditionHistory : []).map((entry: { date: string; condition: string; notes?: string }, idx: number) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="date"
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.date || ''}
+                            onChange={e => {
+                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
+                              updated[idx].date = e.target.value;
+                              setFormData({ ...formData, conditionHistory: updated });
+                            }}
+                          />
+                          <select
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.condition || ''}
+                            onChange={e => {
+                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
+                              updated[idx].condition = e.target.value;
+                              setFormData({ ...formData, conditionHistory: updated });
+                            }}
+                          >
+                            <option value="excellent">Excellent</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                          </select>
+                          <input
+                            type="text"
+                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
+                            value={entry.notes || ''}
+                            placeholder="Notes"
+                            onChange={e => {
+                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
+                              updated[idx].notes = e.target.value;
+                              setFormData({ ...formData, conditionHistory: updated });
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="text-red-500 px-2"
+                            onClick={() => {
+                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
+                              updated.splice(idx, 1);
+                              setFormData({ ...formData, conditionHistory: updated });
+                            }}
+                            aria-label="Remove entry"
+                          >
+                            &minus;
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="text-blue-600 text-xs px-2 py-1 border border-blue-200 rounded"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            conditionHistory: [
+                              ...(Array.isArray(formData.conditionHistory) ? formData.conditionHistory : []),
+                              { date: '', condition: '', notes: '' }
+                            ]
+                          });
+                        }}
+                      >
+                        + Add Condition Entry
+                      </button>
+                    </div>
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Transfer Method</label>
+                    <input
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.transferMethod || ''}
+                      onChange={e => setFormData({ ...formData, transferMethod: e.target.value })}
+                      placeholder='Transfer Method'
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Associated Documents (comma separated URLs)</label>
+                    <input
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.associatedDocuments || ''}
+                      onChange={e => setFormData({ ...formData, associatedDocuments: e.target.value })}
+                      placeholder='https://example.com/doc1, https://example.com/doc2'
+                    />
+                    <label className="block text-sm font-semibold mb-1 text-gray-700">Provenance Notes</label>
+                    <textarea
+                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      value={formData.provenanceNotes || ''}
+                      onChange={e => setFormData({ ...formData, provenanceNotes: e.target.value })}
+                      placeholder='Provenance notes'
+                      rows={2}
                     />
                   </>
                 )}
@@ -633,14 +788,23 @@ export default function ObjectDetailPage() {
         </div>
         {/* Inline Editing Section */}
         {editing && (
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={handleSave}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Save
-            </button>
-          </div>
+          <>
+            {/* Debug Panel for user and premium status */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded text-xs text-gray-700">
+              <strong>Debug: Current User</strong>
+              <pre className="overflow-x-auto whitespace-pre-wrap">{JSON.stringify(user, null, 2)}</pre>
+              <div>Premium active: <span className="font-bold">{user?.premium?.active ? 'true' : 'false'}</span></div>
+              <div>Premium plan: <span className="font-bold">{user?.premium?.plan || 'none'}</span></div>
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={handleSave}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

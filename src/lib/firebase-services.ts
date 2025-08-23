@@ -111,7 +111,7 @@ export function subscribePublicRotations(callback: (rotations: Rotation[]) => vo
   const rotationsRef = collection(db, 'rotations');
   const q = query(rotationsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
   const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const rotations = querySnapshot.docs.map((doc: any) => ({
+  const rotations = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as Rotation[];
@@ -170,31 +170,60 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
 // Create a new object in Firestore
 export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
   // Prepare images: upload if File, keep string URLs
-  let imageUrls: string[] = [];
+  const imageUrls: string[] = [];
   if (Array.isArray(data.images) && data.images.length > 0) {
     for (const img of data.images) {
       if (typeof img === 'string') {
         imageUrls.push(img);
       } else if (img instanceof File) {
-        // Upload image to storage
-        const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${img.name}`);
-        await uploadBytes(storageRef, img);
+        // Convert image to WebP before upload
+        const webpFile = await convertImageToWebP(img);
+        const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${img.name.replace(/\.[^.]+$/, '.webp')}`);
+        await uploadBytes(storageRef, webpFile);
         const url = await getDownloadURL(storageRef);
         imageUrls.push(url);
       }
     }
   }
 
-  // Prepare COA: if string, use as is; if File, upload
+  // Prepare COA: if string, use as is; if File, upload as WebP
   let coaUrl: string | undefined = undefined;
   if (data.certificateOfAuthenticity) {
     if (typeof data.certificateOfAuthenticity === 'string') {
       coaUrl = data.certificateOfAuthenticity;
-    } // If you want to support File, add upload logic here
+    } else {
+      const coaFile = data.certificateOfAuthenticity as File;
+      if (coaFile && typeof coaFile.name === 'string') {
+        const webpFile = await convertImageToWebP(coaFile);
+        const storageRef = ref(storage, `coa/${userId}/${Date.now()}_${coaFile.name.replace(/\.[^.]+$/, '.webp')}`);
+        await uploadBytes(storageRef, webpFile);
+        coaUrl = await getDownloadURL(storageRef);
+      }
+    }
   }
+// Utility: Convert image File to WebP using browser canvas
+async function convertImageToWebP(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        if (!blob) return reject(new Error('WebP conversion failed'));
+        const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' });
+        resolve(webpFile);
+      }, 'image/webp', 0.92);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
 
   // Prepare object data
-  const objectData: any = {
+  const objectData: Record<string, unknown> = {
     ...data,
     userId,
     images: imageUrls,
@@ -207,7 +236,7 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
     objectData.certificateOfAuthenticity = coaUrl;
   }
   // Remove File objects from images if present
-  if (objectData.images && objectData.images.some((img: any) => img instanceof File)) {
+  if (objectData.images && Array.isArray(objectData.images) && objectData.images.some((img: unknown) => img instanceof File)) {
     objectData.images = imageUrls;
   }
   // Write to Firestore
@@ -223,7 +252,7 @@ export function subscribeObjects(userId: string, callback: (objects: HeldObject[
     orderBy('createdAt', 'desc')
   );
   const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const objects = querySnapshot.docs.map((doc: any) => ({
+  const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as HeldObject[];
@@ -236,7 +265,7 @@ export const getObject = async (id: string): Promise<HeldObject | null> => {
   const objectRef = doc(db, 'objects', id);
   const objectSnap = await getDoc(objectRef);
   if (objectSnap.exists()) {
-  const data = objectSnap.data() as Record<string, any>;
+  const data = objectSnap.data() as Record<string, unknown>;
   return { id: objectSnap.id, ...data } as HeldObject;
   }
   return null;
@@ -307,7 +336,7 @@ export function subscribeRotations(userId: string, callback: (rotations: Rotatio
     q = query(rotationsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
   }
   const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const rotations = querySnapshot.docs.map((doc: any) => ({
+  const rotations = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as Rotation[];
@@ -321,7 +350,7 @@ export const getRotation = async (id: string): Promise<Rotation | null> => {
   const rotationSnap = await getDoc(rotationRef);
   
   if (rotationSnap.exists()) {
-  const data = rotationSnap.data() as Record<string, any>;
+  const data = rotationSnap.data() as Record<string, unknown>;
   return { id: rotationSnap.id, ...data } as Rotation;
   }
   
@@ -439,7 +468,7 @@ export function subscribePublicPosts(callback: (objects: HeldObject[]) => void):
   const objectsRef = collection(db, 'objects');
   const q = query(objectsRef, where('isPublic', '==', true), orderBy('createdAt', 'desc'));
   const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const objects = querySnapshot.docs.map((doc: any) => ({
+  const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as HeldObject[];

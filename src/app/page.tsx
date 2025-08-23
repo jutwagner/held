@@ -13,9 +13,9 @@ export default function HomePage() {
   const [heroImg, setHeroImg] = useState<string | null>(null);
   useEffect(() => {
     setHydrated(true);
-    // Pick a random hero image on mount (0.png to 14.png)
-    const idx = Math.floor(Math.random() * 15); // 0 to 14 inclusive
-    setHeroImg(`/img/hero/${idx}.png`);
+  // Pick a random hero image on mount (0.webp to 14.webp)
+  const idx = Math.floor(Math.random() * 15); // 0 to 14 inclusive
+  setHeroImg(`/img/hero/${idx}.webp`);
   }, []);
 
   return (

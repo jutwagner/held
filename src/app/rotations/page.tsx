@@ -139,9 +139,30 @@ export default function RotationsPage() {
 // Reusable premium logic for disabling features
 
 function RotationCard({ rotation, disabled = false }: { rotation: RotationWithObjects; disabled?: boolean }) {
+  // All hooks must be called at the top level, unconditionally
+  const { user } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const router = useRouter();
+  const canDelete = user && (user.uid === rotation.userId || rotation.isPublic);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setConfirmOpen(false);
+    setDeleting(true);
+    try {
+      await import('@/lib/firebase-services').then(mod => mod.deleteRotation(rotation.id));
+      router.refresh();
+    } catch (err) {
+      alert('Failed to delete rotation.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (disabled) {
     return (
-  <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl transition-all duration-200 cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
+      <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl transition-all duration-200 cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
         {/* Absolute CTA overlay, card is visible but not clickable */}
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto',  background: 'rgba(255,255,255,0.85)' }}>
           <div className="flex flex-col items-center">
@@ -196,24 +217,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
       </div>
     );
   }
-  const { user } = useAuth();
-  const [deleting, setDeleting] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const router = useRouter();
-  const canDelete = user && (user.uid === rotation.userId || rotation.isPublic);
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    setConfirmOpen(false);
-    setDeleting(true);
-    try {
-      await import('@/lib/firebase-services').then(mod => mod.deleteRotation(rotation.id));
-      router.refresh();
-    } catch (err) {
-      alert('Failed to delete rotation.');
-    } finally {
-      setDeleting(false);
-    }
-  };
+
   return (
     <Link href={`/rotations/${rotation.id}`}>
       <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:-translate-y-1">

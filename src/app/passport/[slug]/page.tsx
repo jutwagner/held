@@ -3,17 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { HeldObject } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { isHeldPlus } from '@/contexts/AuthContext';
 import { getObjectBySlug } from '@/lib/firebase-services';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { ArrowLeft, Share2, Calendar, DollarSign, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PassportPage() {
+  const { user } = useAuth();
   const params = useParams();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const slug = params.slug as string;
+  const slug = params?.slug ? String(params.slug) : '';
 
   useEffect(() => {
     if (slug) {
@@ -136,6 +139,35 @@ export default function PassportPage() {
                 <p className="text-xl text-gray-600">{object.maker}</p>
               )}
             </div>
+
+            {/* Provenance (Held+) */}
+            {isHeldPlus(user) && (
+              <>
+                {(object.chain || object.certificateOfAuthenticity || object.serialNumber || object.acquisitionDate || object.origin || (object.conditionHistory && object.conditionHistory.length > 0) || object.transferMethod || object.associatedDocuments || object.provenanceNotes) && (
+                  <div className="space-y-4 border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-bold mb-2 text-blue-700">Provenance</h3>
+                    {object.chain && <div><span className="font-semibold">Chain of Ownership:</span> <span className="text-gray-700">{typeof object.chain === 'string' ? object.chain : JSON.stringify(object.chain)}</span></div>}
+                    {object.certificateOfAuthenticity && <div><span className="font-semibold">COA:</span> <span className="text-gray-700">{object.certificateOfAuthenticity.startsWith('http') ? <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View Image</a> : object.certificateOfAuthenticity}</span></div>}
+                    {object.serialNumber && <div><span className="font-semibold">Serial Number:</span> <span className="text-gray-700">{object.serialNumber}</span></div>}
+                    {object.acquisitionDate && <div><span className="font-semibold">Acquisition Date:</span> <span className="text-gray-700">{String(object.acquisitionDate)}</span></div>}
+                    {object.origin && <div><span className="font-semibold">Origin:</span> <span className="text-gray-700">{object.origin}</span></div>}
+                    {object.conditionHistory && object.conditionHistory.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Condition History:</span>
+                        <ul className="list-disc ml-6 text-gray-700">
+                          {object.conditionHistory.map((entry, idx) => (
+                            <li key={idx}>{String(entry.date)} - {entry.condition}{entry.notes ? ` (${entry.notes})` : ''}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {object.transferMethod && <div><span className="font-semibold">Transfer Method:</span> <span className="text-gray-700">{object.transferMethod}</span></div>}
+                    {object.associatedDocuments && <div><span className="font-semibold">Associated Documents:</span> <span className="text-gray-700">{object.associatedDocuments}</span></div>}
+                    {object.provenanceNotes && <div><span className="font-semibold">Provenance Notes:</span> <span className="text-gray-700">{object.provenanceNotes}</span></div>}
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Details */}
             <div className="space-y-4">

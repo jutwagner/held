@@ -67,9 +67,9 @@ export default function TheCollaborativePage() {
   const [rotations, setRotations] = useState<Rotation[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    addRotation();
-  }, []);
+  // useEffect(() => {
+  //   addRotation();
+  // }, []);
 
   useEffect(() => {
     setLoading(true);

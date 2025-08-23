@@ -5,7 +5,7 @@ import { subscribePublicPosts } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
 import Navigation from '@/components/Navigation';
 import type { HeldObject } from '@/types';
-import { addRotation } from '@/scripts/addRotation';
+// import { addRotation } from '@/scripts/addRotation';
 
 export default function TheCollaborativePage() {
   const [posts, setPosts] = useState<HeldObject[]>([]);
@@ -18,7 +18,7 @@ export default function TheCollaborativePage() {
   }, []);
 
   useEffect(() => {
-    addRotation();
+  // addRotation();
   }, []);
 
   return (
