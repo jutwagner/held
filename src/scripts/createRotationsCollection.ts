@@ -2,7 +2,7 @@ import { db as adminDb } from '@/lib/firebase.admin';
 
 // Initialize Firebase Admin SDK
 // Firebase Admin SDK is initialized in lib/firebase.admin.ts
-const db = adminDb;
+// const db = adminDb; // Unused variable removed
 
 // // Sample rotation documents
 // const rotations = [
