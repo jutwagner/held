@@ -292,8 +292,8 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
             <span>{formatDate(
               rotation.createdAt instanceof Date
                 ? rotation.createdAt
-                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof (rotation.createdAt as any).toDate === 'function')
-                  ? (rotation.createdAt as any).toDate()
+                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof (rotation.createdAt as import('firebase/firestore').Timestamp).toDate === 'function')
+                  ? (rotation.createdAt as import('firebase/firestore').Timestamp).toDate()
                   : new Date()
             )}</span>
           </div>
