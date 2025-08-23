@@ -1,5 +1,5 @@
 'use client';
-'/* eslint-disable @next/next/no-img-element */'
+import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getFirestore } from 'firebase/firestore';
@@ -201,7 +201,7 @@ function RotationPageClient({ id }: { id: string }) {
             className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
             title={object.title}
           >
-            <img src={object.images[0] || '/placeholder.png'} alt={object.title} className="w-full h-full object-cover" />
+            <Image src={object.images[0] || '/placeholder.png'} alt={object.title} width={80} height={80} className="w-full h-full object-cover" />
           </button>
         ))}
       </nav>
@@ -213,9 +213,11 @@ function RotationPageClient({ id }: { id: string }) {
             <section id={`object-${index}`} key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
               <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
                 <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-2xl">
-                  <img
+                  <Image
                     src={object.images[0] || '/placeholder.png'}
                     alt={object.title}
+                    width={640}
+                    height={480}
                     className="w-full max-w-3xl rounded-xl object-contain"
                     style={{ maxHeight: '480px', background: '#f8fafc' }}
                   />

@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { createObject } from '@/lib/firebase-services';
 import { CreateObjectData } from '@/types';
 import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function NewObjectPage() {
@@ -304,9 +304,11 @@ export default function NewObjectPage() {
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
                     {formData.images.map((file, index) => (
                       <div key={index} className="relative">
-                        <img
+                        <Image
                           src={URL.createObjectURL(file)}
                           alt={`Preview ${index + 1}`}
+                          width={256}
+                          height={128}
                           className="w-full h-32 object-cover rounded-lg"
                         />
                         <button

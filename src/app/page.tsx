@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -36,11 +37,13 @@ export default function HomePage() {
             }}
           >
             {heroImg && (
-              <img
+              <Image
                 src={heroImg}
                 alt="Hero"
+                width={512}
+                height={256}
                 style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '0.75rem' }}
-                loading="eager"
+                priority
               />
             )}
           </div>

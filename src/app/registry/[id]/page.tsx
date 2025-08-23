@@ -545,7 +545,7 @@ export default function ObjectDetailPage() {
                     <label className="block text-sm font-semibold mb-1 text-gray-700">Certificate of Authenticity (COA)</label>
                     <div className="mb-2">
                       {formData.certificateOfAuthenticity && typeof formData.certificateOfAuthenticity === 'string' && formData.certificateOfAuthenticity.startsWith('http') && (
-                        <img src={formData.certificateOfAuthenticity} alt="COA" className="max-h-32 mb-2 rounded border" />
+                        <Image src={formData.certificateOfAuthenticity} alt="COA" width={128} height={64} className="max-h-32 mb-2 rounded border" />
                       )}
                       <input
                         type="file"

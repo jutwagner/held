@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
 import { subscribeObjects } from '@/lib/firebase-services';
 import { Plus, Search, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 
 import { MobileBottomBar } from '@/components/Navigation';
@@ -174,9 +174,11 @@ function ObjectCard({ object }: { object: HeldObject }) {
         {/* Image */}
         <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
           {object.images.length > 0 ? (
-            <img
+            <Image
               src={object.images[0]}
               alt={object.title}
+              width={256}
+              height={256}
               className="w-full h-full object-cover rounded-lg"
               onError={(e) => {
                 e.currentTarget.onerror = null;
@@ -185,7 +187,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <img src="/img/placeholder.svg" alt="No image" className="w-12 h-12 opacity-40" />
+              <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" />
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -95,7 +96,7 @@ export default function Navigation() {
                       <DropdownMenuTrigger asChild>
                         <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                           {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#888" strokeWidth="2"/><path d="M16 18c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4zm0-8a4 4 0 110 8 4 4 0 010-8z" fill="#bbb"/></svg>
                           )}
@@ -130,11 +131,11 @@ export function MobileBottomBar() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex justify-around py-2">
       <Link href="/registry" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <img src="/img/registry.svg" alt="Registry" width={28} height={28} className="mb-1" />
+        <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="mb-1" />
         <span className="text-xs mt-1">Registry</span>
       </Link>
       <Link href="/rotations" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <img src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="mb-1" />
+        <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="mb-1" />
         <span className="text-xs mt-1">Rotations</span>
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
