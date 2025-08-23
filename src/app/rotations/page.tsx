@@ -210,7 +210,13 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className="flex items-center justify-between text-sm text-gray-500 blur">
           <div className="flex items-center space-x-1 blur">
             <Calendar className="h-3 w-3" />
-            <span>{formatDate((rotation.createdAt instanceof Date ? rotation.createdAt : rotation.createdAt?.toDate?.()) ?? new Date())}</span>
+            <span>{formatDate(
+              rotation.createdAt instanceof Date
+                ? rotation.createdAt
+                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof rotation.createdAt.toDate === 'function')
+                  ? rotation.createdAt.toDate()
+                  : new Date()
+            )}</span>
           </div>
           {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
@@ -283,7 +289,13 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             <Calendar className="h-3 w-3" />
-            <span>{formatDate((rotation.createdAt instanceof Date ? rotation.createdAt : rotation.createdAt?.toDate?.()) ?? new Date())}</span>
+            <span>{formatDate(
+              rotation.createdAt instanceof Date
+                ? rotation.createdAt
+                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof (rotation.createdAt as any).toDate === 'function')
+                  ? (rotation.createdAt as any).toDate()
+                  : new Date()
+            )}</span>
           </div>
           {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
