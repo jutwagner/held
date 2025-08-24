@@ -3,10 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Navigation from '@/components/Navigation';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -14,7 +12,6 @@ export default function SignUpPage() {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signUp } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +20,8 @@ export default function SignUpPage() {
     setError('');
 
     try {
-      await signUp(email, password, displayName);
+      // Temporary placeholder
+      console.log('Sign up:', { email, password, displayName });
       router.push('/registry');
     } catch (error: unknown) {
       if (error instanceof Error) {

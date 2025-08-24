@@ -1,6 +1,6 @@
 import React from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
-import PremiumUpsellFixed from './PremiumUpsellFixed';
+import PremiumUpsell from './PremiumUpsell';
 import { UserDoc } from '@/types';
 import UpdatePaymentForm from './UpdatePaymentForm';
 import { Elements } from '@stripe/react-stripe-js';
@@ -316,14 +316,14 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         )}
         {/* Always show the credit card form for non-premium users */}
         {!localUser?.premium.active && (
-          <PremiumUpsellFixed user={localUser} showCheckoutForm={true} onSuccess={handleUpgradeSuccess} />
+          <PremiumUpsell user={localUser} showCheckoutForm={true} onSuccess={handleUpgradeSuccess} />
         )}
         {localUser?.premium.active && localUser?.premium.cancelRequested && showCardForm && (
           <>
             <div className="mt-6">
-              <PremiumUpsellFixed user={localUser} showCheckoutForm={showCardForm} onSuccess={handleUpgradeSuccess} />
+              <PremiumUpsell user={localUser} showCheckoutForm={showCardForm} onSuccess={handleUpgradeSuccess} />
             </div>
-            <PremiumUpsellFixed user={localUser} showCheckoutForm={false} onSuccess={handleUpgradeSuccess} />
+            <PremiumUpsell user={localUser} showCheckoutForm={false} onSuccess={handleUpgradeSuccess} />
           </>
         )}
         {forceActive && (

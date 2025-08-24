@@ -13,3 +13,4 @@ export default function Page() {
 
   return <RotationPageClient id={id} />;
 }
+ 

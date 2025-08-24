@@ -1,26 +1,3 @@
-// Get user by handle (for vanity URLs)
-export const getUserByHandle = async (handle: string): Promise<UserDoc | null> => {
-  // Decode and strip '@' from handle
-  let cleanHandle = decodeURIComponent(handle);
-  if (cleanHandle.startsWith('@')) cleanHandle = cleanHandle.slice(1);
-  const usersRef = collection(db, 'users');
-  const q = query(usersRef, where('handle', '==', cleanHandle));
-  const querySnapshot = await getDocs(q);
-  if (!querySnapshot.empty) {
-    const docSnap = querySnapshot.docs[0];
-    return { uid: docSnap.id, ...docSnap.data() } as UserDoc;
-  }
-  return null;
-};
-// Get user by UID
-export const getUser = async (uid: string): Promise<UserDoc | null> => {
-  const userRef = doc(db, 'users', uid);
-  const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    return userSnap.data() as UserDoc;
-  }
-  return null;
-}
 import {
   collection,
   doc,
@@ -44,13 +21,6 @@ import {
   getDownloadURL,
   deleteObject as deleteStorageObject,
 } from 'firebase/storage';
-
-// Upload COA image and return its download URL
-export async function uploadCOAImage(file: File, objectId: string): Promise<string> {
-  const storageRef = ref(storage, `coa/${objectId}/${Date.now()}_${file.name}`);
-  await uploadBytes(storageRef, file);
-  return await getDownloadURL(storageRef);
-}
 import { db, storage } from './firebase';
 import {
   HeldObject,
@@ -63,6 +33,38 @@ import {
   UserDoc
 } from '@/types';
 import { generateSlug } from './utils';
+
+// Get user by handle (for vanity URLs)
+export const getUserByHandle = async (handle: string): Promise<UserDoc | null> => {
+  // Decode and strip '@' from handle
+  let cleanHandle = decodeURIComponent(handle);
+  if (cleanHandle.startsWith('@')) cleanHandle = cleanHandle.slice(1);
+  const usersRef = collection(db, 'users');
+  const q = query(usersRef, where('handle', '==', cleanHandle));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const docSnap = querySnapshot.docs[0];
+    return { uid: docSnap.id, ...docSnap.data() } as UserDoc;
+  }
+  return null;
+};
+
+// Get user by UID
+export const getUser = async (uid: string): Promise<UserDoc | null> => {
+  const userRef = doc(db, 'users', uid);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    return userSnap.data() as UserDoc;
+  }
+  return null;
+};
+
+// Upload COA image and return its download URL
+export async function uploadCOAImage(file: File, objectId: string): Promise<string> {
+  const storageRef = ref(storage, `coa/${objectId}/${Date.now()}_${file.name}`);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
+}
 export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> => {
   try {
     const objectsRef = collection(db, 'objects');
