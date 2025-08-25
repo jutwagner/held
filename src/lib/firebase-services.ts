@@ -30,7 +30,9 @@ import {
   UpdateObjectData,
   CreateRotationData,
   UpdateRotationData,
-  UserDoc
+  UserDoc,
+  Conversation,
+  Message
 } from '@/types';
 import { generateSlug } from './utils';
 
@@ -153,6 +155,7 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
       quarterlyReview: true,
       email: true,
       push: false,
+      dms: true,
     },
     premium: userData.premium || {
       active: false,
@@ -165,6 +168,7 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
     email: userData.email,
     uid: userData.uid,
     isPublicProfile: userData.isPublicProfile ?? false,
+    unreadMessages: 0,
   };
   console.log('[DEBUG] createUser returned object:', userToSave);
   await setDoc(userRef, { ...userToSave, createdAt: now, updatedAt: now });
@@ -641,6 +645,118 @@ export const subscribeToComments = (postId: string, callback: (comments: Array<{
       createdAt: Date;
     }>;
     callback(comments);
+  });
+  
+  return unsubscribe;
+};
+
+// DM Functions
+export const createConversation = async (conversation: Omit<Conversation, 'id' | 'createdAt'>): Promise<Conversation> => {
+  const conversationRef = collection(db, 'conversations');
+  const docRef = await addDoc(conversationRef, {
+    ...conversation,
+    createdAt: serverTimestamp(),
+  });
+  
+  return {
+    id: docRef.id,
+    ...conversation,
+    createdAt: new Date(),
+  };
+};
+
+export const sendMessage = async (message: Omit<Message, 'id'>): Promise<void> => {
+  const messageRef = collection(db, 'messages');
+  await addDoc(messageRef, {
+    ...message,
+    createdAt: serverTimestamp(),
+  });
+  
+  // Update conversation with last message
+  const conversationRef = doc(db, 'conversations', message.conversationId);
+  await updateDoc(conversationRef, {
+    lastMessage: message.text,
+    lastMessageTime: serverTimestamp(),
+    unreadCount: serverTimestamp(), // This will be incremented by a Cloud Function
+  });
+};
+
+export const subscribeToMessages = (conversationId: string, callback: (messages: Message[]) => void): () => void => {
+  const messagesRef = collection(db, 'messages');
+  const q = query(messagesRef, where('conversationId', '==', conversationId), orderBy('createdAt', 'asc'));
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const messages = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    })) as Message[];
+    callback(messages);
+  });
+  
+  return unsubscribe;
+};
+
+export const markConversationAsRead = async (conversationId: string): Promise<void> => {
+  const conversationRef = doc(db, 'conversations', conversationId);
+  await updateDoc(conversationRef, {
+    unreadCount: 0,
+  });
+};
+
+export const getUnreadMessageCount = async (userId: string): Promise<number> => {
+  const conversationsRef = collection(db, 'conversations');
+  const q = query(conversationsRef, where('participants', 'array-contains', userId));
+  const querySnapshot = await getDocs(q);
+  
+  let totalUnread = 0;
+  querySnapshot.docs.forEach(doc => {
+    const data = doc.data();
+    if (data.participants[0] !== userId) { // Only count messages from others
+      totalUnread += data.unreadCount || 0;
+    }
+  });
+  
+  return totalUnread;
+};
+
+export const subscribeToUnreadMessages = (userId: string, callback: (count: number) => void): () => void => {
+  const conversationsRef = collection(db, 'conversations');
+  const q = query(conversationsRef, where('participants', 'array-contains', userId));
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    let totalUnread = 0;
+    querySnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.participants[0] !== userId) { // Only count messages from others
+        totalUnread += data.unreadCount || 0;
+      }
+    });
+    callback(totalUnread);
+  });
+  
+  return unsubscribe;
+};
+
+export const updateUserUnreadCount = async (userId: string, count: number): Promise<void> => {
+  const userRef = doc(db, 'users', userId);
+  await updateDoc(userRef, {
+    unreadMessages: count,
+  });
+};
+
+export const subscribeToConversations = (userId: string, callback: (conversations: Conversation[]) => void): () => void => {
+  const conversationsRef = collection(db, 'conversations');
+  const q = query(conversationsRef, where('participants', 'array-contains', userId), orderBy('lastMessageTime', 'desc'));
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const conversations = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      lastMessageTime: doc.data().lastMessageTime?.toDate() || new Date(),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    })) as Conversation[];
+    callback(conversations);
   });
   
   return unsubscribe;

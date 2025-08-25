@@ -22,11 +22,15 @@ const icons = {
   danger: (
     <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v5" stroke="currentColor" strokeWidth="1.5"/><circle cx="10" cy="14" r="1" fill="currentColor"/></svg>
   ),
+  messages: (
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/></svg>
+  ),
 };
 
 const sections = [
   { key: 'profile', label: 'Profile' },
   { key: 'data', label: 'Data' },
+  { key: 'messages', label: 'Messages' },
   { key: 'premium', label: 'Held+' },
 ];
 

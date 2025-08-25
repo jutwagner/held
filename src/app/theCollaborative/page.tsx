@@ -62,7 +62,6 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
 // 'use client' directive should be at the very top
 
 export default function TheCollaborativePage() {
-  const [tab, setTab] = useState<'registry' | 'rotations'>('registry');
   const [posts, setPosts] = useState<HeldObject[]>([]);
   const [rotations, setRotations] = useState<Rotation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,23 +72,25 @@ export default function TheCollaborativePage() {
 
   useEffect(() => {
     setLoading(true);
-    let unsubscribe: (() => void) | null = null;
-    if (tab === 'registry') {
-      unsubscribe = subscribePublicPosts((publicPosts) => {
-        const collaborativePosts = publicPosts.filter(post => post.shareInCollaborative);
-        setPosts(collaborativePosts);
-        setLoading(false);
-      });
-    } else {
-      unsubscribe = subscribePublicRotations((publicRotations) => {
-        setRotations(publicRotations);
-        setLoading(false);
-      });
-    }
+    
+    // Subscribe to both posts and rotations
+    const unsubscribePosts = subscribePublicPosts((publicPosts) => {
+      const collaborativePosts = publicPosts.filter(post => post.shareInCollaborative);
+      setPosts(collaborativePosts);
+    });
+    
+    const unsubscribeRotations = subscribePublicRotations((publicRotations) => {
+      setRotations(publicRotations);
+    });
+    
+    // Set loading to false after both subscriptions are set up
+    setLoading(false);
+    
     return () => {
-      if (unsubscribe) unsubscribe();
+      unsubscribePosts();
+      unsubscribeRotations();
     };
-  }, [tab]);
+  }, []);
 
   return (
     <>
@@ -101,20 +102,7 @@ export default function TheCollaborativePage() {
           ) : (
             <>
               <h1 className="text-2xl font-serif font-bold mb-2 sm:mb-0">theCollaborative</h1>
-              <div className="flex gap-8 border-b border-gray-200 mt-2">
-                <div
-                  className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'registry' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
-                  onClick={() => setTab('registry')}
-                >
-                  Public Registry
-                </div>
-                <div
-                  className={`pb-2 cursor-pointer font-serif text-base transition-colors ${tab === 'rotations' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
-                  onClick={() => setTab('rotations')}
-                >
-                  Public Rotations
-                </div>
-              </div>
+              <p className="text-gray-600">A chronological feed of all shared registry items and rotations.</p>
             </>
           )}
         </div>
@@ -124,32 +112,38 @@ export default function TheCollaborativePage() {
         <div className="held-container py-8">
           {loading ? (
             <p className="text-center text-gray-500">Loading…</p>
-          ) : tab === 'registry' ? (
-            posts.length === 0 ? (
-              <p className="text-center text-gray-500">No public registry items available.</p>
-            ) : (
-              <div className="space-y-6">
-                {posts.map((post) => (
-                  <div key={post.id} className="bg-white rounded-xl ">
-                    <PostCard post={post} />
-                  </div>
-                ))}
-              </div>
-            )
+          ) : posts.length === 0 && rotations.length === 0 ? (
+            <p className="text-center text-gray-500">No shared content available.</p>
           ) : (
-            rotations.length === 0 ? (
-              <p className="text-center text-gray-500">No public rotations available.</p>
-            ) : (
-              <div className="space-y-6">
-                {rotations.map((rotation) => (
-                  <CollaborativeRotationCard
-                    key={rotation.id}
-                    rotation={rotation}
-                    onDelete={() => setRotations((prev) => prev.filter(r => r.id !== rotation.id))}
-                  />
-                ))}
-              </div>
-            )
+            <div className="space-y-6">
+              {/* Combine posts and rotations into one chronological feed */}
+              {[...posts, ...rotations]
+                .sort((a, b) => {
+                  const aDate = 'createdAt' in a ? (a.createdAt instanceof Date ? a.createdAt.getTime() : 0) : 0;
+                  const bDate = 'createdAt' in b ? (b.createdAt instanceof Date ? b.createdAt.getTime() : 0) : 0;
+                  return bDate - aDate; // Most recent first
+                })
+                .map((item) => {
+                  if ('objectIds' in item) {
+                    // This is a rotation
+                    return (
+                      <div key={item.id} className="bg-white rounded-xl shadow-sm">
+                        <CollaborativeRotationCard
+                          rotation={item}
+                          onDelete={() => setRotations((prev) => prev.filter(r => r.id !== item.id))}
+                        />
+                      </div>
+                    );
+                  } else {
+                    // This is a post
+                    return (
+                      <div key={item.id} className="bg-white rounded-xl shadow-sm">
+                        <PostCard post={item} />
+                      </div>
+                    );
+                  }
+                })}
+            </div>
           )}
         </div>
       </main>

@@ -9,10 +9,23 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { useState, useEffect } from 'react';
+import NotificationBadge from './NotificationBadge';
+import { subscribeToUnreadMessages } from '@/lib/firebase-services';
 
 export default function Navigation() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const unsubscribe = subscribeToUnreadMessages(user.uid, (count) => {
+        setUnreadCount(count);
+      });
+      return unsubscribe;
+    }
+  }, [user?.uid]);
   
   // Hide navigation on passport pages
   if (pathname?.startsWith('/passport/')) {
@@ -101,12 +114,13 @@ export default function Navigation() {
                   ) : (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
                           {user.avatarUrl ? (
                             <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#888" strokeWidth="2"/><path d="M16 18c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4zm0-8a4 4 0 110 8 4 4 0 010-8z" fill="#bbb"/></svg>
                           )}
+                          <NotificationBadge count={unreadCount} />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">

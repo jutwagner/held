@@ -15,6 +15,7 @@ export interface UserDoc {
     quarterlyReview: boolean;
     email: boolean;
     push: boolean;
+    dms: boolean;
   };
   premium: {
     active: boolean;
@@ -31,6 +32,24 @@ export interface UserDoc {
   email?: string;
   uid: string;
   isPublicProfile?: boolean;
+  unreadMessages: number;
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage: string;
+  lastMessageTime: Date;
+  unreadCount: number;
+  createdAt: Date;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  text: string;
+  createdAt: Date;
 }
 export interface User {
   uid: string;

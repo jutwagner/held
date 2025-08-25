@@ -8,6 +8,7 @@ import AppearanceSection from './AppearanceSection';
 import AccountSection from './AccountSection';
 import DataSection from './DataSection';
 import NotificationsSection from './NotificationsSection';
+import MessagesSection from './MessagesSection';
 import PremiumSection from './PremiumSection';
 import DangerZoneSection from './DangerZoneSection';
 import Toast from '@/components/Toast';
@@ -103,32 +104,39 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
           ) : (
             <>
               <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Radley, serif' }}>Settings</h1>
-              <ProfileSection
-                user={user ?? undefined}
-                setUser={setUser}
-                displayName={displayName}
-                setDisplayName={val => { setDisplayName(val); markDirty(); }}
-                handle={handle}
-                setHandle={val => { setHandle(val); markDirty(); }}
-                bio={bio}
-                setBio={val => { setBio(val); markDirty(); }}
-                avatarUrl={avatarUrl}
-                setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }}
-                theme={theme}
-                typeTitleSerif={typeTitleSerif}
-                typeMetaMono={typeMetaMono}
-                density={density}
-                isPublicProfile={isPublicProfile}
-                setIsPublicProfile={val => { setIsPublicProfile(val); markDirty(); }}
-                onAppearanceChange={changes => {
-                  if (changes.theme !== undefined) setTheme(changes.theme as Theme);
-                  if (changes.density !== undefined) setDensity(changes.density as Density);
-                  if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
-                  if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
-                  markDirty();
-                }}
-              />
-              <AccountSection user={user ?? undefined} />
+              {section === 'profile' && (
+                <ProfileSection
+                  user={user ?? undefined}
+                  setUser={setUser}
+                  displayName={displayName}
+                  setDisplayName={val => { setDisplayName(val); markDirty(); }}
+                  handle={handle}
+                  setHandle={val => { setHandle(val); markDirty(); }}
+                  bio={bio}
+                  setBio={val => { setBio(val); markDirty(); }}
+                  avatarUrl={avatarUrl}
+                  setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }}
+                  theme={theme}
+                  typeTitleSerif={typeTitleSerif}
+                  typeMetaMono={typeMetaMono}
+                  density={density}
+                  isPublicProfile={isPublicProfile}
+                  setIsPublicProfile={val => { setIsPublicProfile(val); markDirty(); }}
+                  onAppearanceChange={changes => {
+                    if (changes.theme !== undefined) setTheme(changes.theme as Theme);
+                    if (changes.density !== undefined) setDensity(changes.density as Density);
+                    if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
+                    if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
+                    markDirty();
+                  }}
+                />
+              )}
+              {section === 'account' && <AccountSection user={user ?? undefined} />}
+              {section === 'data' && <DataSection user={user ?? undefined} />}
+              {section === 'messages' && <MessagesSection />}
+              {section === 'notifications' && <NotificationsSection user={user ?? undefined} />}
+              {section === 'premium' && <PremiumSection user={user ?? undefined} />}
+              {section === 'danger' && <DangerZoneSection user={user ?? undefined} />}
             </>
           )}
         </main>
