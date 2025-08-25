@@ -7,14 +7,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
 import { getObjectBySlug } from '@/lib/firebase-services';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { ArrowLeft, Share2, Calendar, DollarSign, Tag } from 'lucide-react';
+import { ArrowLeft, Share2, Calendar, DollarSign, Tag, Award, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function PassportPage() {
   const { user } = useAuth();
   const params = useParams();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageModal, setImageModal] = useState<{ isOpen: boolean; src: string; alt: string }>({
+    isOpen: false,
+    src: '',
+    alt: ''
+  });
 
   const slug = params?.slug ? String(params.slug) : '';
 
@@ -88,26 +94,50 @@ export default function PassportPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+      <header className="border-b-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors shadow-sm">
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to Held</span>
+              <span className="text-sm font-medium">Back to Held</span>
             </Link>
             <button
               onClick={handleShare}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors shadow-sm"
             >
               <Share2 className="h-4 w-4" />
-              <span className="text-sm">Share</span>
+              <span className="text-sm font-medium">Share Passport</span>
             </button>
+          </div>
+          
+          {/* Official Header */}
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-4 mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white text-lg font-bold">H</span>
+              </div>
+              <h1 className="text-3xl font-serif font-bold text-gray-900">Held Passport</h1>
+            </div>
+            <p className="text-sm text-gray-600 font-mono tracking-wide">Official Collection Documentation</p>
+            <div className="mt-4 flex items-center justify-center space-x-6 text-xs text-gray-500">
+              <span>Public Record</span>
+              <span>•</span>
+              <span>Verifiable</span>
+              <span>•</span>
+              <span>Shareable</span>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative">
+          {/* Watermark */}
+          <div className="absolute inset-0 pointer-events-none opacity-5 z-0">
+            <div className="absolute top-8 right-8 text-6xl font-serif font-bold text-gray-400 transform rotate-12">
+              HELD
+            </div>
+          </div>
           {/* Images */}
           <div>
             {object.images.length > 0 ? (
@@ -146,8 +176,89 @@ export default function PassportPage() {
                 {(object.chain || object.certificateOfAuthenticity || object.serialNumber || object.acquisitionDate || object.origin || (object.conditionHistory && object.conditionHistory.length > 0) || object.transferMethod || object.associatedDocuments || object.provenanceNotes) && (
                   <div className="space-y-4 border-t border-gray-200 pt-6">
                     <h3 className="text-lg font-bold mb-2 text-blue-700">Provenance</h3>
-                    {object.chain && <div><span className="font-semibold">Chain of Ownership:</span> <span className="text-gray-700">{typeof object.chain === 'string' ? object.chain : JSON.stringify(object.chain)}</span></div>}
-                    {object.certificateOfAuthenticity && <div><span className="font-semibold">COA:</span> <span className="text-gray-700">{object.certificateOfAuthenticity.startsWith('http') ? <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View Image</a> : object.certificateOfAuthenticity}</span></div>}
+                    {object.chain && Array.isArray(object.chain) && object.chain.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Chain of Ownership:</span>
+                        <div className="mt-3 space-y-4">
+                          {object.chain.map((entry, index) => (
+                            <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-medium text-gray-900">{entry.owner}</h4>
+                                <span className="text-sm text-gray-500 font-mono">
+                                  {entry.acquiredAt ? new Date(entry.acquiredAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  }) : 'Date unknown'}
+                                </span>
+                              </div>
+                              {entry.notes && (
+                                <p className="text-sm text-gray-600 italic">"{entry.notes}"</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {object.certificateOfAuthenticity && (
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
+                            <Award className="h-4 w-4 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Certificate of Authenticity</h4>
+                            <p className="text-sm text-gray-500">Official documentation</p>
+                          </div>
+                        </div>
+                        
+                        {object.certificateOfAuthenticity.startsWith('http') ? (
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <Image
+                                src={object.certificateOfAuthenticity || ''}
+                                alt="Certificate of Authenticity"
+                                width={80}
+                                height={60}
+                                className="rounded border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => setImageModal({
+                                  isOpen: true,
+                                  src: object.certificateOfAuthenticity || '',
+                                  alt: 'Certificate of Authenticity'
+                                })}
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 rounded transition-all flex items-center justify-center">
+                                <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Click to enlarge</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() => setImageModal({
+                                  isOpen: true,
+                                  src: object.certificateOfAuthenticity || '',
+                                  alt: 'Certificate of Authenticity'
+                                })}
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                View Full Size
+                              </button>
+                              <a
+                                href={object.certificateOfAuthenticity}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                Open in New Tab
+                              </a>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-700">{object.certificateOfAuthenticity}</p>
+                        )}
+                      </div>
+                    )}
                     {object.serialNumber && <div><span className="font-semibold">Serial Number:</span> <span className="text-gray-700">{object.serialNumber}</span></div>}
                     {object.acquisitionDate && <div><span className="font-semibold">Acquisition Date:</span> <span className="text-gray-700">{String(object.acquisitionDate)}</span></div>}
                     {object.origin && <div><span className="font-semibold">Origin:</span> <span className="text-gray-700">{object.origin}</span></div>}
@@ -257,17 +368,52 @@ export default function PassportPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 mt-16">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <footer className="border-t border-gray-200 mt-16 bg-gradient-to-r from-gray-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <h3 className="text-lg font-serif font-medium">Held</h3>
-              <span className="text-xs font-mono text-gray-500">/held</span>
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center">
+                <span className="text-white text-lg font-bold">H</span>
+              </div>
+              <div>
+                <h3 className="text-xl font-serif font-bold text-gray-900">Held</h3>
+                <p className="text-xs font-mono text-gray-500">/held</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">The quiet home for the things you hold</p>
+            <p className="text-sm text-gray-600 mb-4">The quiet home for the things you hold</p>
+            <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+              <span>Official Collection Documentation</span>
+              <span>•</span>
+              <span>Generated on {new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</span>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Image Modal */}
+      {imageModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={() => setImageModal({ isOpen: false, src: '', alt: '' })}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+            >
+              <X className="h-8 w-8" />
+            </button>
+            <Image
+              src={imageModal.src}
+              alt={imageModal.alt}
+              width={800}
+              height={600}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

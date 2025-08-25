@@ -12,6 +12,13 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 export default function Navigation() {
   const { user, loading, logout } = useAuth();
+  const pathname = usePathname();
+  
+  // Hide navigation on passport pages
+  if (pathname?.startsWith('/passport/')) {
+    return null;
+  }
+  
   return (
     <>
       <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">

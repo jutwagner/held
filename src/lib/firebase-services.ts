@@ -59,6 +59,9 @@ export const getUser = async (uid: string): Promise<UserDoc | null> => {
   return null;
 };
 
+// Alias for getUser (for consistency)
+export const getUserById = getUser;
+
 // Upload COA image and return its download URL
 export async function uploadCOAImage(file: File, objectId: string): Promise<string> {
   const storageRef = ref(storage, `coa/${objectId}/${Date.now()}_${file.name}`);
@@ -478,3 +481,111 @@ export function subscribePublicPosts(callback: (objects: HeldObject[]) => void):
   });
   return unsubscribe;
 }
+
+// Social Features
+
+// Like/Unlike a post
+export const toggleLike = async (postId: string, userId: string): Promise<void> => {
+  const likeRef = doc(db, 'likes', `${postId}_${userId}`);
+  const likeSnap = await getDoc(likeRef);
+  
+  if (likeSnap.exists()) {
+    // Unlike
+    await deleteDoc(likeRef);
+  } else {
+    // Like
+    await setDoc(likeRef, {
+      postId,
+      userId,
+      createdAt: serverTimestamp(),
+    });
+  }
+};
+
+// Get likes count for a post
+export const getLikesCount = async (postId: string): Promise<number> => {
+  const likesRef = collection(db, 'likes');
+  const q = query(likesRef, where('postId', '==', postId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.size;
+};
+
+// Check if user has liked a post
+export const hasUserLiked = async (postId: string, userId: string): Promise<boolean> => {
+  const likeRef = doc(db, 'likes', `${postId}_${userId}`);
+  const likeSnap = await getDoc(likeRef);
+  return likeSnap.exists();
+};
+
+// Add a comment to a post
+export const addComment = async (postId: string, comment: {
+  userId: string;
+  userDisplayName: string;
+  userHandle: string;
+  text: string;
+}): Promise<void> => {
+  const commentsRef = collection(db, 'comments');
+  await addDoc(commentsRef, {
+    postId,
+    ...comment,
+    createdAt: serverTimestamp(),
+  });
+};
+
+// Get comments for a post
+export const getComments = async (postId: string): Promise<Array<{
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  userHandle: string;
+  text: string;
+  createdAt: Date;
+}>> => {
+  const commentsRef = collection(db, 'comments');
+  const q = query(commentsRef, where('postId', '==', postId), orderBy('createdAt', 'desc'));
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt?.toDate() || new Date(),
+  })) as Array<{
+    id: string;
+    userId: string;
+    userDisplayName: string;
+    userHandle: string;
+    text: string;
+    createdAt: Date;
+  }>;
+};
+
+// Real-time listener for comments
+export const subscribeToComments = (postId: string, callback: (comments: Array<{
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  userHandle: string;
+  text: string;
+  createdAt: Date;
+}>) => void): () => void => {
+  const commentsRef = collection(db, 'comments');
+  const q = query(commentsRef, where('postId', '==', postId), orderBy('createdAt', 'desc'));
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const comments = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    })) as Array<{
+      id: string;
+      userId: string;
+      userDisplayName: string;
+      userHandle: string;
+      text: string;
+      createdAt: Date;
+    }>;
+    callback(comments);
+  });
+  
+  return unsubscribe;
+};

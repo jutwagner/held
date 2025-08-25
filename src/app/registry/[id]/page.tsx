@@ -1,105 +1,25 @@
 'use client';
-// Chain of Ownership entry type
-type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
 
 import { useEffect, useState } from 'react';
-import { useParams, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useParams } from 'next/navigation';
+import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { HeldObject } from '@/types';
-import { updateObject } from '@/lib/firebase-services';
-import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import passportSvg from '@/img/passport.svg';
+import ProvenanceSection from '@/components/ProvenanceSection';
+import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 
 export default function ObjectDetailPage() { 
-  const [dragActive, setDragActive] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string>('');
-  const [imageProgress, setImageProgress] = useState<{ [key: string]: number }>({});
-  const [editing, setEditing] = useState(false);
-  const { user } = useAuth();
-
-  async function handleImageUpload(file: File) {
-    setUploading(true);
-    setUploadError('');
-    setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
-    try {
-      const imageRef = ref(storage, `objects/${user?.uid}/${Date.now()}_${file.name}`);
-      // Use uploadBytesResumable for progress
-      const uploadTask = uploadBytesResumable(imageRef, file);
-      await new Promise<string>((resolve, reject) => {
-        uploadTask.on('state_changed',
-          (snapshot: import('firebase/storage').UploadTaskSnapshot) => {
-            const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            setImageProgress(prev => ({ ...prev, [file.name]: percent }));
-          },
-          (error: Error) => {
-            setUploadError('Image upload failed.');
-            setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
-            reject(error);
-          },
-          async () => {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
-            setImageProgress(prev => ({ ...prev, [file.name]: 100 }));
-            resolve(url);
-          }
-        );
-      });
-    } catch (err) {
-      setUploadError('Image upload failed.');
-    } finally {
-      setUploading(false);
-    }
-  }
   const params = useParams();
-  const pathname = usePathname();
+  const { user } = useAuth();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
-  // Skeleton placeholder for layout shift prevention
-  const Skeleton = () => (
-    <div className="animate-pulse bg-white rounded-xl shadow-lg p-6 min-h-[400px]">
-      <div className="grid grid-cols-1 gap-5">
-        <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
-        <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
-        <div className="h-8 bg-gray-200 rounded w-full mb-4" />
-        <div className="h-40 bg-gray-200 rounded w-full mb-4" />
-        <div className="h-6 bg-gray-200 rounded w-1/4 mb-2" />
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
-        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
-        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
-      </div>
-    </div>
-  );
   const [error, setError] = useState<string>('');
-  interface FormData {
-    title: string;
-    description: string;
-    maker: string;
-    condition: string;
-    visibility: string;
-    tags: string;
-    notes: string;
-    year: number | undefined;
-    shareInCollaborative: boolean;
-    category: string;
-    images: string[];
-    chain?: string;
-    certificateOfAuthenticity?: string;
-    serialNumber?: string;
-    acquisitionDate?: string;
-    origin?: string;
-  conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
-    transferMethod?: string;
-    associatedDocuments?: string;
-    provenanceNotes?: string;
-  }
-
-  const [formData, setFormData] = useState<FormData>({
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     maker: '',
@@ -107,78 +27,36 @@ export default function ObjectDetailPage() {
     visibility: 'Public',
     tags: '',
     notes: '',
-    year: undefined,
+    year: undefined as number | undefined,
     shareInCollaborative: false,
     category: '',
-    images: [],
-  chain: '',
-  certificateOfAuthenticity: '',
-  serialNumber: '',
-  acquisitionDate: '',
-  origin: '',
-  conditionHistory: [],
-  transferMethod: '',
-  associatedDocuments: '',
-  provenanceNotes: '',
+    images: [] as string[],
+    // Provenance fields
+    serialNumber: '',
+    acquisitionDate: '',
+    certificateOfAuthenticity: '',
+    certificateImage: '',
+    certificateUrl: '',
+    origin: '',
+    transferMethod: '',
+    associatedDocuments: [] as string[],
+    provenanceNotes: '',
+    chain: [] as Array<{ owner: string; acquiredAt?: string; notes?: string }>,
   });
+
   const objectId = params?.id as string;
 
   useEffect(() => {
     if (!objectId) return;
     setLoading(true);
-    // Fetch object by ID (one-time fetch)
     import('@/lib/firebase-services').then(mod => mod.getObject(objectId)).then(obj => {
       setObject(obj ?? null);
       setLoading(false);
+    }).catch(err => {
+      setError('Failed to load object');
+      setLoading(false);
     });
   }, [objectId]);
-
-  function handleSave() {
-    async function doSave() {
-      try {
-        setLoading(true);
-        // Convert tags to array
-        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
-        type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
-        let chainArr: ChainEntry[] = [];
-        try {
-          chainArr = formData.chain ? JSON.parse(formData.chain) : [];
-        } catch {
-          chainArr = [];
-        }
-  // Use conditionHistory array directly
-  const conditionHistoryArr = Array.isArray(formData.conditionHistory) ? formData.conditionHistory : [];
-        // Parse associatedDocuments
-        let associatedDocumentsArr: string[] = [];
-        if (formData.associatedDocuments) {
-          associatedDocumentsArr = formData.associatedDocuments.split(',').map(d => d.trim()).filter(Boolean);
-        }
-        await updateObject(objectId, {
-          id: objectId,
-          ...formData,
-          condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
-          tags: tagsArray,
-          chain: chainArr,
-          certificateOfAuthenticity: formData.certificateOfAuthenticity || '',
-          conditionHistory: conditionHistoryArr,
-          associatedDocuments: associatedDocumentsArr,
-        });
-  // Object loading now handled by subscribeObjects
-        setEditing(false);
-      } catch (err) {
-        setError('Failed to save changes.');
-      } finally {
-        setLoading(false);
-      }
-    }
-    doSave();
-  }
-            // ...rest of component logic...
-  useEffect(() => {
-    if (user && objectId) {
-  // Object loading now handled by subscribeObjects
-    }
-  }, [user, objectId]);
 
   useEffect(() => {
     if (object) {
@@ -194,32 +72,77 @@ export default function ObjectDetailPage() {
         shareInCollaborative: object.shareInCollaborative ?? false,
         category: object.category || '',
         images: object.images || [],
-        chain: object.chain ? JSON.stringify(object.chain, null, 2) : '',
+        // Provenance fields
+        serialNumber: object.serialNumber || '',
+        acquisitionDate: typeof object.acquisitionDate === 'string' ? object.acquisitionDate : '',
         certificateOfAuthenticity: object.certificateOfAuthenticity || '',
+        certificateImage: '',
+        certificateUrl: '',
+        origin: object.origin || '',
+        transferMethod: object.transferMethod || '',
+        associatedDocuments: Array.isArray(object.associatedDocuments) ? object.associatedDocuments : [],
+        provenanceNotes: object.provenanceNotes || '',
+        chain: Array.isArray(object.chain) ? object.chain.map(entry => ({
+          owner: entry.owner,
+          acquiredAt: typeof entry.acquiredAt === 'string' ? entry.acquiredAt : entry.acquiredAt?.toISOString() || '',
+          notes: entry.notes
+        })) : [],
       });
     }
   }, [object]);
 
+  function handleSave() {
+    async function doSave() {
+      try {
+        setLoading(true);
+        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+        await import('@/lib/firebase-services').then(mod => mod.updateObject(objectId, {
+          id: objectId,
+          title: formData.title,
+          maker: formData.maker,
+          condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
+          isPublic: formData.visibility === 'Public',
+          tags: tagsArray,
+          notes: formData.notes,
+          year: formData.year,
+          shareInCollaborative: formData.shareInCollaborative,
+          images: formData.images,
+          // Provenance fields
+          serialNumber: formData.serialNumber,
+          acquisitionDate: formData.acquisitionDate,
+          certificateOfAuthenticity: formData.certificateOfAuthenticity,
+          origin: formData.origin,
+          transferMethod: formData.transferMethod,
+          associatedDocuments: formData.associatedDocuments,
+          provenanceNotes: formData.provenanceNotes,
+          chain: formData.chain,
+        }));
+        setEditing(false);
+      } catch (err) {
+        setError('Failed to save changes.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    doSave();
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <div className="held-container py-24">
-          <Skeleton />
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-8 py-16">
+          <div className="text-center">Loading...</div>
         </div>
       </div>
     );
   }
+
   if (error || !object) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <div className="held-container py-24">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-8 py-16">
           <div className="text-center">
-            <p className="text-red-600 font-mono">{error || 'Object not found'}</p>
-            {error && (
-              <pre className="bg-gray-100 text-xs text-red-700 p-2 rounded mt-2 overflow-x-auto">
-                {error}
-              </pre>
-            )}
+            <p className="text-red-600">{error || 'Object not found'}</p>
             <Button asChild className="mt-4">
               <Link href="/registry">Back to Registry</Link>
             </Button>
@@ -230,581 +153,396 @@ export default function ObjectDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="held-container py-8">
-        {/* Header - always show title, never double header */}
-        {!(pathname && pathname.includes('/edit')) && (
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex flex-col items-start w-full">
-              <Button variant="ghost" asChild className="mb-2 pl-2 -ml-2">
-                <Link href="/registry" className="flex items-center">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Registry
-                </Link>
-              </Button>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1 font-serif">
-                {formData.title || <span className="text-gray-400 italic">Untitled Object</span>}
-              </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-8 py-16">
+        {/* Header */}
+        <div className="mb-20">
+          <div className="flex items-center justify-between mb-12">
+            <Button variant="ghost" asChild className="p-0 h-auto text-black hover:bg-transparent">
+              <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
+                <ArrowLeft className="h-4 w-4" />
+                Registry
+              </Link>
+            </Button>
+            
+            <div className="text-xs font-medium tracking-widest uppercase text-gray-400">
+              Collection Entry
             </div>
-            <div className="flex items-center space-x-2">
-              {object && user && object.userId === user.uid && (
-                <>
-                    {object && object.isPublic && (
-                      <Button variant="outline" asChild>
-                        <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
-                          <Image src={passportSvg} alt="Passport" width={20} height={20} className="mr-2" />
-                          Passport
-                        </Link>
-                      </Button>
-                    )}
-                    <Button variant="outline" onClick={() => setEditing(!editing)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      {editing ? 'Cancel' : 'Edit'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={async () => {
-                        setLoading(true);
-                        setError('');
-                        try {
-                          await import('@/lib/firebase-services').then(mod => mod.deleteObject(objectId));
-                          window.location.href = '/registry';
-                        } catch (err) {
-                          setError('Failed to delete object.');
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
-                </>
-              )}
-  {/* ...existing code... */}
-            </div>
-          </div>
-        )}
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Images */}
-          <div>
-            <h2 className="text-lg font-medium mb-4">Images</h2>
-            {editing ? (
-              <div className="space-y-4">
-                {formData.images.length > 0 ? (
-                  formData.images.map((image, index) => (
-                    <div key={index} className="relative w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center group" style={{ minHeight: 260 }}>
-                      <Image
-                        src={image}
-                        alt={`Image ${index + 1}`}
-                        width={800}
-                        height={1200}
-                        className="w-full rounded-xl transition-transform duration-200 group-hover:scale-105"
-                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
-                      />
-                      <button
-                        type="button"
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 opacity-80 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== index) })}
-                        aria-label="Delete image"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-500">No images</p>
-                  </div>
+            
+            {/* Action Buttons */}
+            {object && user && object.userId === user.uid && (
+              <div className="flex items-center space-x-4">
+                {object.isPublic && (
+                  <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide">
+                    <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
+                      <Image src={passportSvg} alt="Passport" width={16} height={16} className="mr-2" />
+                      View Passport
+                    </Link>
+                  </Button>
                 )}
-                <div
-                  className={`mt-4 border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
-                  onDragOver={e => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
-                  onDrop={e => {
-                    e.preventDefault(); setDragActive(false);
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) handleImageUpload(file);
-                  }}
-                  onClick={() => document.getElementById('image-upload-input')?.click()}
-                  tabIndex={0}
-                  role="button"
-                  aria-label="Upload image"
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditing(!editing)}
+                  className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide"
                 >
-                  <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" className="mb-2 text-blue-500" viewBox="0 0 24 24"><path d="M12 16v-8m0 0l-4 4m4-4l4 4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                  <span className="text-gray-700 font-medium">Drag & drop or click to upload</span>
-                  <input
-                    id="image-upload-input"
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImageUpload(file);
-                    }}
-                  />
-                  {uploading && <p className="text-blue-600 mt-2">Uploading...</p>}
-                  {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
-                </div>
+                  <Edit className="h-4 w-4 mr-2" />
+                  {editing ? 'Cancel' : 'Edit Entry'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-none font-light tracking-wide"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remove
+                </Button>
               </div>
-            ) : (
-              object && object.images.length > 0 ? (
-                <div className="space-y-4">
-                  {object.images.map((image, index) => (
-                    <div key={index} className="w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 260 }}>
-                      <Image
-                        src={image}
-                        alt={`${object.title} - Image ${index + 1}`}
-                        width={800}
-                        height={1200}
-                        className="w-full rounded-xl"
-                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">No images</p>
-                </div>
-              )
             )}
           </div>
-          {/* Details */}
-          <div className="space-y-6">
-            {editing ? (
-              <>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Description</label>
-                <textarea
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Description"
-                  rows={3}
-                />
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Maker</label>
-                <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.maker}
-                  onChange={e => setFormData({ ...formData, maker: e.target.value })}
-                  placeholder="Maker"
-                />
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Condition</label>
-                <select
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.condition}
-                  onChange={e => setFormData({ ...formData, condition: e.target.value })}
-                >
-                  <option value="">Condition</option>
-                  <option value="excellent">Excellent</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                  <option value="poor">Poor</option>
-                </select>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Category</label>
-                <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="Category"
-                />
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Tags</label>
-                <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.tags}
-                  onChange={e => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="Comma separated tags"
-                />
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Notes</label>
-                <textarea
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  value={formData.notes}
-                  onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Notes"
-                  rows={2}
-                />
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Year</label>
-                <input
-                  className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  type="number"
-                  value={formData.year || ''}
-                  onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
-                  placeholder="Year"
-                />
-                <div className="flex items-center space-x-4 mt-2 mb-2">
-                  <label className="flex items-center cursor-pointer">
-                    <span className="mr-2 text-sm text-gray-700">Public</span>
-                    <input
-                      type="checkbox"
-                      checked={formData.visibility === 'Public'}
-                      onChange={e => setFormData({ ...formData, visibility: e.target.checked ? 'Public' : 'Private' })}
-                      className="sr-only"
+          
+          <div className="mb-16">
+            <h1 className="text-6xl md:text-7xl font-light text-black mb-6 tracking-tighter leading-none">
+              {object.title || <span className="text-gray-400">Untitled</span>}
+            </h1>
+            <div className="w-16 h-0.5 bg-black mb-8"></div>
+            {object.maker && (
+              <p className="text-lg text-gray-600 font-light tracking-wide">
+                {object.maker}
+                {object.year && `, ${object.year}`}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {/* Main Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-20">
+          {/* Visual Documentation */}
+          <div>
+            <div className="mb-12">
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                Visual Documentation
+              </div>
+              <div className="w-12 h-0.5 bg-black"></div>
+            </div>
+            
+            {object.images && object.images.length > 0 ? (
+              <div className="space-y-8">
+                {object.images.map((image, index) => (
+                  <div key={index} className="w-full bg-white border border-gray-200 overflow-hidden group">
+                    <Image
+                      src={image}
+                      alt={`${object.title} - Image ${index + 1}`}
+                      width={800}
+                      height={1200}
+                      className="w-full transition-transform duration-300 group-hover:scale-[1.02]"
+                      style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%' }}
                     />
-                    <span className={`relative inline-block w-10 h-6 rounded-full transition bg-gray-300 ${formData.visibility === 'Public' ? 'bg-blue-500' : ''}`}>
-                      <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${formData.visibility === 'Public' ? 'translate-x-4' : ''}`}></span>
-                    </span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <span className="mr-2 text-sm text-gray-700">Share in Collaborative</span>
-                    <input
-                      type="checkbox"
-                      checked={formData.shareInCollaborative}
-                      onChange={e => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
-                      className="sr-only"
-                    />
-                    <span className={`relative inline-block w-10 h-6 rounded-full transition bg-gray-300 ${formData.shareInCollaborative ? 'bg-blue-500' : ''}`}>
-                      <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${formData.shareInCollaborative ? 'translate-x-4' : ''}`}></span>
-                    </span>
-                  </label>
-                </div>
-                {/* Provenance (Held+) - All fields */}
-                {user?.premium?.active && typeof user?.premium?.plan === 'string' && user.premium.plan.includes('plus') && (
-                  <>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Chain of Ownership</label>
-                    <div className="space-y-2 mb-2">
-                      {(() => {
-                        let chainArr: ChainEntry[] = [];
-                        if (Array.isArray(formData.chain)) {
-                          chainArr = formData.chain;
-                        } else if (typeof formData.chain === 'string' && formData.chain.trim()) {
-                          try {
-                            chainArr = JSON.parse(formData.chain);
-                          } catch {}
-                        }
-                        return chainArr.map((entry: { owner: string; acquiredAt?: string; notes?: string }, idx: number) => (
-                        <div key={idx} className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.owner || ''}
-                            placeholder="Owner"
-                            onChange={e => {
-                              const updated = chainArr.map((x, i) => i === idx ? { ...x, owner: e.target.value } : x);
-                              setFormData({ ...formData, chain: JSON.stringify(updated) });
-                            }}
-                          />
-                          <input
-                            type="date"
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.acquiredAt || ''}
-                            onChange={e => {
-                              const updated = chainArr.map((x, i) => i === idx ? { ...x, acquiredAt: e.target.value } : x);
-                              setFormData({ ...formData, chain: JSON.stringify(updated) });
-                            }}
-                          />
-                          <input
-                            type="text"
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.notes || ''}
-                            placeholder="Notes"
-                            onChange={e => {
-                              const updated = chainArr.map((x, i) => i === idx ? { ...x, notes: e.target.value } : x);
-                              setFormData({ ...formData, chain: JSON.stringify(updated) });
-                            }}
-                          />
-                          <button
-                            type="button"
-                            className="text-red-500 px-2"
-                            onClick={() => {
-                              const updated = chainArr.filter((_, i) => i !== idx);
-                              setFormData({ ...formData, chain: JSON.stringify(updated) });
-                            }}
-                            aria-label="Remove entry"
-                          >
-                            &minus;
-                          </button>
-                        </div>
-                        ));
-                      })()}
-                      <button
-                        type="button"
-                        className="text-blue-600 text-xs px-2 py-1 border border-blue-200 rounded"
-                        onClick={() => {
-                          let chainArr: ChainEntry[] = [];
-                          if (Array.isArray(formData.chain)) {
-                            chainArr = formData.chain;
-                          } else if (typeof formData.chain === 'string' && formData.chain.trim()) {
-                            try {
-                              chainArr = JSON.parse(formData.chain);
-                            } catch {}
-                          }
-                          setFormData({
-                            ...formData,
-                            chain: JSON.stringify([
-                              ...chainArr,
-                              { owner: '', acquiredAt: '', notes: '' }
-                            ])
-                          });
-                        }}
-                      >
-                        + Add Chain Entry
-                      </button>
-                    </div>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Certificate of Authenticity (COA)</label>
-                    <div className="mb-2">
-                      {formData.certificateOfAuthenticity && typeof formData.certificateOfAuthenticity === 'string' && formData.certificateOfAuthenticity.startsWith('http') && (
-                        <Image src={formData.certificateOfAuthenticity} alt="COA" width={128} height={64} className="max-h-32 mb-2 rounded border" />
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="block text-xs mb-2"
-                        onChange={async e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            const imageRef = ref(storage, `coa/${objectId || 'new'}-${Date.now()}_${file.name}`);
-                            const uploadTask = uploadBytesResumable(imageRef, file);
-                            await new Promise<string>((resolve, reject) => {
-                              uploadTask.on('state_changed',
-                                undefined,
-                                (error) => reject(error),
-                                async () => {
-                                  const url = await getDownloadURL(uploadTask.snapshot.ref);
-                                  setFormData({ ...formData, certificateOfAuthenticity: url });
-                                  resolve(url);
-                                }
-                              );
-                            });
-                          } catch (err) {
-                            alert('Image upload failed');
-                          }
-                        }}
-                      />
-                      <input
-                        type="text"
-                        className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={typeof formData.certificateOfAuthenticity === 'string' && !formData.certificateOfAuthenticity.startsWith('http') ? formData.certificateOfAuthenticity : ''}
-                        onChange={e => setFormData({ ...formData, certificateOfAuthenticity: e.target.value })}
-                        placeholder="COA description (optional)"
-                      />
-                    </div>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Serial Number</label>
-                    <input
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.serialNumber || ''}
-                      onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
-                      placeholder='Serial Number'
-                    />
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Acquisition Date</label>
-                    <input
-                      type="date"
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.acquisitionDate || ''}
-                      onChange={e => setFormData({ ...formData, acquisitionDate: e.target.value })}
-                    />
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Origin</label>
-                    <input
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.origin || ''}
-                      onChange={e => setFormData({ ...formData, origin: e.target.value })}
-                      placeholder='Origin'
-                    />
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Condition History</label>
-                    <div className="space-y-2 mb-2">
-                      {(Array.isArray(formData.conditionHistory) ? formData.conditionHistory : []).map((entry: { date: string; condition: string; notes?: string }, idx: number) => (
-                        <div key={idx} className="flex gap-2 items-center">
-                          <input
-                            type="date"
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.date || ''}
-                            onChange={e => {
-                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
-                              updated[idx].date = e.target.value;
-                              setFormData({ ...formData, conditionHistory: updated });
-                            }}
-                          />
-                          <select
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.condition || ''}
-                            onChange={e => {
-                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
-                              updated[idx].condition = e.target.value;
-                              setFormData({ ...formData, conditionHistory: updated });
-                            }}
-                          >
-                            <option value="excellent">Excellent</option>
-                            <option value="good">Good</option>
-                            <option value="fair">Fair</option>
-                            <option value="poor">Poor</option>
-                          </select>
-                          <input
-                            type="text"
-                            className="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-xs"
-                            value={entry.notes || ''}
-                            placeholder="Notes"
-                            onChange={e => {
-                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
-                              updated[idx].notes = e.target.value;
-                              setFormData({ ...formData, conditionHistory: updated });
-                            }}
-                          />
-                          <button
-                            type="button"
-                            className="text-red-500 px-2"
-                            onClick={() => {
-                              const updated = Array.isArray(formData.conditionHistory) ? [...formData.conditionHistory] : [];
-                              updated.splice(idx, 1);
-                              setFormData({ ...formData, conditionHistory: updated });
-                            }}
-                            aria-label="Remove entry"
-                          >
-                            &minus;
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        className="text-blue-600 text-xs px-2 py-1 border border-blue-200 rounded"
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            conditionHistory: [
-                              ...(Array.isArray(formData.conditionHistory) ? formData.conditionHistory : []),
-                              { date: '', condition: '', notes: '' }
-                            ]
-                          });
-                        }}
-                      >
-                        + Add Condition Entry
-                      </button>
-                    </div>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Transfer Method</label>
-                    <input
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.transferMethod || ''}
-                      onChange={e => setFormData({ ...formData, transferMethod: e.target.value })}
-                      placeholder='Transfer Method'
-                    />
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Associated Documents (comma separated URLs)</label>
-                    <input
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.associatedDocuments || ''}
-                      onChange={e => setFormData({ ...formData, associatedDocuments: e.target.value })}
-                      placeholder='https://example.com/doc1, https://example.com/doc2'
-                    />
-                    <label className="block text-sm font-semibold mb-1 text-gray-700">Provenance Notes</label>
-                    <textarea
-                      className="bg-gray-50 border border-gray-300 rounded px-3 py-2 w-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                      value={formData.provenanceNotes || ''}
-                      onChange={e => setFormData({ ...formData, provenanceNotes: e.target.value })}
-                      placeholder='Provenance notes'
-                      rows={2}
-                    />
-                  </>
-                )}
-              </>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <>
-                <p className="text-gray-600">{object?.description || <span className="text-gray-400 italic">Description</span>}</p>
-                <p className="text-gray-600">Maker: {object?.maker || <span className="text-gray-400 italic">Maker</span>}</p>
-                <p className="text-gray-600">Condition: {object?.condition || <span className="text-gray-400 italic">Condition</span>}</p>
-                <p className="text-gray-600">Category: {object?.category || <span className="text-gray-400 italic">Category</span>}</p>
-                <p className="flex items-center text-gray-600">
-                  <span className="flex items-center mr-4">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1 text-blue-500" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.05 12a9.94 9.94 0 0 1 19.9 0 9.94 9.94 0 0 1-19.9 0z"/></svg>
-                    {object?.isPublic ? (
-                      <span className="text-green-600">Public</span>
-                    ) : (
-                      <span className="text-red-600">Private</span>
-                    )}
-                  </span>
-                  <span className="flex items-center">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1 text-blue-500" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.05 12a9.94 9.94 0 0 1 19.9 0 9.94 9.94 0 0 1-19.9 0z"/></svg>
-                    {object?.shareInCollaborative ? (
-                      <span className="text-green-600">Shared in Collaborative</span>
-                    ) : (
-                      <span className="text-gray-500">Not Shared</span>
-                    )}
-                  </span>
-                </p>
-                {Array.isArray(object?.tags) && object.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {object.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded"
-                      >
+              <div className="aspect-square bg-white border border-gray-200 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    No Images
+                  </div>
+                  <p className="text-gray-500 font-light">Visual documentation not available</p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Specifications */}
+          <div className="space-y-12">
+            <div className="mb-12">
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                Specifications
+              </div>
+              <div className="w-12 h-0.5 bg-black"></div>
+            </div>
+            
+            <div className="space-y-8">
+              {object.description && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Description
+                  </div>
+                  <p className="text-lg text-black font-light leading-relaxed">{object.description}</p>
+                </div>
+              )}
+              
+              {object.maker && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Manufacturer
+                  </div>
+                  <p className="text-lg text-black font-light">{object.maker}</p>
+                </div>
+              )}
+              
+              {object.condition && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Physical Condition
+                  </div>
+                  <p className="text-lg text-black font-light capitalize">{object.condition}</p>
+                </div>
+              )}
+              
+              {object.category && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Classification
+                  </div>
+                  <p className="text-lg text-black font-light">{object.category}</p>
+                </div>
+              )}
+              
+              {object.year && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Year of Production
+                  </div>
+                  <p className="text-lg text-black font-light">{object.year}</p>
+                </div>
+              )}
+              
+              {object.tags && object.tags.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Keywords
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {object.tags.map((tag, index) => (
+                      <span key={index} className="inline-block bg-gray-100 text-black px-3 py-1 text-sm border border-gray-200">
                         {tag}
                       </span>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-gray-500">Tags</p>
-                )}
-                <p className="text-gray-600">Notes: {object?.notes || <span className="text-gray-400 italic">Notes</span>}</p>
-                <p className="text-gray-600">Year: {object?.year || <span className="text-gray-400 italic">Year</span>}</p>
-                <p className="text-gray-600">
-                  In theCollaborative: {object?.shareInCollaborative ? 'Yes' : 'No'}
-                </p>
-                {/* Provenance (Held+) */}
-                {user?.premium?.active && user?.premium?.plan === 'plus' && (
-                  <>
-                    {/* Chain of Ownership (always visible) */}
-                    <div className="mt-2">
-                      <span className="font-semibold text-xs text-blue-700">Chain of Ownership:</span>
-                      {Array.isArray(object?.chain) && object.chain.length > 0 ? (
-                        <ul className="mt-1 mb-2 text-xs text-gray-700">
-                          {object.chain.map((owner, idx) => (
-                            <li key={idx} className="flex gap-2 items-center">
-                              <span className="font-mono">{owner.owner || <span className="text-gray-400 italic">Unknown</span>}</span>
-                              <span className="text-gray-500">{owner.acquiredAt ? `(${owner.acquiredAt})` : ''}</span>
-                              {owner.notes && <span className="text-gray-400">{owner.notes}</span>}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <span className="text-gray-400 italic ml-2">No chain of ownership</span>
-                      )}
-                    </div>
-                    {/* Certificate of Authenticity (always visible) */}
-                    <div className="mt-2">
-                      <span className="font-semibold text-xs text-blue-700">COA:</span>
-                      {object?.certificateOfAuthenticity ? (
-                        typeof object.certificateOfAuthenticity === 'string' && object.certificateOfAuthenticity.startsWith('http') ? (
-                          <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-2">View Certificate</a>
-                        ) : typeof object.certificateOfAuthenticity === 'string' ? (
-                          <span className="ml-2">{object.certificateOfAuthenticity}</span>
-                        ) : (
-                          <span className="ml-2">[Image uploaded]</span>
-                        )
-                      ) : (
-                        <span className="text-gray-400 italic ml-2">No certificate</span>
-                      )}
-                    </div>
-                  </>
-                )}
-                <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono">
-                  <p>Created: {object ? new Date(object.createdAt).toLocaleDateString() : ''}</p>
-                  <p>Updated: {object ? new Date(object.updatedAt).toLocaleDateString() : ''}</p>
-                  <p>ID: {object?.id}</p>
-                  <p>Slug: {object?.slug}</p>
                 </div>
-              </>
-            )}
+              )}
+              
+              {object.notes && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                    Additional Notes
+                  </div>
+                  <p className="text-lg text-black font-light leading-relaxed">{object.notes}</p>
+                </div>
+              )}
+              
+              <div className="pt-8 border-t border-gray-100">
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                  Visibility
+                </div>
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${object.isPublic ? 'bg-black' : 'bg-gray-300'}`}></div>
+                    <span className="text-black font-light">
+                      {object.isPublic ? 'Public' : 'Private'}
+                    </span>
+                  </div>
+                  
+                  {object.shareInCollaborative && (
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full bg-black"></div>
+                      <span className="text-black font-light">Collaborative</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        {/* Inline Editing Section */}
+        
+        {/* Edit Form */}
         {editing && (
-          <>
-            {/* Debug Panel for user and premium status */}
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded text-xs text-gray-700">
-              <strong>Debug: Current User</strong>
-              <pre className="overflow-x-auto whitespace-pre-wrap">{JSON.stringify(user, null, 2)}</pre>
-              <div>Premium active: <span className="font-bold">{user?.premium?.active ? 'true' : 'false'}</span></div>
-              <div>Premium plan: <span className="font-bold">{user?.premium?.plan || 'none'}</span></div>
+          <div className="mt-20 bg-white border border-gray-200 p-16">
+            <div className="mb-12">
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                Edit Entry
+              </div>
+              <h2 className="text-4xl font-light text-black tracking-tight">Modify Details</h2>
             </div>
-            <div className="flex justify-end mt-4">
-              <button
+            
+            <div className="space-y-12">
+              {/* Title */}
+              <div>
+                <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                  Object Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                  placeholder="Eames Lounge Chair and Ottoman"
+                />
+              </div>
+              
+              {/* Maker and Year */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                <div>
+                  <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                    Manufacturer
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.maker}
+                    onChange={(e) => setFormData({...formData, maker: e.target.value})}
+                    className="w-full text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                    placeholder="Herman Miller, Apple, Rolex"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.year || ''}
+                    onChange={(e) => setFormData({...formData, year: e.target.value ? parseInt(e.target.value) : undefined})}
+                    className="w-full text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                    placeholder="1956"
+                  />
+                </div>
+              </div>
+              
+              {/* Condition */}
+              <div>
+                <label className="text-xs font-medium text-black mb-6 uppercase tracking-widest">
+                  Physical Condition
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {['excellent', 'good', 'fair', 'poor'].map((condition) => (
+                    <button
+                      key={condition}
+                      type="button"
+                      onClick={() => setFormData({...formData, condition})}
+                      className={`py-4 px-6 border text-left text-sm font-light tracking-wide ${
+                        formData.condition === condition
+                          ? 'border-black bg-black text-white'
+                          : 'bg-white text-black hover:border-gray-400'
+                      }`}
+                    >
+                      {condition.charAt(0).toUpperCase() + condition.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Tags */}
+              <div>
+                <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                  Keywords
+                </label>
+                <div className="flex gap-4">
+                  <input
+                    type="text"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                    className="flex-1 text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                    placeholder="vintage, rare, handmade"
+                  />
+                </div>
+              </div>
+              
+              {/* Notes */}
+              <div>
+                <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  rows={4}
+                  className="w-full resize-none border border-gray-200 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 text-base leading-relaxed"
+                  placeholder="Additional details, provenance notes..."
+                />
+              </div>
+              
+              {/* Visibility */}
+              <div className="space-y-6 pt-8 border-t border-gray-100">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.visibility === 'Public'}
+                    onChange={(e) => setFormData({...formData, visibility: e.target.checked ? 'Public' : 'Private'})}
+                    className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                  />
+                  <label className="ml-3 text-black font-light text-sm tracking-wide">
+                    Public Visibility
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.shareInCollaborative}
+                    onChange={(e) => setFormData({...formData, shareInCollaborative: e.target.checked})}
+                    className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                  />
+                  <label className="ml-3 text-black font-light text-sm tracking-wide">
+                    Collaborative Sharing
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {/* Save Button */}
+            <div className="mt-16 pt-8 border-t border-gray-100 flex justify-end">
+              <Button
                 onClick={handleSave}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="bg-black hover:bg-gray-800 text-white font-light tracking-wide px-12 py-3 rounded-none"
               >
-                Save
-              </button>
+                Save Changes
+              </Button>
             </div>
-          </>
+          </div>
+        )}
+        
+        {/* Provenance Section */}
+        {isHeldPlus(user) && (
+          <div className="mt-20">
+            <ProvenanceSection 
+              data={{
+                serialNumber: formData.serialNumber,
+                acquisitionDate: formData.acquisitionDate,
+                certificateOfAuthenticity: formData.certificateOfAuthenticity,
+                certificateImage: formData.certificateImage,
+                certificateUrl: formData.certificateUrl,
+                origin: formData.origin,
+                transferMethod: formData.transferMethod,
+                associatedDocuments: formData.associatedDocuments,
+                provenanceNotes: formData.provenanceNotes,
+                chain: formData.chain,
+              }}
+              onChange={(provenanceData) => {
+                setFormData(prev => ({
+                  ...prev,
+                  ...provenanceData,
+                  associatedDocuments: Array.isArray(provenanceData.associatedDocuments) 
+                    ? provenanceData.associatedDocuments
+                    : []
+                }));
+              }}
+            />
+            
+            {/* Provenance Save Button */}
+            <div className="mt-8 flex justify-end">
+              <Button
+                onClick={handleSave}
+                className="bg-black hover:bg-gray-800 text-white font-light tracking-wide px-8 py-3 rounded-none"
+              >
+                Save Provenance
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Provenance Upsell for non-premium users */}
+        {!isHeldPlus(user) && (
+          <div className="mt-20">
+            <ProvenanceUpsell />
+          </div>
         )}
       </div>
     </div>

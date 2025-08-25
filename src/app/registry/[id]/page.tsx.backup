@@ -1,0 +1,755 @@
+'use client';
+// Chain of Ownership entry type
+type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
+
+import { useEffect, useState } from 'react';
+import { useParams, usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { HeldObject } from '@/types';
+import { updateObject } from '@/lib/firebase-services';
+import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
+import passportSvg from '@/img/passport.svg';
+import ProvenanceSection from '@/components/ProvenanceSection';
+import ProvenanceUpsell from '@/components/ProvenanceUpsell';
+
+export default function ObjectDetailPage() { 
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
+  const [imageProgress, setImageProgress] = useState<{ [key: string]: number }>({});
+  const [editing, setEditing] = useState(false);
+  const { user } = useAuth();
+
+  async function handleImageUpload(file: File) {
+    setUploading(true);
+    setUploadError('');
+    setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
+    try {
+      const imageRef = ref(storage, `objects/${user?.uid}/${Date.now()}_${file.name}`);
+      // Use uploadBytesResumable for progress
+      const uploadTask = uploadBytesResumable(imageRef, file);
+      await new Promise<string>((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snapshot: import('firebase/storage').UploadTaskSnapshot) => {
+            const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            setImageProgress(prev => ({ ...prev, [file.name]: percent }));
+          },
+          (error: Error) => {
+            setUploadError('Image upload failed.');
+            setImageProgress(prev => ({ ...prev, [file.name]: 0 }));
+            reject(error);
+          },
+          async () => {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
+            setImageProgress(prev => ({ ...prev, [file.name]: 100 }));
+            resolve(url);
+          }
+        );
+      });
+    } catch (err) {
+      setUploadError('Image upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  }
+  const params = useParams();
+  const pathname = usePathname();
+  const [object, setObject] = useState<HeldObject | null>(null);
+  const [loading, setLoading] = useState(true);
+  // Skeleton placeholder for layout shift prevention
+  const Skeleton = () => (
+    <div className="animate-pulse bg-white rounded-xl shadow-lg p-6 min-h-[400px]">
+      <div className="grid grid-cols-1 gap-5">
+        <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-4" />
+        <div className="h-40 bg-gray-200 rounded w-full mb-4" />
+        <div className="h-6 bg-gray-200 rounded w-1/4 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-8 bg-gray-200 rounded w-full mb-2" />
+      </div>
+    </div>
+  );
+  const [error, setError] = useState<string>('');
+  interface FormData {
+    title: string;
+    description: string;
+    maker: string;
+    condition: string;
+    visibility: string;
+    tags: string;
+    notes: string;
+    year: number | undefined;
+    shareInCollaborative: boolean;
+    category: string;
+    images: string[];
+    chain?: string;
+    certificateOfAuthenticity?: string;
+    certificateImage?: string;
+    certificateUrl?: string;
+    serialNumber?: string;
+    acquisitionDate?: string;
+    origin?: string;
+    conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
+    transferMethod?: string;
+    associatedDocuments?: string;
+    provenanceNotes?: string;
+  }
+
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    description: '',
+    maker: '',
+    condition: '',
+    visibility: 'Public',
+    tags: '',
+    notes: '',
+    year: undefined,
+    shareInCollaborative: false,
+    category: '',
+    images: [],
+    chain: '',
+    certificateOfAuthenticity: '',
+    serialNumber: '',
+    acquisitionDate: '',
+    origin: '',
+    conditionHistory: [],
+    transferMethod: '',
+    associatedDocuments: '',
+    provenanceNotes: '',
+  });
+  const objectId = params?.id as string;
+
+  useEffect(() => {
+    if (!objectId) return;
+    setLoading(true);
+    // Fetch object by ID (one-time fetch)
+    import('@/lib/firebase-services').then(mod => mod.getObject(objectId)).then(obj => {
+      setObject(obj ?? null);
+      setLoading(false);
+    });
+  }, [objectId]);
+
+  function handleSave() {
+    async function doSave() {
+      try {
+        setLoading(true);
+        // Convert tags to array
+        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+        type ChainEntry = { owner: string; acquiredAt?: string; notes?: string };
+        let chainArr: ChainEntry[] = [];
+        try {
+          chainArr = formData.chain ? JSON.parse(formData.chain) : [];
+        } catch {
+          chainArr = [];
+        }
+  // Use conditionHistory array directly
+  const conditionHistoryArr = Array.isArray(formData.conditionHistory) ? formData.conditionHistory : [];
+        // Parse associatedDocuments
+        let associatedDocumentsArr: string[] = [];
+        if (formData.associatedDocuments) {
+          associatedDocumentsArr = formData.associatedDocuments.split(',').map(d => d.trim()).filter(Boolean);
+        }
+        await updateObject(objectId, {
+          id: objectId,
+          ...formData,
+          condition: formData.condition as 'excellent' | 'good' | 'fair' | 'poor',
+          tags: tagsArray,
+          chain: chainArr,
+          certificateOfAuthenticity: formData.certificateOfAuthenticity || '',
+          conditionHistory: conditionHistoryArr,
+          associatedDocuments: associatedDocumentsArr,
+        });
+  // Object loading now handled by subscribeObjects
+        setEditing(false);
+      } catch (err) {
+        setError('Failed to save changes.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    doSave();
+  }
+            // ...rest of component logic...
+  useEffect(() => {
+    if (user && objectId) {
+  // Object loading now handled by subscribeObjects
+    }
+  }, [user, objectId]);
+
+  useEffect(() => {
+    if (object) {
+      setFormData({
+        title: object.title,
+        description: object.description || '',
+        maker: object.maker || '',
+        condition: object.condition || 'fair',
+        visibility: object.isPublic ? 'Public' : 'Private',
+        tags: Array.isArray(object.tags) ? object.tags.join(', ') : '',
+        notes: object.notes || '',
+        year: object.year ?? undefined,
+        shareInCollaborative: object.shareInCollaborative ?? false,
+        category: object.category || '',
+        images: object.images || [],
+        chain: object.chain ? JSON.stringify(object.chain, null, 2) : '',
+        certificateOfAuthenticity: object.certificateOfAuthenticity || '',
+      });
+    }
+  }, [object]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <div className="held-container py-24">
+          <Skeleton />
+        </div>
+      </div>
+    );
+  }
+  if (error || !object) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <div className="held-container py-24">
+          <div className="text-center">
+            <p className="text-red-600 font-mono">{error || 'Object not found'}</p>
+            {error && (
+              <pre className="bg-gray-100 text-xs text-red-700 p-2 rounded mt-2 overflow-x-auto">
+                {error}
+              </pre>
+            )}
+            <Button asChild className="mt-4">
+              <Link href="/registry">Back to Registry</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-8 py-16">
+        {/* Header */}
+        {pathname && !pathname.includes('/edit') && (
+          <div className="mb-20">
+            <div className="flex items-center justify-between mb-12">
+              <Button variant="ghost" asChild className="p-0 h-auto text-black hover:bg-transparent">
+                <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
+                  <ArrowLeft className="h-4 w-4" />
+                  Registry
+                </Link>
+              </Button>
+              
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400">
+                Collection Entry
+              </div>
+            </div>
+            
+            <div className="mb-16">
+              <h1 className="text-6xl md:text-7xl font-light text-black mb-6 tracking-tighter leading-none">
+                {formData.title || <span className="text-gray-400">Untitled</span>}
+              </h1>
+              <div className="w-16 h-0.5 bg-black mb-8"></div>
+              {formData.maker && (
+                <p className="text-lg text-gray-600 font-light tracking-wide">
+                  {formData.maker}
+                  {formData.year && `, ${formData.year}`}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center space-x-4">
+              {object && user && object.userId === user.uid && (
+                <>
+                    {object && object.isPublic && (
+                      <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide">
+                        <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
+                          <Image src={passportSvg} alt="Passport" width={16} height={16} className="mr-2" />
+                          View Passport
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="outline" onClick={() => setEditing(!editing)} className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide">
+                      <Edit className="h-4 w-4 mr-2" />
+                      {editing ? 'Cancel' : 'Edit Entry'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-none font-light tracking-wide"
+                      onClick={async () => {
+                        setLoading(true);
+                        setError('');
+                        try {
+                          await import('@/lib/firebase-services').then(mod => mod.deleteObject(objectId));
+                          window.location.href = '/registry';
+                        } catch (err) {
+                          setError('Failed to delete object.');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove
+                    </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Main Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-20">
+          {/* Visual Documentation */}
+          <div>
+            <div className="mb-12">
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                Visual Documentation
+              </div>
+              <div className="w-12 h-0.5 bg-black"></div>
+            </div>
+            {editing ? (
+              <div className="space-y-4">
+                {formData.images.length > 0 ? (
+                  <div className="space-y-8">
+                    {formData.images.map((image, index) => (
+                      <div key={index} className="relative w-full bg-white border border-gray-200 overflow-hidden group">
+                        <Image
+                          src={image}
+                          alt={`Image ${index + 1}`}
+                          width={800}
+                          height={1200}
+                          className="w-full transition-transform duration-300 group-hover:scale-[1.02]"
+                          style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%' }}
+                        />
+                        <button
+                          type="button"
+                          className="absolute top-4 right-4 bg-black text-white w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== index) })}
+                          aria-label="Remove image"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aspect-square bg-white border border-gray-200 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        No Images
+                      </div>
+                      <p className="text-gray-500 font-light">Visual documentation not available</p>
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`mt-8 border border-gray-200 p-12 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 ${dragActive ? 'border-black bg-gray-50' : 'border-gray-200 bg-white'}`}
+                  onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                  onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+                  onDrop={e => {
+                    e.preventDefault(); setDragActive(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                  onClick={() => document.getElementById('image-upload-input')?.click()}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Upload image"
+                >
+                  <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                    Add Image
+                  </div>
+                  <span className="text-gray-600 font-light mb-4">Drag and drop or click to select</span>
+                  <input
+                    id="image-upload-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                  />
+                  {uploading && <p className="text-gray-500 mt-2 font-light">Processing...</p>}
+                  {uploadError && <p className="text-red-600 mt-2 font-light">{uploadError}</p>}
+                </div>
+              </div>
+            ) : (
+              object && object.images.length > 0 ? (
+                <div className="space-y-8">
+                  {object.images.map((image, index) => (
+                    <div key={index} className="w-full bg-white border border-gray-200 overflow-hidden group">
+                      <Image
+                        src={image}
+                        alt={`${object.title} - Image ${index + 1}`}
+                        width={800}
+                        height={1200}
+                        className="w-full transition-transform duration-300 group-hover:scale-[1.02]"
+                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="aspect-square bg-white border border-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                      No Images
+                    </div>
+                    <p className="text-gray-500 font-light">Visual documentation not available</p>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+          {/* Specifications */}
+          <div className="space-y-12">
+            <div className="mb-12">
+              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                Specifications
+              </div>
+              <div className="w-12 h-0.5 bg-black"></div>
+            </div>
+            {editing ? (
+                              <>
+                  <div className="space-y-8">
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Description
+                      </label>
+                      <textarea
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 resize-none"
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Detailed description of the piece"
+                        rows={4}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Manufacturer
+                      </label>
+                      <input
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                        value={formData.maker}
+                        onChange={e => setFormData({ ...formData, maker: e.target.value })}
+                        placeholder="Manufacturer name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Physical Condition
+                      </label>
+                      <select
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent"
+                  value={formData.condition}
+                  onChange={e => setFormData({ ...formData, condition: e.target.value })}
+                >
+                  <option value="">Select condition</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="fair">Fair</option>
+                  <option value="poor">Poor</option>
+                </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Classification
+                      </label>
+                      <input
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                        value={formData.category}
+                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                        placeholder="Object classification"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Keywords
+                      </label>
+                      <input
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                        value={formData.tags}
+                        onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                        placeholder="Comma separated keywords"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Additional Notes
+                      </label>
+                      <textarea
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 resize-none"
+                        value={formData.notes}
+                        onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                        placeholder="Additional details and observations"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                        Year of Production
+                      </label>
+                      <input
+                        className="w-full text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                        type="number"
+                        value={formData.year || ''}
+                        onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+                        placeholder="Production year"
+                      />
+                    </div>
+                    
+                    <div className="space-y-6 pt-8 border-t border-gray-100">
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="checkbox"
+                          id="isPublic"
+                          checked={formData.visibility === 'Public'}
+                          onChange={e => setFormData({ ...formData, visibility: e.target.checked ? 'Public' : 'Private' })}
+                          className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                        />
+                        <label htmlFor="isPublic" className="text-black font-light text-sm tracking-wide">
+                          Public Visibility
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="checkbox"
+                          id="shareInCollaborative"
+                          checked={formData.shareInCollaborative}
+                          onChange={e => setFormData({ ...formData, shareInCollaborative: e.target.checked })}
+                          className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                        />
+                        <label htmlFor="shareInCollaborative" className="text-black font-light text-sm tracking-wide">
+                          Collaborative Sharing
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+                {/* Provenance (Held+) - Premium Experience */}
+                {user?.premium?.active && typeof user?.premium?.plan === 'string' && user.premium.plan.includes('plus') && (
+                  <ProvenanceSection 
+                    data={{
+                      serialNumber: formData.serialNumber,
+                      acquisitionDate: formData.acquisitionDate,
+                      certificateOfAuthenticity: formData.certificateOfAuthenticity,
+                      certificateImage: formData.certificateImage,
+                      certificateUrl: formData.certificateUrl,
+                      origin: formData.origin,
+                      transferMethod: formData.transferMethod,
+                      associatedDocuments: typeof formData.associatedDocuments === 'string' 
+                        ? formData.associatedDocuments.split(',').map(d => d.trim()).filter(Boolean)
+                        : Array.isArray(formData.associatedDocuments) 
+                        ? formData.associatedDocuments 
+                        : [],
+                      provenanceNotes: formData.provenanceNotes,
+                      chain: Array.isArray(formData.chain) 
+                        ? formData.chain 
+                        : typeof formData.chain === 'string' && formData.chain.trim()
+                        ? (() => {
+                            try {
+                              return JSON.parse(formData.chain);
+                            } catch {
+                              return [];
+                            }
+                          })()
+                        : []
+                    }}
+                    onChange={(provenanceData) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        ...provenanceData,
+                        associatedDocuments: Array.isArray(provenanceData.associatedDocuments) 
+                          ? provenanceData.associatedDocuments.join(', ')
+                          : provenanceData.associatedDocuments || '',
+                        chain: provenanceData.chain ? JSON.stringify(provenanceData.chain) : ''
+                      }));
+                    }}
+                  />
+                )}
+                
+                {/* Provenance Upsell for non-premium users */}
+                {!user?.premium?.active && (
+                  <ProvenanceUpsell />
+                )}
+              </>
+            ) : (
+              <>
+                <div className="space-y-8">
+                  {object?.description && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Description
+                      </div>
+                      <p className="text-lg text-black font-light leading-relaxed">{object.description}</p>
+                    </div>
+                  )}
+                  
+                  {object?.maker && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Manufacturer
+                      </div>
+                      <p className="text-lg text-black font-light">{object.maker}</p>
+                    </div>
+                  )}
+                  
+                  {object?.condition && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Physical Condition
+                      </div>
+                      <p className="text-lg text-black font-light capitalize">{object.condition}</p>
+                    </div>
+                  )}
+                  
+                  {object?.category && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Classification
+                      </div>
+                      <p className="text-lg text-black font-light">{object.category}</p>
+                    </div>
+                  )}
+                  
+                  {object?.year && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Year of Production
+                      </div>
+                      <p className="text-lg text-black font-light">{object.year}</p>
+                    </div>
+                  )}
+                  
+                  {object?.tags && object.tags.length > 0 && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Keywords
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {object.tags.map((tag, index) => (
+                          <span key={index} className="inline-block bg-gray-100 text-black px-3 py-1 text-sm border border-gray-200">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {object?.notes && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">
+                        Additional Notes
+                      </div>
+                      <p className="text-lg text-black font-light leading-relaxed">{object.notes}</p>
+                    </div>
+                  )}
+                  
+                  <div className="pt-8 border-t border-gray-100">
+                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
+                      Visibility
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${object?.isPublic ? 'bg-black' : 'bg-gray-300'}`}></div>
+                        <span className="text-black font-light">
+                          {object?.isPublic ? 'Public' : 'Private'}
+                        </span>
+                      </div>
+                      
+                      {object?.shareInCollaborative && (
+                        <div className="flex items-center space-x-3">
+                          <div className="w-3 h-3 rounded-full bg-black"></div>
+                          <span className="text-black font-light">Collaborative</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Provenance Section */}
+        {user?.premium?.active && typeof user?.premium?.plan === 'string' && user.premium.plan.includes('plus') && (
+          <div className="mt-20">
+            <ProvenanceSection 
+              data={{
+                serialNumber: formData.serialNumber,
+                acquisitionDate: formData.acquisitionDate,
+                certificateOfAuthenticity: formData.certificateOfAuthenticity,
+                certificateImage: formData.certificateImage,
+                certificateUrl: formData.certificateUrl,
+                origin: formData.origin,
+                transferMethod: formData.transferMethod,
+                associatedDocuments: typeof formData.associatedDocuments === 'string' 
+                  ? formData.associatedDocuments.split(',').map(d => d.trim()).filter(Boolean)
+                  : Array.isArray(formData.associatedDocuments) 
+                  ? formData.associatedDocuments 
+                  : [],
+                provenanceNotes: formData.provenanceNotes,
+                chain: Array.isArray(formData.chain) 
+                  ? formData.chain 
+                  : typeof formData.chain === 'string' && formData.chain.trim()
+                  ? (() => {
+                      try {
+                        return JSON.parse(formData.chain);
+                      } catch {
+                        return [];
+                      }
+                    })()
+                  : []
+              }}
+              onChange={(provenanceData) => {
+                setFormData(prev => ({
+                  ...prev,
+                  ...provenanceData,
+                  associatedDocuments: Array.isArray(provenanceData.associatedDocuments) 
+                    ? provenanceData.associatedDocuments.join(', ')
+                    : provenanceData.associatedDocuments || '',
+                  chain: provenanceData.chain ? JSON.stringify(provenanceData.chain) : ''
+                }));
+              }}
+            />
+          </div>
+        )}
+        
+        {/* Provenance Upsell for non-premium users */}
+        {!user?.premium?.active && (
+          <div className="mt-20">
+            <ProvenanceUpsell />
+          </div>
+        )}
+        
+        {/* Save Button */}
+        {editing && (
+          <div className="mt-16 flex justify-end">
+            <Button 
+              onClick={handleSave}
+              className="bg-black hover:bg-gray-800 text-white font-light tracking-wide px-12 py-3 rounded-none"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
