@@ -130,7 +130,7 @@ export default function TheCollaborativePage() {
             ) : (
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <div key={post.id} className="bg-white rounded-xl shadow p-4">
+                  <div key={post.id} className="bg-white rounded-xl ">
                     <PostCard post={post} />
                   </div>
                 ))}

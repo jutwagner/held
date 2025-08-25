@@ -21,7 +21,7 @@ import {
   getDownloadURL,
   deleteObject as deleteStorageObject,
 } from 'firebase/storage';
-import { db, storage } from './firebase';
+import { db, storage, auth } from './firebase';
 import {
   HeldObject,
   Rotation,
@@ -486,14 +486,46 @@ export function subscribePublicPosts(callback: (objects: HeldObject[]) => void):
 
 // Like/Unlike a post
 export const toggleLike = async (postId: string, userId: string): Promise<void> => {
+  console.log('[DEBUG] toggleLike called with:', { postId, userId });
+  
+  // Check if Firebase Auth is ready
+  const currentUser = auth.currentUser;
+  console.log('[DEBUG] Firebase Auth current user:', currentUser ? {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    emailVerified: currentUser.emailVerified
+  } : null);
+  
+  if (!currentUser) {
+    throw new Error('Firebase Auth not ready - no current user');
+  }
+  
+  // Wait for Firebase Auth to be fully established
+  await new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        unsubscribe();
+        resolve(user);
+      }
+    });
+    
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      unsubscribe();
+      resolve(null);
+    }, 5000);
+  });
+  
   const likeRef = doc(db, 'likes', `${postId}_${userId}`);
   const likeSnap = await getDoc(likeRef);
   
   if (likeSnap.exists()) {
     // Unlike
+    console.log('[DEBUG] Unlike existing like');
     await deleteDoc(likeRef);
   } else {
     // Like
+    console.log('[DEBUG] Creating new like');
     await setDoc(likeRef, {
       postId,
       userId,
@@ -504,17 +536,40 @@ export const toggleLike = async (postId: string, userId: string): Promise<void> 
 
 // Get likes count for a post
 export const getLikesCount = async (postId: string): Promise<number> => {
+  console.log('[DEBUG] getLikesCount called with:', { postId });
+  
+  // Check if Firebase Auth is ready
+  const currentUser = auth.currentUser;
+  console.log('[DEBUG] Firebase Auth current user for getLikesCount:', currentUser ? {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    emailVerified: currentUser.emailVerified
+  } : null);
+  
   const likesRef = collection(db, 'likes');
   const q = query(likesRef, where('postId', '==', postId));
   const querySnapshot = await getDocs(q);
+  console.log('[DEBUG] getLikesCount result:', { count: querySnapshot.size });
   return querySnapshot.size;
 };
 
 // Check if user has liked a post
 export const hasUserLiked = async (postId: string, userId: string): Promise<boolean> => {
+  console.log('[DEBUG] hasUserLiked called with:', { postId, userId });
+  
+  // Check if Firebase Auth is ready
+  const currentUser = auth.currentUser;
+  console.log('[DEBUG] Firebase Auth current user for hasUserLiked:', currentUser ? {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    emailVerified: currentUser.emailVerified
+  } : null);
+  
   const likeRef = doc(db, 'likes', `${postId}_${userId}`);
   const likeSnap = await getDoc(likeRef);
-  return likeSnap.exists();
+  const exists = likeSnap.exists();
+  console.log('[DEBUG] hasUserLiked result:', { exists });
+  return exists;
 };
 
 // Add a comment to a post
@@ -524,8 +579,9 @@ export const addComment = async (postId: string, comment: {
   userHandle: string;
   text: string;
 }): Promise<void> => {
-  const commentsRef = collection(db, 'comments');
-  await addDoc(commentsRef, {
+  const commentId = `${postId}_${comment.userId}_${Date.now()}`;
+  const commentRef = doc(db, 'comments', commentId);
+  await setDoc(commentRef, {
     postId,
     ...comment,
     createdAt: serverTimestamp(),

@@ -104,6 +104,8 @@ export interface CreateObjectData {
   serialNumber?: string;
   acquisitionDate?: string;
   certificateOfAuthenticity?: string;
+  certificateImage?: string;
+  certificateUrl?: string;
   origin?: string;
   conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
   transferMethod?: string;
@@ -130,6 +132,8 @@ export interface UpdateObjectData {
   serialNumber?: string;
   acquisitionDate?: string;
   certificateOfAuthenticity?: string;
+  certificateImage?: string;
+  certificateUrl?: string;
   origin?: string;
   conditionHistory?: Array<{ date: string; condition: string; notes?: string }>;
   transferMethod?: string;

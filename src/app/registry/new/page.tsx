@@ -25,8 +25,8 @@ export default function NewObjectPage() {
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',
     maker: '',
-    year: null,
-    value: null,
+    year: undefined,
+    value: undefined,
     category: '',
     condition: 'good',
     tags: [],
@@ -381,7 +381,7 @@ export default function NewObjectPage() {
                           <Input
                             type="number"
                             value={formData.year || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value ? parseInt(e.target.value) : null }))}
+                            onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value ? parseInt(e.target.value) : undefined }))}
                             placeholder="1956"
                             className="text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
                           />

@@ -27,6 +27,13 @@ if (missingVars.length > 0) {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Debug Firebase configuration
+console.log('[DEBUG] Firebase config:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  storageBucket: firebaseConfig.storageBucket
+});
+
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
