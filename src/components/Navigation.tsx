@@ -47,7 +47,7 @@ export default function Navigation() {
               <Link href="/registry" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Registry</Link>
               <Link href="/rotations" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Rotations</Link>
               <Link href="/theCollaborative" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">theCollaborative</Link>
-              {user && (
+              {/*user && (
                 <Link href="/settings/messages" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-500">
                     <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
@@ -59,7 +59,7 @@ export default function Navigation() {
                     </span>
                   )}
                 </Link>
-              )}
+              )*/}
             </div>
             {/* User Menu */}
             <div className="flex items-center space-x-4">
