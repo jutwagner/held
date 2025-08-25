@@ -47,15 +47,28 @@ export default function Navigation() {
               <Link href="/registry" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Registry</Link>
               <Link href="/rotations" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Rotations</Link>
               <Link href="/theCollaborative" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">theCollaborative</Link>
+              {user && (
+                <Link href="/settings/messages" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-500">
+                    <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
+                  </svg>
+                  Messages
+                  {unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-medium rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
             </div>
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center gap-4">
                 {/* Add Button placeholder for CLS */}
                 <div style={{ width: 120, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {loading || !user ? (
+                  {loading ? (
                     <div className="bg-gray-200 rounded-lg w-full h-full animate-pulse" />
-                  ) : (
+                  ) : user ? (
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button size="sm" className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
@@ -105,13 +118,17 @@ export default function Navigation() {
                         </div>
                       </DialogContent>
                     </Dialog>
+                  ) : (
+                    <Link href="/auth/signin" className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
+                      Sign In
+                    </Link>
                   )}
                 </div>
                 {/* Avatar placeholder for CLS */}
                 <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {loading || !user ? (
+                  {loading ? (
                     <div className="bg-gray-200 rounded-full w-full h-full animate-pulse" />
-                  ) : (
+                  ) : user ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
@@ -136,6 +153,12 @@ export default function Navigation() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  ) : (
+                    <Link href="/auth/signin" className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-gray-500">
+                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -149,6 +172,18 @@ export default function Navigation() {
 }
 
 export function MobileBottomBar() {
+  const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const unsubscribe = subscribeToUnreadMessages(user.uid, (count) => {
+        setUnreadCount(count);
+      });
+      return unsubscribe;
+    }
+  }, [user?.uid]);
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex justify-around py-2">
       <Link href="/registry" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
@@ -163,6 +198,19 @@ export function MobileBottomBar() {
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
         <span className="text-xs mt-1">theCollaborative</span>
       </Link>
+      {user && (
+        <Link href="/settings/messages" className="flex flex-col items-center text-gray-600 hover:text-blue-600 relative">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mb-1">
+            <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
+          </svg>
+          <span className="text-xs mt-1">Messages</span>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-medium rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
+      )}
     </nav>
   );
 }

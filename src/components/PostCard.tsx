@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Heart, MessageCircle, Send, User, Calendar } from 'lucide-react';
 import { getUser, toggleLike, getLikesCount, hasUserLiked, addComment, getComments, subscribeToComments } from '@/lib/firebase-services';
 import Link from 'next/link';
+import DMModal from './DMModal';
 
 interface PostCardProps {
   post: HeldObject;
@@ -27,6 +28,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     text: string;
     createdAt: Date;
   }>>([]);
+  const [isDMOpen, setIsDMOpen] = useState(false);
 
   // Fetch post user data and social data
   useEffect(() => {
@@ -284,10 +286,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       return;
     }
     
-    // TODO: Implement DM functionality
-    // This could open a modal or navigate to a DM page
+    // Open DM modal
     console.log('Open DM with:', postUser.handle || postUser.displayName || 'Unknown User');
-    alert(`DM functionality coming soon! Would open chat with @${postUser.handle || postUser.displayName || 'Unknown User'}`);
+    setIsDMOpen(true);
   };
 
   return (
@@ -493,6 +494,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
         )}
       </div>
+      
+      {/* DM Modal */}
+      <DMModal
+        isOpen={isDMOpen}
+        onClose={() => setIsDMOpen(false)}
+      />
     </div>
   );
 };
