@@ -10,6 +10,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   serverTimestamp,
   onSnapshot,
   QuerySnapshot,
@@ -72,8 +73,21 @@ export async function uploadCOAImage(file: File, objectId: string): Promise<stri
 }
 export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> => {
   try {
+    console.log('[DEBUG] getObjectBySlug starting with slug:', slug);
     const objectsRef = collection(db, 'objects');
+    console.log('[DEBUG] Collection reference created');
+    
+    // First, let's try to get all objects to see if we can access the collection at all
+    const allObjectsQuery = query(objectsRef, limit(5));
+    const allObjectsSnapshot = await getDocs(allObjectsQuery);
+    console.log('[DEBUG] All objects query result:', { 
+      empty: allObjectsSnapshot.empty, 
+      size: allObjectsSnapshot.size,
+      docs: allObjectsSnapshot.docs.map(d => ({ id: d.id, data: d.data() }))
+    });
+    
     const q = query(objectsRef, where('slug', '==', slug));
+    console.log('[DEBUG] Slug query created');
     const querySnapshot = await getDocs(q);
     console.log('[DEBUG] getObjectBySlug:', { slug, found: !querySnapshot.empty, count: querySnapshot.size, docs: querySnapshot.docs.map(d => d.data()) });
     if (!querySnapshot.empty) {

@@ -71,7 +71,7 @@ export default function Navigation() {
                   ) : user ? (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button size="sm" className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
+                        <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black-700 transition-all">
                           <span className="flex items-center gap-2">
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                             Add

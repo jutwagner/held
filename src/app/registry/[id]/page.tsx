@@ -165,9 +165,6 @@ export default function ObjectDetailPage() {
               </Link>
             </Button>
             
-            <div className="text-xs font-medium tracking-widest uppercase text-gray-400">
-              Collection Entry
-            </div>
             
             {/* Action Buttons */}
             {object && user && object.userId === user.uid && (

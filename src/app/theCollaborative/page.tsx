@@ -298,15 +298,6 @@ export default function TheCollaborativePage() {
             <div className="mb-8">
               {/* Header with clear filter */}
               <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-1">Browse by Category</h2>
-                  <p className="text-sm text-gray-600">
-                    {selectedCategory 
-                      ? `Showing ${filteredItems.length} items in ${selectedCategory}`
-                      : `Showing all ${filteredItems.length} items`
-                    }
-                  </p>
-                </div>
                 {selectedCategory && (
                   <button
                     onClick={() => setSelectedCategory(null)}
@@ -343,7 +334,7 @@ export default function TheCollaborativePage() {
                         onClick={() => setSelectedCategory(isSelected ? null : category)}
                         disabled={!isAvailable}
                         className={`
-                          flex-shrink-0 relative px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
+                          flex-shrink-0 relative px-4 py-2 rounded-lg text-sm font-small transition-all duration-200 whitespace-nowrap
                           ${isSelected 
                             ? 'bg-black text-white shadow-md' 
                             : isAvailable 
