@@ -157,7 +157,7 @@ export default function NewObjectPage() {
         {/* Header */}
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-16">
-            <Button variant="ghost" asChild className="p-0 h-auto text-black hover:bg-transparent">
+            <Button variant="ghost" asChild className="p-2 h-auto text-black hover:bg-gray-100 rounded-lg">
               <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
                 <ArrowLeft className="h-4 w-4" />
                 Registry
@@ -252,7 +252,7 @@ export default function NewObjectPage() {
                         <label className="block text-xs font-medium text-black mb-6 uppercase tracking-widest">
                           Classification
                         </label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {[
                             { value: "Audio", label: "Audio Equipment" },
                             { value: "Photography", label: "Photography" },
@@ -271,13 +271,13 @@ export default function NewObjectPage() {
                               key={category.value}
                               type="button"
                               onClick={() => setFormData(prev => ({ ...prev, category: category.value }))}
-                              className={`py-4 px-6 border border-gray-200 text-left transition-all duration-150 ${
+                              className={`py-4 px-6 border-2 text-left transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
                                 formData.category === category.value
-                                  ? 'border-black bg-black text-white'
-                                  : 'bg-white text-black hover:border-gray-400'
+                                  ? 'border-black bg-black text-white shadow-lg'
+                                  : 'border-gray-200 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
                               }`}
                             >
-                              <div className="text-sm font-light tracking-wide">{category.label}</div>
+                              <div className="text-sm font-medium tracking-wide">{category.label}</div>
                             </button>
                           ))}
                         </div>

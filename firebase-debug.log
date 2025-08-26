@@ -1,0 +1,64 @@
+[debug] [2025-08-26T00:13:38.099Z] ----------------------------------------------------------------------
+[debug] [2025-08-26T00:13:38.101Z] Command:       /Users/justinwagner/.nvm/versions/node/v20.19.4/bin/node /Users/justinwagner/.nvm/versions/node/v20.19.4/bin/firebase init storage
+[debug] [2025-08-26T00:13:38.102Z] CLI Version:   14.13.0
+[debug] [2025-08-26T00:13:38.102Z] Platform:      darwin
+[debug] [2025-08-26T00:13:38.102Z] Node Version:  v20.19.4
+[debug] [2025-08-26T00:13:38.102Z] Time:          Mon Aug 25 2025 20:13:38 GMT-0400 (Eastern Daylight Time)
+[debug] [2025-08-26T00:13:38.102Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-26T00:13:38.208Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-26T00:13:38.208Z] > authorizing via signed-in user (jutwagner@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/justinwagner
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-08-26T00:13:38.210Z] Using project from CLI flag: held-62986
+[debug] [2025-08-26T00:13:38.211Z] Checked if tokens are valid: false, expires at: 1756148093445
+[debug] [2025-08-26T00:13:38.211Z] Checked if tokens are valid: false, expires at: 1756148093445
+[debug] [2025-08-26T00:13:38.211Z] > refreshing access token with scopes: []
+[debug] [2025-08-26T00:13:38.212Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-08-26T00:13:38.212Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-26T00:13:38.394Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-08-26T00:13:38.395Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-26T00:13:38.422Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/held-62986 [none]
+[debug] [2025-08-26T00:13:38.706Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/held-62986 200
+[debug] [2025-08-26T00:13:38.707Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/held-62986 {"projectId":"held-62986","projectNumber":"612683552247","displayName":"Held","name":"projects/held-62986","resources":{"hostingSite":"held-62986"},"state":"ACTIVE","etag":"1_620b4e0d-4bad-4a29-b3b7-785c3bc95df5"}
+[info] i  Using project held-62986 (Held) 
+[info] 
+=== Storage Setup
+[info] 
+[info] Firebase Storage Security Rules allow you to define how and when to allow
+[info] uploads and downloads. You can keep these rules in your project directory
+[info] and publish them with firebase deploy.
+[info] 
+[debug] [2025-08-26T00:16:14.219Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (/Users/justinwagner/.nvm/versions/node/v20.19.4/lib/node_modules/firebase-tools/node_modules/@inquirer/core/dist/commonjs/lib/create-prompt.js:101:37)
+    at Interface.emit (node:events:524:28)
+    at Interface.emit (node:domain:489:12)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1125:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:264:20)
+    at ReadStream.emit (node:events:536:35)
+    at ReadStream.emit (node:domain:489:12)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+[error] 
+[error] Error: An unexpected error has occurred.

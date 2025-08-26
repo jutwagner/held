@@ -231,9 +231,13 @@ async function convertImageToWebP(file: File): Promise<File> {
   });
 }
 
-  // Prepare object data
+  // Prepare object data - filter out undefined values
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
+  
   const objectData: Record<string, unknown> = {
-    ...data,
+    ...cleanData,
     userId,
     images: imageUrls,
     slug: generateSlug(data.title),
