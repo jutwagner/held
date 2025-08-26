@@ -182,7 +182,6 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
     email: userData.email,
     uid: userData.uid,
     isPublicProfile: userData.isPublicProfile ?? false,
-    unreadMessages: 0,
   };
   console.log('[DEBUG] createUser returned object:', userToSave);
   await setDoc(userRef, { ...userToSave, createdAt: now, updatedAt: now });
@@ -671,14 +670,32 @@ export const subscribeToComments = (postId: string, callback: (comments: Array<{
 // DM Functions
 export const getUserDisplayName = async (userId: string): Promise<string> => {
   try {
+    console.log('[DEBUG] Getting display name for userId:', userId);
+    console.log('[DEBUG] Current auth user:', auth.currentUser?.uid);
+    console.log('[DEBUG] DB instance:', !!db);
+    
+    // Check if we have an authenticated user
+    if (!auth.currentUser) {
+      console.log('[DEBUG] No authenticated user, returning default');
+      return 'User';
+    }
+    
     const userDoc = await getDoc(doc(db, 'users', userId));
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      return userData.displayName || userData.handle || 'User';
+      const displayName = userData.displayName || userData.handle || 'User';
+      console.log('[DEBUG] Found display name:', displayName, 'for user:', userId);
+      return displayName;
     }
+    console.log('[DEBUG] User document does not exist for:', userId);
     return 'User';
   } catch (error) {
-    console.error('Error getting user display name:', error);
+    console.error('[DEBUG] Error getting user display name for', userId, ':', error);
+    console.error('[DEBUG] Error details:', {
+      code: error.code,
+      message: error.message,
+      authState: !!auth.currentUser
+    });
     return 'User';
   }
 };
@@ -875,4 +892,167 @@ export const subscribeToConversations = (userId: string, callback: (conversation
   });
   
   return unsubscribe;
+};
+
+// Typing indicators
+export const setTypingStatus = async (conversationId: string, userId: string, isTyping: boolean): Promise<void> => {
+  const typingRef = doc(db, 'typing', `${conversationId}_${userId}`);
+  
+  if (isTyping) {
+    await setDoc(typingRef, {
+      conversationId,
+      userId,
+      timestamp: serverTimestamp(),
+    });
+  } else {
+    await deleteDoc(typingRef);
+  }
+};
+
+export const subscribeToTypingIndicators = (
+  conversationId: string, 
+  currentUserId: string,
+  callback: (typingUsers: string[]) => void
+): () => void => {
+  const q = query(
+    collection(db, 'typing'),
+    where('conversationId', '==', conversationId)
+  );
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const typingUsers: string[] = [];
+    const cutoffTime = new Date(Date.now() - 10000); // 10 seconds ago
+    
+    querySnapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      const timestamp = data.timestamp?.toDate();
+      
+      // Only include if typing within last 10 seconds and not current user
+      if (timestamp && timestamp > cutoffTime && data.userId !== currentUserId) {
+        typingUsers.push(data.userId);
+      }
+    });
+    
+    callback(typingUsers);
+  });
+  
+  return unsubscribe;
+};
+
+// Presence system
+export const setUserPresence = async (userId: string, isOnline: boolean): Promise<void> => {
+  try {
+    console.log('[DEBUG] Setting presence for user:', userId, 'online:', isOnline);
+    console.log('[DEBUG] Current auth user:', auth.currentUser?.uid);
+    console.log('[DEBUG] Auth state:', !!auth.currentUser);
+    
+    // Check if user is authenticated
+    if (!auth.currentUser) {
+      console.log('[DEBUG] No authenticated user, skipping presence update');
+      return;
+    }
+    
+    const presenceRef = doc(db, 'presence', userId);
+    console.log('[DEBUG] Presence ref created for path:', `presence/${userId}`);
+    
+    const presenceData = {
+      isOnline,
+      lastSeen: serverTimestamp(),
+      userId: userId // Add userId for clarity
+    };
+    
+    console.log('[DEBUG] Setting presence data:', presenceData);
+    await setDoc(presenceRef, presenceData);
+    console.log('[DEBUG] Successfully set presence for user:', userId);
+  } catch (error) {
+    console.error('[DEBUG] Error setting presence for user:', userId, error);
+    console.error('[DEBUG] Error details:', {
+      code: error.code,
+      message: error.message,
+      authUser: !!auth.currentUser
+    });
+  }
+};
+
+export const subscribeToUserPresence = (userId: string, callback: (isOnline: boolean, lastSeen?: Date) => void): () => void => {
+  const presenceRef = doc(db, 'presence', userId);
+  
+  const unsubscribe = onSnapshot(presenceRef, (doc) => {
+    if (doc.exists()) {
+      const data = doc.data();
+      const lastSeen = data.lastSeen?.toDate();
+      
+      // Consider user online if they were active in the last 5 minutes
+      const isRecent = lastSeen && (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000;
+      const isOnline = data.isOnline && isRecent;
+      
+      callback(isOnline, lastSeen);
+    } else {
+      callback(false);
+    }
+  });
+  
+  return unsubscribe;
+};
+
+export const initializePresence = (userId: string): (() => void) => {
+  let initDelay: NodeJS.Timeout;
+  let heartbeat: NodeJS.Timeout;
+  
+  // Wait for auth to be ready before starting presence
+  const waitForAuth = () => {
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      console.log('[DEBUG] Auth ready, initializing presence for:', userId);
+      setUserPresence(userId, true);
+      
+      // Set up heartbeat to maintain presence
+      heartbeat = setInterval(() => {
+        if (auth.currentUser && auth.currentUser.uid === userId) {
+          setUserPresence(userId, true);
+        }
+      }, 60000); // Update every minute
+    } else {
+      console.log('[DEBUG] Auth not ready, retrying in 1s for:', userId);
+      initDelay = setTimeout(waitForAuth, 1000);
+    }
+  };
+  
+  // Start the auth check
+  initDelay = setTimeout(waitForAuth, 1000);
+  
+  // Set up offline detection
+  const handleBeforeUnload = () => {
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      setUserPresence(userId, false);
+    }
+  };
+  
+  const handleVisibilityChange = () => {
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      if (document.hidden) {
+        setUserPresence(userId, false);
+      } else {
+        setUserPresence(userId, true);
+      }
+    }
+  };
+  
+  // Only add listeners if we're in browser environment
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
+  
+  // Return cleanup function
+  return () => {
+    clearTimeout(initDelay);
+    clearInterval(heartbeat);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      setUserPresence(userId, false);
+    }
+  };
 };

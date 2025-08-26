@@ -10,7 +10,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { createUser, getUser } from '@/lib/firebase-services';
+import { createUser, getUser, initializePresence } from '@/lib/firebase-services';
 import type { UserDoc } from '@/types';
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -45,6 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [presenceCleanup, setPresenceCleanup] = useState<(() => void) | null>(null);
   
     // Google Sign-In
   const signInWithGoogle = async (): Promise<void> => {
@@ -84,11 +85,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (typeof window !== 'undefined') {
           localStorage.setItem('held_user', JSON.stringify(userData));
         }
+        
+        // Initialize presence tracking with delay to ensure user is fully set up
+        setTimeout(() => {
+          const cleanup = initializePresence(firebaseUser.uid);
+          setPresenceCleanup(() => cleanup);
+        }, 2000);
       } else {
         console.log('[DEBUG] AuthContext setUser called with: null');
         setUser(null);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('held_user');
+        }
+        
+        // Clean up presence tracking
+        if (presenceCleanup) {
+          presenceCleanup();
+          setPresenceCleanup(null);
         }
       }
       setLoading(false);

@@ -11,7 +11,11 @@ import {
   sendMessage, 
   subscribeToMessages, 
   markConversationAsRead,
-  findExistingConversation
+  findExistingConversation,
+  setTypingStatus,
+  subscribeToTypingIndicators,
+  getUserDisplayName,
+  subscribeToUserPresence
 } from '@/lib/firebase-services';
 import type { Conversation, Message } from '@/types';
 
@@ -29,21 +33,53 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUserNames, setTypingUserNames] = useState<{[userId: string]: string}>({});
+  const [targetUserOnline, setTargetUserOnline] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isOpen && currentConversationId) {
+    if (isOpen && currentConversationId && user) {
       // Mark conversation as read when opened
       markConversationAsRead(currentConversationId);
       
       // Subscribe to messages
-      const unsubscribe = subscribeToMessages(currentConversationId, (messages) => {
+      const unsubscribeMessages = subscribeToMessages(currentConversationId, (messages) => {
         setMessages(messages);
       });
       
-      return unsubscribe;
+      // Subscribe to typing indicators
+      const unsubscribeTyping = subscribeToTypingIndicators(currentConversationId, user.uid, async (userIds) => {
+        console.log('[DEBUG] Typing users changed:', userIds);
+        setTypingUsers(userIds);
+        
+        // Fetch display names for typing users
+        const names: {[userId: string]: string} = {};
+        for (const userId of userIds) {
+          names[userId] = await getUserDisplayName(userId);
+        }
+        console.log('[DEBUG] Typing user names:', names);
+        setTypingUserNames(names);
+      });
+      
+      return () => {
+        unsubscribeMessages();
+        unsubscribeTyping();
+      };
     }
-  }, [isOpen, currentConversationId]);
+  }, [isOpen, currentConversationId, user]);
+
+  // Subscribe to target user's presence
+  useEffect(() => {
+    if (isOpen && targetUserId) {
+      const unsubscribePresence = subscribeToUserPresence(targetUserId, (isOnline) => {
+        setTargetUserOnline(isOnline);
+      });
+      
+      return unsubscribePresence;
+    }
+  }, [isOpen, targetUserId]);
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -87,6 +123,11 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
       });
 
       setNewMessage('');
+      
+      // Clear typing status after sending
+      if (currentConversationId) {
+        setTypingStatus(currentConversationId, user.uid, false);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -94,10 +135,32 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
     }
   };
 
+  const handleTyping = () => {
+    if (!currentConversationId || !user) return;
+    
+    console.log('[DEBUG] User is typing, setting status for:', user.uid, 'in conversation:', currentConversationId);
+    
+    // Set typing status
+    setTypingStatus(currentConversationId, user.uid, true);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      console.log('[DEBUG] Typing timeout, clearing status for:', user.uid);
+      setTypingStatus(currentConversationId, user.uid, false);
+    }, 3000);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    } else {
+      handleTyping();
     }
   };
 
@@ -114,7 +177,13 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Direct Message</h3>
-              <p className="text-sm text-gray-500">Chat with @{targetUserName || targetUserId || 'user'}</p>
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-gray-500">Chat with @{targetUserName || targetUserId || 'user'}</p>
+                <div className={`w-2 h-2 rounded-full ${targetUserOnline ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                <span className={`text-xs ${targetUserOnline ? 'text-green-600' : 'text-gray-500'}`}>
+                  {targetUserOnline ? 'online' : 'offline'}
+                </span>
+              </div>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -186,13 +255,36 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
             <div ref={messagesEndRef} />
           </div>
           
+          {/* Typing Indicator */}
+          {typingUsers.length > 0 && (
+            <div className="px-6 py-2 bg-gray-50 border-t">
+              {console.log('[DEBUG] Rendering typing indicator for users:', typingUsers)}
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span className="text-sm text-gray-600">
+                  {typingUsers.length === 1 
+                    ? `${typingUserNames[typingUsers[0]] || 'Someone'} is typing...`
+                    : `${typingUsers.length} people are typing...`
+                  }
+                </span>
+              </div>
+            </div>
+          )}
+          
           {/* Input Area */}
           <div className="p-6 bg-white border-t">
             <div className="flex items-end space-x-3">
               <div className="flex-1 relative">
                 <Input
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message..."
                   disabled={loading}

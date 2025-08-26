@@ -131,7 +131,7 @@ export default function Navigation() {
                   ) : user ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
+                        <button className="rounded-full  shadow-sm w-10 h-10 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
                           {user.avatarUrl ? (
                             <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover rounded-full" />
                           ) : (

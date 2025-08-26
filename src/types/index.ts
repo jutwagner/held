@@ -15,6 +15,7 @@ export interface UserDoc {
     quarterlyReview: boolean;
     email: boolean;
     push: boolean;
+    dms?: boolean;
   };
   premium: {
     active: boolean;
@@ -152,4 +153,21 @@ export interface UpdateRotationData extends Partial<CreateRotationData> {
   id: string;
   updatedAt?: Date;
   slug?: string;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  text: string;
+  createdAt: Date;
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage: string;
+  lastMessageTime: Date;
+  unreadCount: number;
+  createdAt: Date;
 }

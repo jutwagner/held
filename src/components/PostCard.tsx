@@ -156,6 +156,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       return;
     }
     
+    // Optimistic update - show change immediately
+    const wasLiked = liked;
+    const oldCount = likesCount;
+    setLiked(!liked);
+    setLikesCount(prev => liked ? prev - 1 : prev + 1);
+    
     try {
       console.log('Attempting to toggle like...');
       
@@ -163,11 +169,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       await new Promise(resolve => setTimeout(resolve, 50));
       
       await toggleLike(post.id, firebaseUser.uid);
-      setLiked(!liked);
-      setLikesCount(prev => liked ? prev - 1 : prev + 1);
       console.log('Like toggled successfully!');
     } catch (error) {
       console.error('Error toggling like:', error);
+      // Rollback optimistic update on error
+      setLiked(wasLiked);
+      setLikesCount(oldCount);
     }
   };
 
