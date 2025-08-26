@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { HeldObject } from '@/types';
@@ -14,11 +14,14 @@ import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 
 export default function ObjectDetailPage() { 
   const params = useParams();
+  const router = useRouter();
   const { user } = useAuth();
   const [object, setObject] = useState<HeldObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -127,6 +130,22 @@ export default function ObjectDetailPage() {
     doSave();
   }
 
+  const handleDelete = async () => {
+    if (!object || !user || object.userId !== user.uid) return;
+    
+    setDeleting(true);
+    try {
+      await import('@/lib/firebase-services').then(mod => mod.deleteObject(objectId));
+      router.push('/registry');
+    } catch (err) {
+      console.error('Failed to delete object:', err);
+      alert('Failed to delete object. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -187,10 +206,12 @@ export default function ObjectDetailPage() {
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deleting}
                   className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-lg font-light tracking-wide"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Remove
+                  {deleting ? 'Removing...' : 'Remove'}
                 </Button>
               </div>
             )}
@@ -537,6 +558,41 @@ export default function ObjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">Delete Object</h3>
+              <p className="mb-6 text-gray-600">
+                Are you sure you want to delete <span className="font-bold text-gray-900">"{object?.title}"</span>? 
+                This action cannot be undone and will permanently remove this object from your registry.
+              </p>
+              <div className="flex justify-center gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="px-6 py-2 rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Forever'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
