@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { getFirestore } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getObject, getRotation, subscribeRotations } from '@/lib/firebase-services';
+import { useAuth } from '@/contexts/AuthContext';
 import { HeldObject } from '@/types';
 import type { RotationWithObjects } from '@/types';
 
@@ -27,19 +28,11 @@ function RotationPageClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
-  // Get current user from AuthContext (replace with your actual context/hook)
-  type HeldUser = { uid: string; [key: string]: unknown } | null;
-  const [user, setUser] = useState<HeldUser>(null);
-  useEffect(() => {
-    // Replace with your actual auth logic
-    if (typeof window !== 'undefined') {
-      const storedUser = window.localStorage.getItem('heldUser');
-      if (storedUser) setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  // Get current user from AuthContext
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return; // Wait for auth to be ready
     setLoading(true);
     async function fetchRotation() {
       try {
@@ -72,12 +65,12 @@ function RotationPageClient({ id }: { id: string }) {
           setLoading(false);
         }
       } catch (err) {
-  setError('Error loading rotation');
-  setLoading(false);
+        setError('Error loading rotation');
+        setLoading(false);
       }
     }
     fetchRotation();
-  }, [id, user]);
+  }, [id, user, authLoading]);
 
   useEffect(() => {
     const fetchObjects = async () => {
