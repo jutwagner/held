@@ -226,7 +226,7 @@ export default function ObjectDetailPage() {
                   <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide">
                     <Link href={`/passport/${object.slug || object.id}`} target="_blank" className="whitespace-nowrap flex items-center">
                       <Image src={passportSvg} alt="Passport" width={16} height={16} className="mr-2" />
-                      View Passport
+                      Passport
                     </Link>
                   </Button>
                 )}
@@ -247,7 +247,7 @@ export default function ObjectDetailPage() {
                   className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  {editing ? 'Cancel' : 'Edit Entry'}
+                  {editing ? 'Cancel' : 'Edit'}
                 </Button>
                 <Button
                   variant="outline"
@@ -256,7 +256,7 @@ export default function ObjectDetailPage() {
                   className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-lg font-light tracking-wide"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {deleting ? 'Removing...' : 'Remove'}
+                  {deleting ? 'Removing...' : ''}
                 </Button>
               </div>
             )}
@@ -417,7 +417,7 @@ export default function ObjectDetailPage() {
           <div ref={editFormRef} className="mt-20 bg-white border border-gray-200 p-16 shadow-lg rounded-lg">
             <div className="mb-12">
               <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
-                Edit Entry
+                Edit 
               </div>
               <h2 className="text-4xl font-light text-black tracking-tight">Modify Details</h2>
             </div>
