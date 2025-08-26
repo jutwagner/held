@@ -86,7 +86,7 @@ export const getObjectBySlug = async (slug: string): Promise<HeldObject | null> 
       docs: allObjectsSnapshot.docs.map(d => ({ id: d.id, data: d.data() }))
     });
     
-    const q = query(objectsRef, where('slug', '==', slug));
+    const q = query(objectsRef, where('slug', '==', slug), where('isPublic', '==', true));
     console.log('[DEBUG] Slug query created');
     const querySnapshot = await getDocs(q);
     console.log('[DEBUG] getObjectBySlug:', { slug, found: !querySnapshot.empty, count: querySnapshot.size, docs: querySnapshot.docs.map(d => d.data()) });

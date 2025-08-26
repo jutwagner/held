@@ -34,8 +34,14 @@ export default function PassportPage() {
   const loadObject = async () => {
     try {
       setLoading(true);
-      const obj = await getObjectBySlug(slug);
-      console.log('[DEBUG] PassportPage getObjectBySlug result:', obj);
+      let obj = await getObjectBySlug(slug);
+      
+      // If no object found by slug, try to treat slug as object ID
+      if (!obj) {
+        const { getObject } = await import('@/lib/firebase-services');
+        obj = await getObject(slug);
+      }
+      
       if (!obj) {
         return;
       }

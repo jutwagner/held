@@ -171,7 +171,7 @@ export default function ObjectDetailPage() {
               <div className="flex items-center space-x-4">
                 {object.isPublic && (
                   <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide">
-                    <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
+                    <Link href={`/passport/${object.slug || object.id}`} target="_blank" className="whitespace-nowrap flex items-center">
                       <Image src={passportSvg} alt="Passport" width={16} height={16} className="mr-2" />
                       View Passport
                     </Link>
