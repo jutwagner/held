@@ -768,6 +768,19 @@ export const updateUserUnreadCount = async (userId: string, count: number): Prom
   });
 };
 
+export const getUserConversations = async (userId: string): Promise<Conversation[]> => {
+  const conversationsRef = collection(db, 'conversations');
+  const q = query(conversationsRef, where('participants', 'array-contains', userId), orderBy('lastMessageTime', 'desc'));
+  
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    lastMessageTime: doc.data().lastMessageTime?.toDate() || new Date(),
+    createdAt: doc.data().createdAt?.toDate() || new Date(),
+  })) as Conversation[];
+};
+
 export const subscribeToConversations = (userId: string, callback: (conversations: Conversation[]) => void): () => void => {
   const conversationsRef = collection(db, 'conversations');
   const q = query(conversationsRef, where('participants', 'array-contains', userId), orderBy('lastMessageTime', 'desc'));

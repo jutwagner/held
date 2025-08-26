@@ -96,3 +96,7 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
 }
+
+nav .held-container{
+  max-width: unset;
+}
