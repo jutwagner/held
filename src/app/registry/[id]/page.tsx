@@ -22,6 +22,7 @@ export default function ObjectDetailPage() {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const editFormRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -462,6 +463,111 @@ export default function ObjectDetailPage() {
                     className="w-full text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
                     placeholder="1956"
                   />
+                </div>
+              </div>
+              
+              {/* Images Section */}
+              <div>
+                <label className="text-xs font-medium text-black mb-6 uppercase tracking-widest">
+                  Images
+                </label>
+                <div className="space-y-4">
+                  {/* Current Images */}
+                  {formData.images.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-3">Current Images:</div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {formData.images.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={image}
+                              alt={`Current image ${index + 1}`}
+                              className="w-full h-32 object-cover border border-gray-200 rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = formData.images.filter((_, i) => i !== index);
+                                setFormData({...formData, images: newImages});
+                              }}
+                              className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Add New Images */}
+                  <div>
+                    <input
+                      type="file"
+                      id="image-upload"
+                      multiple
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 0) return;
+                        
+                        setUploadingImages(true);
+                        try {
+                          // Import the upload function dynamically
+                          const firebaseServices = await import('@/lib/firebase-services');
+                          const uploadImages = (firebaseServices as any).uploadImages;
+                          const imageUrls = await uploadImages(files, user?.uid || '');
+                          setFormData({
+                            ...formData,
+                            images: [...formData.images, ...imageUrls]
+                          });
+                        } catch (error) {
+                          console.error('Error uploading images:', error);
+                          alert('Failed to upload images. Please try again.');
+                        } finally {
+                          setUploadingImages(false);
+                          // Clear the input so the same files can be uploaded again if needed
+                          e.target.value = '';
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className={`block w-full p-8 border-2 border-dashed transition-colors duration-200 rounded-lg text-center ${
+                        uploadingImages 
+                          ? 'border-blue-300 bg-blue-50 cursor-not-allowed' 
+                          : 'border-gray-300 hover:border-gray-400 cursor-pointer'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        {uploadingImages ? (
+                          <>
+                            <svg className="w-8 h-8 mx-auto text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <div className="text-sm text-blue-600 font-medium">
+                              Uploading images...
+                            </div>
+                            <div className="text-xs text-blue-500">Please wait while we process your images</div>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-8 h-8 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium text-black">Click to upload images</span> or drag and drop
+                            </div>
+                            <div className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</div>
+                          </>
+                        )}
+                      </div>
+                    </label>
+                  </div>
                 </div>
               </div>
               

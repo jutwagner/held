@@ -37,6 +37,27 @@ import {
 } from '@/types';
 import { generateSlug } from './utils';
 
+// Utility: Convert image File to WebP using browser canvas
+async function convertImageToWebP(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        if (!blob) return reject(new Error('WebP conversion failed'));
+        const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' });
+        resolve(webpFile);
+      }, 'image/webp', 0.92);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // Get user by handle (for vanity URLs)
 export const getUserByHandle = async (handle: string): Promise<UserDoc | null> => {
   // Decode and strip '@' from handle
@@ -190,21 +211,42 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
 
 // Object services
 // Create a new object in Firestore
-export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
-  // Prepare images: upload if File, keep string URLs
+// Standalone function to upload images
+export const uploadImages = async (files: File[], userId: string): Promise<string[]> => {
   const imageUrls: string[] = [];
-  if (Array.isArray(data.images) && data.images.length > 0) {
-    for (const img of data.images) {
-      if (typeof img === 'string') {
-        imageUrls.push(img);
-      } else if (img instanceof File) {
+  
+  for (const file of files) {
+    if (file && file.size > 0) {
+      try {
         // Convert image to WebP before upload
-        const webpFile = await convertImageToWebP(img);
-        const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${img.name.replace(/\.[^.]+$/, '.webp')}`);
+        const webpFile = await convertImageToWebP(file);
+        const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${file.name.replace(/\.[^.]+$/, '.webp')}`);
         await uploadBytes(storageRef, webpFile);
         const url = await getDownloadURL(storageRef);
         imageUrls.push(url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
       }
+    }
+  }
+  
+  return imageUrls;
+};
+
+export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
+  // Process images: if string, use as is; if File, upload as WebP
+  const imageUrls: string[] = [];
+  for (const img of data.images) {
+    if (img && typeof img === 'string') {
+      imageUrls.push(img);
+    } else if (img instanceof File) {
+      // Convert image to WebP before upload
+      const webpFile = await convertImageToWebP(img);
+      const storageRef = ref(storage, `objects/${userId}/${Date.now()}_${img.name.replace(/\.[^.]+$/, '.webp')}`);
+      await uploadBytes(storageRef, webpFile);
+      const url = await getDownloadURL(storageRef);
+      imageUrls.push(url);
     }
   }
 
@@ -223,27 +265,6 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
       }
     }
   }
-// Utility: Convert image File to WebP using browser canvas
-async function convertImageToWebP(file: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0);
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('WebP conversion failed'));
-        const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' });
-        resolve(webpFile);
-      }, 'image/webp', 0.92);
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
-
   // Prepare object data - filter out undefined values
   const cleanData = Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== undefined)
