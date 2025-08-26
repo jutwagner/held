@@ -131,9 +131,9 @@ export default function Navigation() {
                   ) : user ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
+                        <button className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
                           {user.avatarUrl ? (
-                            <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
+                            <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover rounded-full" />
                           ) : (
                             <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#888" strokeWidth="2"/><path d="M16 18c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4zm0-8a4 4 0 110 8 4 4 0 010-8z" fill="#bbb"/></svg>
                           )}
@@ -145,6 +145,12 @@ export default function Navigation() {
                           <Link href="/settings" className="flex items-center">
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                             <span className="ml-2">Settings</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/settings/messages" className="flex items-center">
+                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                            <span className="ml-2">Messages</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={logout} className="flex items-center text-red-600">

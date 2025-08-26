@@ -10,7 +10,8 @@ import {
   createConversation, 
   sendMessage, 
   subscribeToMessages, 
-  markConversationAsRead 
+  markConversationAsRead,
+  findExistingConversation
 } from '@/lib/firebase-services';
 import type { Conversation, Message } from '@/types';
 
@@ -55,15 +56,25 @@ export default function DMModal({ isOpen, onClose, conversationId }: DMModalProp
       let conversationToUse = currentConversationId;
       
       if (!currentConversationId) {
-        // Create new conversation if none exists
-        const conversation = await createConversation({
-          participants: [user.uid, 'jutwagner'], // Hardcoded for now
-          lastMessage: newMessage,
-          lastMessageTime: new Date(),
-          unreadCount: 1
-        });
-        conversationToUse = conversation.id;
-        setCurrentConversationId(conversation.id);
+        // First, try to find an existing conversation between these participants
+        const participants = [user.uid, 'jutwagner']; // Hardcoded for now
+        const existingConversationId = await findExistingConversation(participants);
+        
+        if (existingConversationId) {
+          // Use existing conversation
+          conversationToUse = existingConversationId;
+          setCurrentConversationId(existingConversationId);
+        } else {
+          // Create new conversation if none exists
+          const conversation = await createConversation({
+            participants,
+            lastMessage: newMessage,
+            lastMessageTime: new Date(),
+            unreadCount: 1
+          });
+          conversationToUse = conversation.id;
+          setCurrentConversationId(conversation.id);
+        }
       }
 
       await sendMessage({

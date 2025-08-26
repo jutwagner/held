@@ -669,6 +669,40 @@ export const subscribeToComments = (postId: string, callback: (comments: Array<{
 };
 
 // DM Functions
+export const getUserDisplayName = async (userId: string): Promise<string> => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      return userData.displayName || userData.handle || 'User';
+    }
+    return 'User';
+  } catch (error) {
+    console.error('Error getting user display name:', error);
+    return 'User';
+  }
+};
+
+export const findExistingConversation = async (participants: string[]): Promise<string | null> => {
+  const conversationsRef = collection(db, 'conversations');
+  const q = query(conversationsRef, where('participants', 'array-contains', participants[0]));
+  const querySnapshot = await getDocs(q);
+  
+  // Find conversation that contains exactly these participants
+  for (const doc of querySnapshot.docs) {
+    const data = doc.data();
+    const conversationParticipants = data.participants || [];
+    
+    // Check if participants arrays are the same (regardless of order)
+    if (conversationParticipants.length === participants.length &&
+        participants.every(p => conversationParticipants.includes(p))) {
+      return doc.id;
+    }
+  }
+  
+  return null;
+};
+
 export const createConversation = async (conversation: Omit<Conversation, 'id' | 'createdAt'>): Promise<Conversation> => {
   const conversationRef = collection(db, 'conversations');
   const docRef = await addDoc(conversationRef, {
@@ -702,6 +736,21 @@ export const sendMessage = async (message: Omit<Message, 'id'>): Promise<void> =
     lastMessageTime: serverTimestamp(),
     unreadCount: serverTimestamp(), // This will be incremented by a Cloud Function
   });
+};
+
+export const getMessages = async (conversationId: string): Promise<Message[]> => {
+  const messagesRef = collection(db, 'messages');
+  const q = query(messagesRef, where('conversationId', '==', conversationId), orderBy('createdAt', 'asc'));
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate() || new Date(),
+    };
+  }) as Message[];
 };
 
 export const subscribeToMessages = (conversationId: string, callback: (messages: Message[]) => void): () => void => {
@@ -744,17 +793,31 @@ export const getUnreadMessageCount = async (userId: string): Promise<number> => 
 };
 
 export const subscribeToUnreadMessages = (userId: string, callback: (count: number) => void): () => void => {
+  // Get all conversations where user is a participant
   const conversationsRef = collection(db, 'conversations');
   const q = query(conversationsRef, where('participants', 'array-contains', userId));
   
   const unsubscribe = onSnapshot(q, (querySnapshot) => {
     let totalUnread = 0;
+    
     querySnapshot.docs.forEach(doc => {
       const data = doc.data();
-      if (data.participants[0] !== userId) { // Only count messages from others
-        totalUnread += data.unreadCount || 0;
+      const participants = data.participants || [];
+      const lastMessage = data.lastMessage;
+      const lastMessageTime = data.lastMessageTime?.toDate();
+      
+      // Only count if there's actually a last message and it's recent
+      if (lastMessage && lastMessageTime) {
+        const hoursSinceLastMessage = (Date.now() - lastMessageTime.getTime()) / (1000 * 60 * 60);
+        
+        // Consider messages from last 24 hours as potentially unread
+        if (hoursSinceLastMessage < 24) {
+          // Add 1 unread per active conversation (more realistic)
+          totalUnread += 1;
+        }
       }
     });
+    
     callback(totalUnread);
   });
   
@@ -769,16 +832,32 @@ export const updateUserUnreadCount = async (userId: string, count: number): Prom
 };
 
 export const getUserConversations = async (userId: string): Promise<Conversation[]> => {
+  console.log('[DEBUG] getUserConversations called for userId:', userId);
   const conversationsRef = collection(db, 'conversations');
-  const q = query(conversationsRef, where('participants', 'array-contains', userId), orderBy('lastMessageTime', 'desc'));
   
+  // Use simple query without orderBy to avoid issues with missing lastMessageTime
+  const q = query(conversationsRef, where('participants', 'array-contains', userId));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    lastMessageTime: doc.data().lastMessageTime?.toDate() || new Date(),
-    createdAt: doc.data().createdAt?.toDate() || new Date(),
-  })) as Conversation[];
+  console.log('[DEBUG] Found', querySnapshot.docs.length, 'conversations');
+  
+  const conversations = querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    console.log('[DEBUG] Conversation data:', doc.id, data);
+    return {
+      id: doc.id,
+      participants: data.participants || [],
+      lastMessage: data.lastMessage || '',
+      lastMessageTime: data.lastMessageTime?.toDate ? data.lastMessageTime.toDate() : new Date(0), // Use epoch if no time
+      unreadCount: data.unreadCount || 0,
+      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+    };
+  });
+  
+  // Sort manually by lastMessageTime (newest first)
+  conversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+  
+  console.log('[DEBUG] Returning conversations:', conversations);
+  return conversations as Conversation[];
 };
 
 export const subscribeToConversations = (userId: string, callback: (conversations: Conversation[]) => void): () => void => {
