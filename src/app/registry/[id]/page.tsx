@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ export default function ObjectDetailPage() {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const editFormRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -173,6 +174,39 @@ export default function ObjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Sticky Edit Mode Banner */}
+      {editing && (
+        <div className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-4 sm:px-8 shadow-xl border-b border-blue-500 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="w-8 h-8 bg-blue-500/80 rounded-full flex items-center justify-center flex-shrink-0">
+                <Edit className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-white">Edit Mode Active</p>
+                <p className="text-blue-100 text-sm hidden sm:block">Make changes to your registry entry</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              <Button
+                onClick={handleSave}
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
+              >
+                {loading ? 'Saving...' : 'Save'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setEditing(false)}
+                className="bg-white/90 hover:bg-white text-blue-600 border-white hover:border-blue-100 px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 text-sm sm:text-base"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto px-8 py-16">
         {/* Header */}
         <div className="mb-20">
@@ -198,7 +232,18 @@ export default function ObjectDetailPage() {
                 )}
                 <Button 
                   variant="outline" 
-                  onClick={() => setEditing(!editing)}
+                  onClick={() => {
+                    setEditing(!editing);
+                    if (!editing) {
+                      // Scroll to edit form after a brief delay to allow state update
+                      setTimeout(() => {
+                        editFormRef.current?.scrollIntoView({ 
+                          behavior: 'smooth', 
+                          block: 'start' 
+                        });
+                      }, 100);
+                    }
+                  }}
                   className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide"
                 >
                   <Edit className="h-4 w-4 mr-2" />
@@ -369,7 +414,7 @@ export default function ObjectDetailPage() {
         
         {/* Edit Form */}
         {editing && (
-          <div className="mt-20 bg-white border border-gray-200 p-16">
+          <div ref={editFormRef} className="mt-20 bg-white border border-gray-200 p-16 shadow-lg rounded-lg">
             <div className="mb-12">
               <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
                 Edit Entry
@@ -593,6 +638,8 @@ export default function ObjectDetailPage() {
           </div>
         </div>
       )}
+
+
     </div>
   );
 }
