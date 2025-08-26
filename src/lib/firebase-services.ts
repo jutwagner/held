@@ -684,6 +684,11 @@ export const createConversation = async (conversation: Omit<Conversation, 'id' |
 };
 
 export const sendMessage = async (message: Omit<Message, 'id'>): Promise<void> => {
+  // Add null check for conversationId
+  if (!message.conversationId) {
+    throw new Error('ConversationId is required to send a message');
+  }
+
   const messageRef = collection(db, 'messages');
   await addDoc(messageRef, {
     ...message,

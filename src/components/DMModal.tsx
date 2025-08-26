@@ -52,6 +52,8 @@ export default function DMModal({ isOpen, onClose, conversationId }: DMModalProp
 
     setLoading(true);
     try {
+      let conversationToUse = currentConversationId;
+      
       if (!currentConversationId) {
         // Create new conversation if none exists
         const conversation = await createConversation({
@@ -60,11 +62,12 @@ export default function DMModal({ isOpen, onClose, conversationId }: DMModalProp
           lastMessageTime: new Date(),
           unreadCount: 1
         });
+        conversationToUse = conversation.id;
         setCurrentConversationId(conversation.id);
       }
 
       await sendMessage({
-        conversationId: currentConversationId!,
+        conversationId: conversationToUse!,
         senderId: user.uid,
         text: newMessage,
         createdAt: new Date()
