@@ -63,9 +63,9 @@ export default function Navigation() {
             </div>
             {/* User Menu */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {/* Add Button placeholder for CLS */}
-                <div style={{ width: 120, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 120, height: 36, display: 'flex', alignItems: 'right', justifyContent: 'right' }}>
                   {loading ? (
                     <div className="bg-gray-200 rounded-lg w-full h-full animate-pulse" />
                   ) : user ? (
