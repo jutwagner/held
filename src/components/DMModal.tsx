@@ -19,9 +19,11 @@ interface DMModalProps {
   isOpen: boolean;
   onClose: () => void;
   conversationId?: string;
+  targetUserId?: string;
+  targetUserName?: string;
 }
 
-export default function DMModal({ isOpen, onClose, conversationId }: DMModalProps) {
+export default function DMModal({ isOpen, onClose, conversationId, targetUserId, targetUserName }: DMModalProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -57,7 +59,7 @@ export default function DMModal({ isOpen, onClose, conversationId }: DMModalProp
       
       if (!currentConversationId) {
         // First, try to find an existing conversation between these participants
-        const participants = [user.uid, 'jutwagner']; // Hardcoded for now
+        const participants = [user.uid, targetUserId || 'jutwagner'];
         const existingConversationId = await findExistingConversation(participants);
         
         if (existingConversationId) {
@@ -112,7 +114,7 @@ export default function DMModal({ isOpen, onClose, conversationId }: DMModalProp
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Direct Message</h3>
-              <p className="text-sm text-gray-500">Chat with @jutwagner</p>
+              <p className="text-sm text-gray-500">Chat with @{targetUserName || targetUserId || 'user'}</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-gray-600">

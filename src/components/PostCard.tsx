@@ -285,6 +285,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       console.log('No post user data, cannot send DM');
       return;
     }
+    if (firebaseUser.uid === post.userId) {
+      console.log('Cannot message yourself');
+      return;
+    }
     
     // Open DM modal
     console.log('Open DM with:', postUser.handle || postUser.displayName || 'Unknown User');
@@ -499,6 +503,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <DMModal
         isOpen={isDMOpen}
         onClose={() => setIsDMOpen(false)}
+        targetUserId={postUser?.uid}
+        targetUserName={postUser?.handle || postUser?.displayName}
       />
     </div>
   );
