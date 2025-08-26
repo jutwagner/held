@@ -81,3 +81,18 @@
 .top-25{
   top:4rem;
 }
+
+.heldplus{
+  border-color: rgb(213, 210, 161);
+  background-color: #f0efea;
+}
+
+/* Hide scrollbar for horizontal scrollable elements */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}

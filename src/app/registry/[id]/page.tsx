@@ -173,7 +173,7 @@ export default function ObjectDetailPage() {
             {object && user && object.userId === user.uid && (
               <div className="flex items-center space-x-4">
                 {object.isPublic && (
-                  <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide">
+                  <Button variant="outline" asChild className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide">
                     <Link href={`/passport/${object.slug}`} target="_blank" className="whitespace-nowrap flex items-center">
                       <Image src={passportSvg} alt="Passport" width={16} height={16} className="mr-2" />
                       View Passport
@@ -183,14 +183,14 @@ export default function ObjectDetailPage() {
                 <Button 
                   variant="outline" 
                   onClick={() => setEditing(!editing)}
-                  className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide"
+                  className="border-black text-black hover:bg-black hover:text-white rounded-lg font-light tracking-wide"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   {editing ? 'Cancel' : 'Edit Entry'}
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-none font-light tracking-wide"
+                  className="border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 rounded-lg font-light tracking-wide"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Remove
@@ -203,7 +203,6 @@ export default function ObjectDetailPage() {
             <h1 className="text-6xl md:text-7xl font-light text-black mb-6 tracking-tighter leading-none">
               {object.title || <span className="text-gray-400">Untitled</span>}
             </h1>
-            <div className="w-16 h-0.5 bg-black mb-8"></div>
             {object.maker && (
               <p className="text-lg text-gray-600 font-light tracking-wide">
                 {object.maker}
@@ -218,10 +217,6 @@ export default function ObjectDetailPage() {
           {/* Visual Documentation */}
           <div>
             <div className="mb-12">
-              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
-                Visual Documentation
-              </div>
-              <div className="w-12 h-0.5 bg-black"></div>
             </div>
             
             {object.images && object.images.length > 0 ? (
@@ -257,7 +252,7 @@ export default function ObjectDetailPage() {
               <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
                 Specifications
               </div>
-              <div className="w-12 h-0.5 bg-black"></div>
+              
             </div>
             
             <div className="space-y-8">

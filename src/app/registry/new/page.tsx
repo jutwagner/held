@@ -173,7 +173,6 @@ export default function NewObjectPage() {
             <h1 className="text-6xl md:text-7xl font-light text-black mb-6 tracking-tighter leading-none">
               Acquisition
             </h1>
-            <div className="w-16 h-0.5 bg-black mb-8"></div>
             <p className="text-base text-gray-600 max-w-xl font-light leading-relaxed">
               Systematic documentation for permanent collection records.
             </p>

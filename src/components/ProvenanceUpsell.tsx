@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 const ProvenanceUpsell: React.FC = () => {
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-8 relative overflow-hidden">
+    <div className="heldplus border-2 border-amber-200 rounded-xl p-8 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200 to-orange-200 rounded-full opacity-20 transform translate-x-16 -translate-y-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-amber-100 to-orange-100 rounded-full opacity-30 transform -translate-x-12 translate-y-12"></div>

@@ -112,7 +112,7 @@ function RotationPageClient({ id }: { id: string }) {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow">&nbsp;</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono">&nbsp;</span>
             </div>
           </div>
         </header>
@@ -184,7 +184,7 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </header>

@@ -309,10 +309,6 @@ export default function ObjectDetailPage() {
           {/* Visual Documentation */}
           <div>
             <div className="mb-12">
-              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
-                Visual Documentation
-              </div>
-              <div className="w-12 h-0.5 bg-black"></div>
             </div>
             {editing ? (
               <div className="space-y-4">
@@ -415,7 +411,6 @@ export default function ObjectDetailPage() {
               <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">
                 Specifications
               </div>
-              <div className="w-12 h-0.5 bg-black"></div>
             </div>
             {editing ? (
                               <>
