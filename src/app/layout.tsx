@@ -3,6 +3,7 @@
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 
 import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
             <Navigation />
+            <EmailVerificationBanner />
             {children}
           </div>
         </AuthProvider>

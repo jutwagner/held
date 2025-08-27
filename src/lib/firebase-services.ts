@@ -234,6 +234,50 @@ export const uploadImages = async (files: File[], userId: string): Promise<strin
   return imageUrls;
 };
 
+// Account deletion
+export const deleteUserAccount = async (userId: string): Promise<void> => {
+  try {
+    // Delete user document
+    await deleteDoc(doc(db, 'users', userId));
+    
+    // Delete user's objects
+    const objectsQuery = query(collection(db, 'objects'), where('ownerId', '==', userId));
+    const objectsSnapshot = await getDocs(objectsQuery);
+    
+    for (const objectDoc of objectsSnapshot.docs) {
+      await deleteObject(objectDoc.id);
+    }
+    
+    // Delete user's rotations
+    const rotationsQuery = query(collection(db, 'rotations'), where('ownerId', '==', userId));
+    const rotationsSnapshot = await getDocs(rotationsQuery);
+    
+    for (const rotationDoc of rotationsSnapshot.docs) {
+      await deleteDoc(doc(db, 'rotations', rotationDoc.id));
+    }
+    
+    // Delete user's conversations
+    const conversationsQuery = query(collection(db, 'conversations'), where('participants', 'array-contains', userId));
+    const conversationsSnapshot = await getDocs(conversationsQuery);
+    
+    for (const conversationDoc of conversationsSnapshot.docs) {
+      await deleteDoc(doc(db, 'conversations', conversationDoc.id));
+    }
+    
+    // Clean up user presence
+    try {
+      await deleteDoc(doc(db, 'presence', userId));
+    } catch (e) {
+      // Ignore if doesn't exist
+    }
+    
+    console.log('✅ User data deleted successfully');
+  } catch (error) {
+    console.error('❌ Error deleting user data:', error);
+    throw error;
+  }
+};
+
 export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
   // Process images: if string, use as is; if File, upload as WebP
   const imageUrls: string[] = [];

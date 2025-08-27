@@ -296,20 +296,6 @@ export default function TheCollaborativePage() {
           {/* Category Filter Pills */}
           {!loading && (posts.length > 0 || rotations.length > 0) && (
             <div className="mb-8">
-              {/* Header with clear filter */}
-              <div className="flex items-center justify-between mb-6">
-                {selectedCategory && (
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700 underline flex items-center gap-1"
-                  >
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                      <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
-                    </svg>
-                    Clear filter
-                  </button>
-                )}
-              </div>
               
               {/* Single row horizontal scrollable for all devices */}
               <div className="relative">
@@ -384,18 +370,10 @@ export default function TheCollaborativePage() {
                   </h3>
                   <p className="text-gray-500">
                     {selectedCategory 
-                      ? 'Try selecting a different category or clear the filter.'
+                      ? 'Try selecting a different category.'
                       : 'No shared content available.'
                     }
                   </p>
-                  {selectedCategory && (
-                    <button
-                      onClick={() => setSelectedCategory(null)}
-                      className="mt-4 text-sm text-gray-600 hover:text-gray-800 underline"
-                    >
-                      Clear filter
-                    </button>
-                  )}
                 </div>
               ) : (
                 filteredItems.map((item) => {
