@@ -13,6 +13,7 @@ import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight,
 import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
+import ProvenancePreview from '@/components/ProvenancePreview';
 import ProvenanceSection from '@/components/ProvenanceSection';
 
 export default function NewObjectPage() {
@@ -163,10 +164,7 @@ export default function NewObjectPage() {
                 Registry
               </Link>
             </Button>
-            
-            <div className="text-xs font-medium tracking-widest uppercase text-gray-400">
-              New Entry
-            </div>
+    
           </div>
           
           <div className="mb-20">
@@ -185,14 +183,24 @@ export default function NewObjectPage() {
             {steps.map((step) => {
               const isActive = currentStep === step.id;
               const isCompleted = completedSteps.has(step.id);
+              const isProvenanceStep = step.id === 4;
+              const isUserPremium = isHeldPlus(user);
+              const isProvenanceDisabled = isProvenanceStep && !isUserPremium;
               
               return (
-                <div key={step.id} className="text-center">
+                <div key={step.id} className="text-center relative">
+                  {isProvenanceDisabled && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                  )}
                   <div className={`text-xs font-medium tracking-widest uppercase mb-2 transition-colors ${
                     isCompleted 
                       ? 'text-black' 
                       : isActive 
                       ? 'text-black'
+                      : isProvenanceDisabled
+                      ? 'text-gray-300'
                       : 'text-gray-300'
                   }`}>
                     {String(step.id).padStart(2, '0')}
@@ -202,6 +210,8 @@ export default function NewObjectPage() {
                       ? 'bg-black' 
                       : isActive 
                       ? 'bg-black'
+                      : isProvenanceDisabled
+                      ? 'bg-gray-200'
                       : 'bg-gray-200'
                   }`} />
                   <div className={`text-xs font-medium tracking-wide uppercase transition-colors ${
@@ -209,9 +219,16 @@ export default function NewObjectPage() {
                       ? 'text-black' 
                       : isActive 
                       ? 'text-black'
+                      : isProvenanceDisabled
+                      ? 'text-gray-400'
                       : 'text-gray-400'
                   }`}>
                     {step.title}
+                    {isProvenanceDisabled && (
+                      <div className="text-xs text-amber-600 mt-1 normal-case tracking-normal">
+                        Held+ Only
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -532,7 +549,7 @@ export default function NewObjectPage() {
                         }}
                       />
                     ) : (
-                      <ProvenanceUpsell />
+                      <ProvenancePreview />
                     )}
                   </div>
                 )}
@@ -565,6 +582,14 @@ export default function NewObjectPage() {
                     className="bg-black hover:bg-gray-800 text-white font-light tracking-wide px-12 py-3 rounded-none"
                   >
                     {loading ? 'Processing...' : 'Submit Entry'}
+                  </Button>
+                ) : currentStep === 4 && !isHeldPlus(user) ? (
+                  <Button 
+                    type="submit" 
+                    disabled={loading || !canProceed()}
+                    className="bg-black hover:bg-gray-800 text-white font-light tracking-wide flex items-center gap-3 px-8 py-3 rounded-none"
+                  >
+                    {loading ? 'Processing...' : 'Skip & Submit Entry'}
                   </Button>
                 ) : (
                   <Button 
