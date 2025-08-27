@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // For Capacitor, we don't need static export - regular build works fine
   images: {
     domains: [
       'firebasestorage.googleapis.com',

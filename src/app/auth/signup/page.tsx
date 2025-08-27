@@ -149,14 +149,13 @@ export default function SignUpPage() {
         displayName: displayName.trim(),
         handle: '', // Will be set later in profile
         bio: '',
-        avatar: '',
-        isPublic: true,
-        joinedAt: new Date(),
-        lastActiveAt: new Date(),
+        avatarUrl: '',
+        isPublicProfile: true,
         notifications: {
-          likes: true,
-          comments: true,
-          follows: true,
+          monthlyRotation: true,
+          quarterlyReview: true,
+          email: true,
+          push: false,
           dms: true,
         }
       });

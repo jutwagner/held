@@ -258,7 +258,6 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
           {/* Typing Indicator */}
           {typingUsers.length > 0 && (
             <div className="px-6 py-2 bg-gray-50 border-t">
-              {console.log('[DEBUG] Rendering typing indicator for users:', typingUsers)}
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>

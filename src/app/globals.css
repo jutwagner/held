@@ -100,3 +100,8 @@
 nav .held-container{
   max-width: unset;
 }
+
+.pill{
+  border-radius: 100px;
+  font-size: 0.675rem;
+}

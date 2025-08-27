@@ -20,7 +20,7 @@ export default function SignInPage() {
 
   // Check for messages from signup or other sources
   useEffect(() => {
-    const message = searchParams.get('message');
+    const message = searchParams?.get('message');
     if (message) {
       setInfo(decodeURIComponent(message));
     }

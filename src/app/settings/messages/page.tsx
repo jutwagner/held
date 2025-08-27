@@ -240,8 +240,8 @@ export default function MessagesPage() {
                 ) : (
                   (() => {
                     // Group consecutive messages from the same sender
-                    const groupedMessages = [];
-                    let currentGroup = null;
+                    const groupedMessages: Array<{senderId: string; messages: Message[]}> = [];
+                    let currentGroup: {senderId: string; messages: Message[]} | null = null;
 
                     messages.forEach((message, index) => {
                       const isFromSameSender = currentGroup && currentGroup.senderId === message.senderId;
@@ -252,7 +252,7 @@ export default function MessagesPage() {
                       // Allow up to 4 hours between messages
                       const shouldGroup = isFromSameSender && timeDiff <= 240;
                       
-                      if (shouldGroup) {
+                      if (shouldGroup && currentGroup) {
                         currentGroup.messages.push(message);
                       } else {
                         if (currentGroup) {

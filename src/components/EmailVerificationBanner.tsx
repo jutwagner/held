@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
 export default function EmailVerificationBanner() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [dismissed, setDismissed] = useState(false);
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
@@ -18,7 +18,7 @@ export default function EmailVerificationBanner() {
 
   useEffect(() => {
     // Check if this is a welcome visit
-    if (searchParams.get('welcome') === 'true') {
+    if (searchParams?.get('welcome') === 'true') {
       setIsWelcome(true);
       // Clean up URL
       router.replace('/registry', { scroll: false });
@@ -105,7 +105,7 @@ export default function EmailVerificationBanner() {
   };
 
   // Don't show if user is verified, dismissed, or not logged in
-  if (!user || isVerified || user.emailVerified || dismissed) return null;
+  if (!user || isVerified || firebaseUser?.emailVerified || dismissed) return null;
 
   return (
     <div className={`border-b ${isWelcome ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>

@@ -320,7 +320,7 @@ export default function TheCollaborativePage() {
                         onClick={() => setSelectedCategory(isSelected ? null : category)}
                         disabled={!isAvailable}
                         className={`
-                          flex-shrink-0 relative px-4 py-2 rounded-lg text-sm font-small transition-all duration-200 whitespace-nowrap
+                          flex-shrink-0 pill relative px-4 py-2 rounded-lg text-xsm font-small transition-all duration-200 whitespace-nowrap
                           ${isSelected 
                             ? 'bg-black text-white shadow-md' 
                             : isAvailable 
@@ -331,14 +331,6 @@ export default function TheCollaborativePage() {
                       >
                         <span className="flex items-center gap-2">
                           {category}
-                          {isAvailable && count > 0 && (
-                            <span className={`
-                              inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium
-                              ${isSelected ? 'bg-white text-black' : 'bg-gray-200 text-gray-600'}
-                            `}>
-                              {count}
-                            </span>
-                          )}
                         </span>
                       </button>
                     );

@@ -757,8 +757,8 @@ export const getUserDisplayName = async (userId: string): Promise<string> => {
   } catch (error) {
     console.error('[DEBUG] Error getting user display name for', userId, ':', error);
     console.error('[DEBUG] Error details:', {
-      code: error.code,
-      message: error.message,
+      code: (error as any).code,
+      message: (error as any).message,
       authState: !!auth.currentUser
     });
     return 'User';
@@ -1032,8 +1032,8 @@ export const setUserPresence = async (userId: string, isOnline: boolean): Promis
   } catch (error) {
     console.error('[DEBUG] Error setting presence for user:', userId, error);
     console.error('[DEBUG] Error details:', {
-      code: error.code,
-      message: error.message,
+      code: (error as any).code,
+      message: (error as any).message,
       authUser: !!auth.currentUser
     });
   }
