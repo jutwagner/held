@@ -131,11 +131,11 @@ export default function Navigation() {
                   ) : user ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="rounded-full  shadow-sm w-10 h-10 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
+                        <button className="rounded-full  shadow-sm w-10 h-10 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 relative">
                           {user.avatarUrl ? (
                             <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover rounded-full" />
                           ) : (
-                            <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#888" strokeWidth="2"/><path d="M16 18c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4zm0-8a4 4 0 110 8 4 4 0 010-8z" fill="#bbb"/></svg>
+                            <svg width="32" height="32" fill="none" viewBox="0 0 23 36"><path d="M16 18c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4zm0-8a4 4 0 110 8 4 4 0 010-8z" fill="#bbb"/></svg>
                           )}
                           <NotificationBadge count={unreadCount} />
                         </button>

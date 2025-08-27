@@ -3,11 +3,9 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.held.app',
   appName: 'Held',
-  webDir: '.next',
+  webDir: 'out', // Use 'out' for static builds, '.next' for server builds
   server: {
-    androidScheme: 'https',
-    url: 'http://localhost:3001', // For development
-    cleartext: true
+    androidScheme: 'https'
   },
   ios: {
     scheme: 'Held'
