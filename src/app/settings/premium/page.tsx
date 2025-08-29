@@ -17,7 +17,7 @@ export default function PremiumSettings() {
         <SectionNav section="premium" mobile />
       </nav>
       <main className="flex-1 p-4 md:p-8 max-w-2xl mx-auto pb-16 md:pb-8 flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Radley, serif' }}>Held+</h1>
+  <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Libre Baskerville, serif' }}>Held+</h1>
         <PremiumSection user={user ?? undefined} />
       </main>
     </div>

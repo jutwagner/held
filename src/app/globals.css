@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Radley:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,7 +38,7 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Radley', serif;
+  font-family: 'Libre Baskerville', serif;
     font-weight: 400;
   }
   
@@ -122,8 +122,8 @@
 }
 
 .heldplus{
-  border-color: rgb(213, 210, 161);
-  background-color: #f0efea;
+  border-color: rgb(211 214 213);
+    background-color: #eaeff0;
 }
 
 /* Hide scrollbar for horizontal scrollable elements */
@@ -155,4 +155,8 @@ nav .held-container{
 
 .mobileNav a{
   min-height: 54px;
+}
+
+.font-serif {
+  font-family: 'Libre Baskerville', serif;
 }

@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['Playfair Display', 'serif'],
+        serif: ['Radley', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {

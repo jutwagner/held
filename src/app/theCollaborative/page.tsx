@@ -284,8 +284,11 @@ export default function TheCollaborativePage() {
             <p className="text-center text-gray-500">Loading…</p>
           ) : (
             <>
-              <h1 className="text-2xl font-serif font-bold mb-2 sm:mb-0">theCollaborative</h1>
-              <p className="text-gray-600">A chronological feed of all shared registry items and rotations.</p>
+
+
+            <h1 className="text-3xl font-serif font-medium mb-2">theCollaborative</h1>
+            <p className="text-gray-600">A feed of shared Registry Rotations.</p>
+
             </>
           )}
         </div>

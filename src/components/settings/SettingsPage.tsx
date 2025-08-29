@@ -103,7 +103,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Radley, serif' }}>Settings</h1>
+              <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>
               {section === 'profile' && (
                 <ProfileSection
                   user={user ?? undefined}

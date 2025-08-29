@@ -85,7 +85,6 @@ export default function Navigation() {
                       <DialogTrigger asChild>
                         <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black-700 transition-all">
                           <span className="flex items-center gap-2">
-                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                             Add
                           </span>
                         </Button>
@@ -106,7 +105,6 @@ export default function Navigation() {
                             </div>
                             <DialogClose asChild>
                               <Link href="/registry/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
-                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                 Add Object
                               </Link>
                             </DialogClose>
@@ -122,7 +120,6 @@ export default function Navigation() {
                             </div>
                             <DialogClose asChild>
                               <Link href="/rotations/new" className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg shadow hover:bg-blue-500 transition-all duration-200 text-lg font-semibold w-full">
-                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                 Add Rotation
                               </Link>
                             </DialogClose>
