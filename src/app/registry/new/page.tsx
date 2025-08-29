@@ -13,7 +13,7 @@ import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight,
 import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
-import ProvenancePreview from '@/components/ProvenancePreview';
+
 import ProvenanceSection from '@/components/ProvenanceSection';
 
 export default function NewObjectPage() {
@@ -549,7 +549,7 @@ export default function NewObjectPage() {
                         }}
                       />
                     ) : (
-                      <ProvenancePreview />
+                      <ProvenanceUpsell />
                     )}
                   </div>
                 )}

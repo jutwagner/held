@@ -45,5 +45,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIWebViewBounce</key>
+	<false/>
+	<key>UIScrollViewBounces</key>
+	<false/>
+	<key>KeyboardDisplayRequiresUserAction</key>
+	<false/>
 </dict>
 </plist>

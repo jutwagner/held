@@ -7,7 +7,7 @@ export function isHeldPlus(user: UserDoc | null | undefined): boolean {
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 // import type { Dispatch, SetStateAction } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithPopup } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser, initializePresence } from '@/lib/firebase-services';
@@ -47,27 +47,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [presenceCleanup, setPresenceCleanup] = useState<(() => void) | null>(null);
   
-    // Google Sign-In
+    // Google Sign-In - use redirect for mobile compatibility
   const signInWithGoogle = async (): Promise<void> => {
     try {
       const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      // For mobile apps, only use popup (no redirect to Safari)
       const result = await signInWithPopup(auth, provider);
-      // Create user in DB if not exists
-      const userData = await getUser(result.user.uid);
-      if (!userData) {
-        await createUser({
-          uid: result.user.uid,
-          email: result.user.email!,
-          displayName: result.user.displayName || '',
-          avatarUrl: result.user.photoURL || '',
-        });
+      if (result?.user) {
+        const userData = await getUser(result.user.uid);
+        if (!userData) {
+          await createUser({
+            uid: result.user.uid,
+            email: result.user.email!,
+            displayName: result.user.displayName || '',
+            avatarUrl: result.user.photoURL || '',
+          });
+        }
       }
-    } catch {
-      throw new Error('Google sign-in failed.');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      // Check if it's a popup blocked error
+      if (error.code === 'auth/popup-blocked') {
+        throw new Error('Popup was blocked. Please allow popups for this app.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled.');
+      } else {
+        throw new Error('Google sign-in failed. This feature requires proper Firebase iOS configuration.');
+      }
     }
   };
 
   useEffect(() => {
+    // Handle Google OAuth redirect result
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          // Create user in DB if not exists
+          const userData = await getUser(result.user.uid);
+          if (!userData) {
+            await createUser({
+              uid: result.user.uid,
+              email: result.user.email!,
+              displayName: result.user.displayName || '',
+              avatarUrl: result.user.photoURL || '',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Google redirect sign-in error:', error);
+      }
+    };
+
+    handleRedirectResult();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
       if (firebaseUser) {

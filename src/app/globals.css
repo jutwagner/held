@@ -34,6 +34,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Remove body padding - will be handled by individual components */
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -49,6 +50,44 @@
 @layer components {
   .held-container {
     @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Safe area utilities - iOS only */
+  @supports (padding: env(safe-area-inset-top)) {
+    .safe-area-top {
+      padding-top: max(env(safe-area-inset-top), 20px);
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .safe-area-left {
+      padding-left: env(safe-area-inset-left);
+    }
+    
+    .safe-area-right {
+      padding-right: env(safe-area-inset-right);
+    }
+    
+    .safe-area-all {
+      padding-top: max(env(safe-area-inset-top), 20px);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    
+    /* For sticky headers that need to stay below Dynamic Island */
+    .sticky-header-safe {
+      top: max(env(safe-area-inset-top), 20px);
+    }
+  }
+  
+  /* Fallback for non-iOS (web browsers) */
+  @supports not (padding: env(safe-area-inset-top)) {
+    .sticky-header-safe {
+      top: 0;
+    }
   }
   
   .held-card {
@@ -104,4 +143,16 @@ nav .held-container{
 .pill{
   border-radius: 100px;
   font-size: 0.675rem;
+}
+
+.testimonial{
+  text-align: center;
+  width: 100%;
+  justify-content: center;
+}
+
+.mobileNav {min-height: 70px;}
+
+.mobileNav a{
+  min-height: 54px;
 }

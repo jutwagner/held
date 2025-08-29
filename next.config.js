@@ -1,13 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // For Capacitor, we don't need static export - regular build works fine
+  // Use dev server but with proper native app configuration
   images: {
-    domains: [
-      'firebasestorage.googleapis.com',
-      'lh3.googleusercontent.com',
-      'lh4.googleusercontent.com',
-      'lh5.googleusercontent.com',
-      'lh6.googleusercontent.com',
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh4.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh5.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh6.googleusercontent.com',
+      },
     ],
   },
   webpack: (config, { isServer }) => {

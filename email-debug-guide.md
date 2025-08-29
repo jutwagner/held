@@ -77,3 +77,4 @@ But re-enable it for production!
 - [ ] DNS records properly set (if custom domain)
 
 If none of these work, the issue might be with Firebase's email service itself, which occasionally has outages.
+

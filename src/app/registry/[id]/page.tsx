@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+// Removed dynamic-island.css import; only use absolutely positioned spacer for Dynamic Island
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,8 +13,19 @@ import passportSvg from '@/img/passport.svg';
 import ProvenanceSection from '@/components/ProvenanceSection';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 
+function hasDynamicIsland() {
+  if (typeof window === 'undefined') return false;
+  const ua = window.navigator.userAgent;
+  // iOS detection
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  // Dynamic Island screen heights (add new models as needed)
+  const dynamicIslandHeights = [852, 932, 1179, 1290];
+  return isIOS && dynamicIslandHeights.includes(window.screen.height);
+}
+
 export default function ObjectDetailPage() { 
   const params = useParams();
+  const [dynamicIsland, setDynamicIsland] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const [object, setObject] = useState<HeldObject | null>(null);
@@ -50,6 +62,10 @@ export default function ObjectDetailPage() {
   });
 
   const objectId = params?.id as string;
+
+  useEffect(() => {
+    if (hasDynamicIsland()) setDynamicIsland(true);
+  }, []);
 
   useEffect(() => {
     if (!objectId) return;

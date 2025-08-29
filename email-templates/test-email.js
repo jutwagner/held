@@ -30,3 +30,4 @@ async function testEmailTemplate() {
 
 // Run the test
 testEmailTemplate();
+

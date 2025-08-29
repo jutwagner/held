@@ -1,6 +1,4 @@
-
 "use client";
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -12,7 +10,6 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { useState, useEffect } from 'react';
 import NotificationBadge from './NotificationBadge';
 import { subscribeToUnreadMessages } from '@/lib/firebase-services';
-
 export default function Navigation() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
@@ -26,21 +23,36 @@ export default function Navigation() {
       return unsubscribe;
     }
   }, [user?.uid]);
-  
+
   // Hide navigation on passport pages
   if (pathname?.startsWith('/passport/')) {
     return null;
   }
-  
+
+  // Detect iOS Dynamic Island (runtime check)
+  const [isDynamicIsland, setIsDynamicIsland] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.navigator.userAgent) {
+      const ua = window.navigator.userAgent;
+      // iPhone 14 Pro/Pro Max, iOS 16+, Safari only
+      const isIOS = /iPhone/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua);
+      // Dynamic Island devices: iPhone 14 Pro, 14 Pro Max, 15 Pro, 15 Pro Max
+      const isDynamic = /iPhone\s?(14|15)\s?Pro/.test(ua);
+      setIsDynamicIsland(isIOS && isDynamic);
+    }
+  }, []);
+
   return (
     <>
-      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <nav
+        className={`border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky z-40${isDynamicIsland ? ' sticky-header-safe safe-area-top' : ''}`}
+        style={!isDynamicIsland ? { position: 'sticky', top: 0 } : undefined}
+      >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <h1 className="text-xl font-serif font-medium">Held</h1>
-              <span className="text-xs font-mono text-gray-500">/held</span>
+              <Image src="/held-logo.svg" alt="Held Logo" width={32} height={32} className="h-8 w-auto" />
             </Link>
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
@@ -179,42 +191,27 @@ export default function Navigation() {
 
 export function MobileBottomBar() {
   const { user } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (user?.uid) {
-      const unsubscribe = subscribeToUnreadMessages(user.uid, (count) => {
-        setUnreadCount(count);
-      });
-      return unsubscribe;
-    }
-  }, [user?.uid]);
-
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex justify-around py-2">
-      <Link href="/registry" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="mb-1" />
-        <span className="text-xs mt-1">Registry</span>
+    <nav className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex justify-around items-center" style={{ minHeight: 40 }}>
+      <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
+        <span className="flex items-center justify-center h-8"><Image src="/img/registry.svg" alt="Registry" width={28} height={28} /></span>
       </Link>
-      <Link href="/rotations" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="mb-1" />
-        <span className="text-xs mt-1">Rotations</span>
+      <Link href="/rotations" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
+        <span className="flex items-center justify-center h-8"><Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} /></span>
       </Link>
-      <Link href="/theCollaborative" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
-        <span className="text-xs mt-1">theCollaborative</span>
+      <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
+        <span className="flex items-center justify-center h-8">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
+        </span>
       </Link>
       {user && (
-        <Link href="/settings/messages" className="flex flex-col items-center text-gray-600 hover:text-blue-600 relative">
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mb-1">
-            <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
-          </svg>
-          <span className="text-xs mt-1">Messages</span>
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-medium rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
+        <Link href="/settings" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
+          <span className="flex items-center justify-center h-8">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+          </span>
         </Link>
       )}
     </nav>
