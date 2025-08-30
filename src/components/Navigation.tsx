@@ -14,6 +14,7 @@ export default function Navigation() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isDynamicIsland, setIsDynamicIsland] = useState(false);
 
   useEffect(() => {
     if (user?.uid) {
@@ -24,13 +25,6 @@ export default function Navigation() {
     }
   }, [user?.uid]);
 
-  // Hide navigation on passport pages
-  if (pathname?.startsWith('/passport/')) {
-    return null;
-  }
-
-  // Detect iOS Dynamic Island (runtime check)
-  const [isDynamicIsland, setIsDynamicIsland] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.navigator.userAgent) {
       const ua = window.navigator.userAgent;
@@ -41,6 +35,11 @@ export default function Navigation() {
       setIsDynamicIsland(isIOS && isDynamic);
     }
   }, []);
+
+  // Hide navigation on passport pages
+  if (pathname?.startsWith('/passport/')) {
+    return null;
+  }
 
   return (
     <>

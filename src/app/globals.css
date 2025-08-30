@@ -160,3 +160,15 @@ nav .held-container{
 .font-serif {
   font-family: 'Libre Baskerville', serif;
 }
+
+.flex-wrap{ 
+  flex-wrap: wrap;
+}
+
+.full-width{
+  width: 100%;
+}
+
+.align-center{
+  text-align: center;
+}

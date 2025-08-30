@@ -156,17 +156,19 @@ export default function EditObjectPage() {
                 <Input id="title" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required placeholder="Object title" />
               </div>
               <div>
-                <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
-                <select id="category" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-                  <option value="" disabled>Select category</option>
-                  <option value="Furniture">Furniture</option>
-                  <option value="Lighting">Lighting</option>
-                  <option value="Art">Art</option>
-                  <option value="Decor">Decor</option>
-                  <option value="Textiles">Textiles</option>
-                  <option value="Books">Books</option>
-                  <option value="Other">Other</option>
-                </select>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {['Furniture','Lighting','Art','Decor','Textiles','Books','Other'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`pill px-4 py-2 border ${formData.category === cat ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-900 border-gray-300'} transition-colors duration-200`}
+                      onClick={() => setFormData({ ...formData, category: cat })}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label htmlFor="maker" className="block text-sm font-semibold text-gray-700 mb-2">Maker</label>

@@ -641,28 +641,30 @@ export default function ObjectDetailPage() {
               </div>
               
               {/* Visibility */}
-              <div className="space-y-6 pt-8 border-t border-gray-100">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.visibility === 'Public'}
-                    onChange={(e) => setFormData({...formData, visibility: e.target.checked ? 'Public' : 'Private'})}
-                    className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
-                  />
-                  <label className="ml-3 text-black font-light text-sm tracking-wide">
-                    Public Visibility
-                  </label>
+              {/* Category Selection */}
+              <div className="pt-8 border-t border-gray-100">
+                <label className="text-xs font-medium text-black mb-4 uppercase tracking-widest block">Category</label>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`pill px-4 py-2 border ${formData.category === cat ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-900 border-gray-300'} transition-colors duration-200`}
+                      onClick={() => setFormData({ ...formData, category: cat })}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.shareInCollaborative}
-                    onChange={(e) => setFormData({...formData, shareInCollaborative: e.target.checked})}
-                    className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
-                  />
-                  <label className="ml-3 text-black font-light text-sm tracking-wide">
-                    Collaborative Sharing
-                  </label>
+                <div className="flex items-center gap-6 mt-4">
+                  <span className="text-sm text-gray-700">Public Visibility</span>
+                  <button type="button" aria-label="Toggle Public/Private" className={`relative inline-flex h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${formData.visibility === 'Public' ? 'bg-blue-500' : 'bg-gray-300'}`} onClick={() => setFormData({ ...formData, visibility: formData.visibility === 'Public' ? 'Private' : 'Public' })}>
+                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${formData.visibility === 'Public' ? 'translate-x-6' : ''}`}></span>
+                  </button>
+                  <span className="text-sm text-gray-700">Collaborative Sharing</span>
+                  <button type="button" aria-label="Toggle Collaborative" className={`relative inline-flex h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${formData.shareInCollaborative ? 'bg-blue-500' : 'bg-gray-300'}`} onClick={() => setFormData({ ...formData, shareInCollaborative: !formData.shareInCollaborative })}>
+                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${formData.shareInCollaborative ? 'translate-x-6' : ''}`}></span>
+                  </button>
                 </div>
               </div>
             </div>

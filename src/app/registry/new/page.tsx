@@ -150,7 +150,7 @@ export default function NewObjectPage() {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -270,33 +270,35 @@ export default function NewObjectPage() {
                           Classification
                         </label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            { value: "Audio", label: "Audio Equipment" },
-                            { value: "Photography", label: "Photography" },
-                            { value: "Art", label: "Fine Art" },
-                            { value: "Design", label: "Industrial Design" },
-                            { value: "Furniture", label: "Furniture" },
-                            { value: "Lighting", label: "Lighting" },
-                            { value: "Technology", label: "Technology" },
-                            { value: "Instruments", label: "Musical Instruments" },
-                            { value: "Watches", label: "Timepieces" },
-                            { value: "Fashion", label: "Fashion & Textiles" },
-                            { value: "Books", label: "Publications" },
-                            { value: "Miscellaneous", label: "Miscellaneous" }
-                          ].map((category) => (
+                          {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
                             <button
-                              key={category.value}
+                              key={cat}
                               type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, category: category.value }))}
+                              onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
                               className={`py-4 px-6 border-2 text-left transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
-                                formData.category === category.value
+                                formData.category === cat
                                   ? 'border-black bg-black text-white shadow-lg'
                                   : 'border-gray-200 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
                               }`}
                             >
-                              <div className="text-sm font-medium tracking-wide">{category.label}</div>
+                              <div className="text-sm font-medium tracking-wide">{cat}</div>
                             </button>
                           ))}
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              className="hidden"
+                              id="image-upload"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => document.getElementById('image-upload')?.click()} 
+                              className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide"
+                            >
+                              Select Files
+                            </Button>
                         </div>
                       </div>
                     </div>
@@ -326,7 +328,7 @@ export default function NewObjectPage() {
                             type="file"
                             multiple
                             accept="image/*"
-                            onChange={handleImageUpload}
+                            {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
                             className="hidden"
                             id="image-upload"
                           />
