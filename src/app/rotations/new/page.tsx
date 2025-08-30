@@ -27,6 +27,35 @@ export default function NewRotationPage() {
     isPublic: false,
   });
 
+  const [showAddModal, setShowAddModal] = useState(false);
+const [newItemData, setNewItemData] = useState({ title: '', category: '', image: null });
+const [addingItem, setAddingItem] = useState(false);
+const categoryOptions = ['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'];
+
+const handleAddNewItem = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!user || typeof user.uid !== 'string') return;
+  if (!newItemData.title.trim() || !newItemData.category) return;
+  setAddingItem(true);
+  try {
+    const { createObject } = await import('@/lib/firebase-services');
+    const item = await createObject(user.uid, {
+      title: newItemData.title,
+      category: newItemData.category,
+      images: newItemData.image ? [newItemData.image] : [],
+      maker: '', year: undefined, value: undefined, condition: 'good', tags: [], notes: '', isPublic: false, shareInCollaborative: false
+    });
+    setObjects(prev => [...prev, item]);
+    setSelectedObjects(prev => [...prev, item.id]);
+    setShowAddModal(false);
+    setNewItemData({ title: '', category: '', image: null });
+  } catch (err) {
+    alert('Failed to add item');
+  } finally {
+    setAddingItem(false);
+  }
+};
+
 
   useEffect(() => {
     if (!user || typeof user.uid !== 'string') return;
@@ -226,6 +255,46 @@ export default function NewRotationPage() {
                   </Button>
                 </div>
               </form>
+
+              {showAddModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+      <h2 className="text-2xl font-bold mb-4">Add New Item</h2>
+      <form onSubmit={handleAddNewItem} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Title"
+          value={newItemData.title}
+          onChange={e => setNewItemData({ ...newItemData, title: e.target.value })}
+          className="w-full border border-gray-300 rounded px-3 py-2"
+          required
+        />
+        <div className="flex flex-wrap gap-2">
+          {categoryOptions.map(cat => (
+            <button
+              key={cat}
+              type="button"
+              className={`pill px-4 py-2 border ${newItemData.category === cat ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-900 border-gray-300'} transition-colors duration-200`}
+              onClick={() => setNewItemData({ ...newItemData, category: cat })}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => setNewItemData({ ...newItemData, image: e.target.files?.[0] || null })}
+          className="w-full border border-gray-300 rounded px-3 py-2"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
+          <Button type="submit" disabled={addingItem} className="bg-black text-white">{addingItem ? 'Adding...' : 'Add Item'}</Button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
             </div>
           </div>
 
@@ -282,9 +351,15 @@ export default function NewRotationPage() {
                       </div>
                     </div>
                   ))}
+
                 </div>
               )}
             </div>
+                    {/* Add New Item Button below the panel */}
+                    <div className="held-card p-6 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 cursor-pointer hover:border-black transition-all mt-6" onClick={() => setShowAddModal(true)}>
+                      <span className="text-3xl text-gray-400">+</span>
+                      <span className="font-semibold text-gray-700">Add New Item</span>
+                    </div>
           </div>
         </div>
       </div>
