@@ -147,12 +147,14 @@ export interface CreateRotationData {
   description?: string;
   objectIds: string[];
   isPublic: boolean;
+  coverImage?: string; // URL of the uploaded cover image
 }
 
 export interface UpdateRotationData extends Partial<CreateRotationData> {
   id: string;
   updatedAt?: Date;
   slug?: string;
+  coverImage?: string; // URL of the uploaded cover image
 }
 
 export interface Message {

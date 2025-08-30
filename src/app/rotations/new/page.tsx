@@ -20,15 +20,16 @@ export default function NewRotationPage() {
   const [selectedObjects, setSelectedObjects] = useState<string[]>([]);
   const [rotationCount, setRotationCount] = useState<number>(0);
 
-  const [formData, setFormData] = useState<CreateRotationData>({
-    name: '',
-    description: '',
-    objectIds: [],
-    isPublic: false,
-  });
+    const [formData, setFormData] = useState<CreateRotationData>({
+      name: '',
+      description: '',
+      objectIds: [],
+      isPublic: false,
+    });
+    const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
-const [newItemData, setNewItemData] = useState({ title: '', category: '', image: null });
+const [newItemData, setNewItemData] = useState<{ title: string; category: string; image: File | null }>({ title: '', category: '', image: null });
 const [addingItem, setAddingItem] = useState(false);
 const categoryOptions = ['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'];
 
@@ -159,25 +160,55 @@ const handleAddNewItem = async (e: React.FormEvent) => {
                 </div>
               )}
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name Field */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Rotation Name</label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Give your rotation a name..."
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-lg font-serif"
+                    required
+                  />
+                </div>
+
+                {/* Sexy Cover Image Upload */}
+                <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer group"
+                  onClick={() => document.getElementById('coverImageInput')?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      setCoverImageFile(e.dataTransfer.files[0]);
+                    }
+                  }}
+                >
+                  <input
+                    id="coverImageInput"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => setCoverImageFile(e.target.files?.[0] || null)}
+                  />
+                  {coverImageFile ? (
+                    <div className="w-full flex flex-col items-center">
+                      <img src={URL.createObjectURL(coverImageFile)} alt="Cover Preview" className="w-full h-40 object-cover rounded-lg border mb-2" />
+                      <button type="button" className="text-xs text-red-500 underline" onClick={e => { e.stopPropagation(); setCoverImageFile(null); }}>Remove</button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 w-full">
+                      <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16.5 3.5a3.5 3.5 0 11-7 0m7 0A3.5 3.5 0 009 3.5m7.5 0V7m-7.5 0V3.5m0 0A3.5 3.5 0 003.5 7m0 0V3.5m0 0A3.5 3.5 0 007 3.5" /></svg>
+                      <span className="text-gray-500 text-sm">Drag & drop or click to upload a cover image</span>
+                    </div>
+                  )}
+                </div>
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                     <p className="text-sm text-red-600">{error}</p>
                   </div>
                 )}
-
-                {/* Name */}
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Rotation Name *
-                  </label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                    placeholder="e.g., Fall 2024 Setup"
-                  />
-                </div>
 
                 {/* Description */}
                 <div>
