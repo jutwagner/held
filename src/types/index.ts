@@ -4,14 +4,15 @@ export type Density = 'cozy' | 'standard' | 'spacious';
 export interface UserDoc {
   displayName: string;
   handle: string;
-  bio: string;
-  avatarUrl: string;
-  theme: Theme;
-  typeTitleSerif: boolean;
-  typeMetaMono: boolean;
-  density: Density;
-  notifications: {
-    monthlyRotation: boolean;
+  id: string;
+  name: string;
+  description?: string;
+  objectIds: string[];
+  isPublic: boolean;
+  createdAt: Date | Timestamp | FieldValue;
+  updatedAt?: Date | Timestamp | FieldValue;
+  slug?: string;
+  coverImage?: string;
     quarterlyReview: boolean;
     email: boolean;
     push: boolean;
@@ -82,10 +83,12 @@ export interface Rotation {
   slug: string;
   createdAt: Date | import('firebase/firestore').Timestamp | import('firebase/firestore').FieldValue;
   updatedAt: Date | import('firebase/firestore').Timestamp | import('firebase/firestore').FieldValue;
+  coverImage?: string;
 }
 
 export interface RotationWithObjects extends Rotation {
   objects: HeldObject[];
+  coverImage?: string;
 }
 
 export interface CreateObjectData {

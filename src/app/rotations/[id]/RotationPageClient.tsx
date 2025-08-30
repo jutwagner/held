@@ -205,7 +205,7 @@ function RotationPageClient({ id }: { id: string }) {
           {objects.map((object, index) => (
             <section id={`object-${index}`} key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
               <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
-                <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-2xl">
+                <div className="bg-white rounded-xl shadow-sm flex flex-col items-center justify-center transition-all duration-300 hover:shadow-2xl">
                   <Image
                     src={object.images[0] || '/placeholder.png'}
                     alt={object.title}
