@@ -8,7 +8,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(req: NextRequest) {
   try {
     const { uid, email } = await req.json();
+    console.log('[CHECKOUT SESSION] Creating session with:', { uid, email });
     if (!uid || !email) {
+      console.warn('[CHECKOUT SESSION] Missing uid or email', { uid, email });
       return NextResponse.json({ error: 'Missing user UID or email' }, { status: 400 });
     }
     // Create a Stripe Checkout Session for Held+ subscription
@@ -26,8 +28,10 @@ export async function POST(req: NextRequest) {
       cancel_url: process.env.STRIPE_CANCEL_URL || 'http://localhost:3000/settings/premium?canceled=true',
       metadata: { uid },
     });
+    console.log('[CHECKOUT SESSION] Session created:', { id: session.id, url: session.url, metadata: session.metadata });
     return NextResponse.json({ url: session.url });
   } catch (error) {
+    console.error('[CHECKOUT SESSION] Error creating session:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

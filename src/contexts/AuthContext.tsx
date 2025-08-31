@@ -117,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
         console.log('[DEBUG] AuthContext setUser called with:', userData);
+        console.log('[DEBUG] User premium status:', userData?.premium);
         setUser(userData);
         if (typeof window !== 'undefined') {
           localStorage.setItem('held_user', JSON.stringify(userData));

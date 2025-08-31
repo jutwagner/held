@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const uid = body?.uid;
     const email = body?.email;
+    console.log('[PAYMENT INTENT] Incoming request:', { uid, email });
 
     // Find or create Stripe customer for this user
     let customerId = undefined;
@@ -32,9 +33,11 @@ export async function POST(req: NextRequest) {
       metadata: uid ? { uid } : undefined,
       customer: customerId,
     });
+    console.log('[PAYMENT INTENT] Created:', { id: paymentIntent.id, metadata: paymentIntent.metadata });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
+    console.error('[PAYMENT INTENT] Error:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

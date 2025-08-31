@@ -131,7 +131,8 @@ export default function EditObjectPage() {
       }));
       router.push(`/registry/${objectId}`);
     } catch (err) {
-      setUploadError('Failed to save changes');
+      console.error('Failed to save changes:', err);
+      setUploadError('Failed to save changes: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }

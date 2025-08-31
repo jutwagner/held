@@ -377,13 +377,24 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
   // Handle new images if provided
   if (data.images && data.images.length > 0) {
     const object = await getObject(id);
+    let newImageUrls: string[] = [];
     if (object) {
-      // TODO: Implement image upload and processing logic here
-      // For now, only keep existing image URLs
-      updateData.images = [
-        ...object.images.filter(img => typeof img === 'string'),
-        // ...newImageUrls.filter(url => typeof url === 'string') // Uncomment when implemented
-      ];
+      for (const img of data.images) {
+        if (typeof img !== 'string' && img instanceof File) {
+          try {
+            const storageRef = ref(storage, `objects/${id}/${img.name}`);
+            await uploadBytes(storageRef, img);
+            const url = await getDownloadURL(storageRef);
+            newImageUrls.push(url);
+            console.debug('[updateObject] Uploaded image:', url);
+          } catch (err) {
+            console.error('[updateObject] Image upload failed:', err);
+          }
+        } else if (typeof img === 'string') {
+          newImageUrls.push(img);
+        }
+      }
+      updateData.images = newImageUrls.filter(url => typeof url === 'string');
     }
   }
 
@@ -393,7 +404,20 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
   }
 
   delete updateData.id; // Remove id from update data
-  await updateDoc(objectRef, updateData);
+  // Remove undefined fields
+  Object.keys(updateData).forEach(key => {
+    if (updateData[key as keyof typeof updateData] === undefined) {
+      delete updateData[key as keyof typeof updateData];
+    }
+  });
+  console.debug('[updateObject] Update payload:', updateData);
+  try {
+    await updateDoc(objectRef, updateData);
+    console.debug('[updateObject] Update successful for object:', id);
+  } catch (err) {
+    console.error('[updateObject] Firestore update failed:', err);
+    throw err;
+  }
 };
 
 export const deleteObject = async (id: string): Promise<void> => {

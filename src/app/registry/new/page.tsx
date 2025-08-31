@@ -150,7 +150,7 @@ export default function NewObjectPage() {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
-  }
+  } 
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -328,9 +328,9 @@ export default function NewObjectPage() {
                             type="file"
                             multiple
                             accept="image/*"
-                            {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
                             className="hidden"
                             id="image-upload"
+                            onChange={handleImageUpload}
                           />
                           <Button 
                             type="button" 

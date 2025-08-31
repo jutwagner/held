@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const customerId = session.customer as string;
     const uid = session.metadata?.uid;
+    console.log('[STRIPE WEBHOOK] checkout.session.completed', { uid, customerId });
     if (uid && customerId) {
       await db.collection('users').doc(uid).set({
         stripeCustomerId: customerId,
@@ -41,6 +42,9 @@ export async function POST(req: NextRequest) {
           cancelRequested: admin.firestore.FieldValue.delete(),
         },
       }, { merge: true });
+      console.log('[STRIPE WEBHOOK] Firestore updated for checkout.session.completed', { uid });
+    } else {
+      console.warn('[STRIPE WEBHOOK] Missing uid or customerId in checkout.session.completed', { uid, customerId });
     }
   }
 
@@ -49,6 +53,7 @@ export async function POST(req: NextRequest) {
     const intent = event.data.object as Stripe.PaymentIntent;
     const customerId = intent.customer as string;
     const uid = intent.metadata?.uid;
+    console.log('[STRIPE WEBHOOK] payment_intent.succeeded', { uid, customerId });
     if (uid) {
       await db.collection('users').doc(uid).set({
         stripeCustomerId: customerId || '',
@@ -60,6 +65,9 @@ export async function POST(req: NextRequest) {
           cancelRequested: admin.firestore.FieldValue.delete(),
         },
       }, { merge: true });
+      console.log('[STRIPE WEBHOOK] Firestore updated for payment_intent.succeeded', { uid });
+    } else {
+      console.warn('[STRIPE WEBHOOK] Missing uid in payment_intent.succeeded', { uid });
     }
   }
 

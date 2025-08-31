@@ -1,3 +1,4 @@
+import { Timestamp, FieldValue } from 'firebase/firestore';
 export type Theme = 'light' | 'dim' | 'dark';
 export type Density = 'cozy' | 'standard' | 'spacious';
 
@@ -13,14 +14,13 @@ export interface UserDoc {
   updatedAt?: Date | Timestamp | FieldValue;
   slug?: string;
   coverImage?: string;
-    quarterlyReview: boolean;
-    email: boolean;
-    push: boolean;
-    dms?: boolean;
-  };
+  quarterlyReview: boolean;
+  // ...existing code...
+  push: boolean;
+  dms?: boolean;
   premium: {
     active: boolean;
-    plan: 'plus' | null;
+    plan: 'plus' | 'heldplus' | null;
     since: number | null;
     renewsAt: number | null;
     cancelRequested?: boolean;
