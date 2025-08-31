@@ -166,20 +166,25 @@ export default function RegistryPage() {
 }
 
 function ObjectCard({ object }: { object: HeldObject }) {
-  const cardClassName = "bg-white rounded-lg shadow p-4 min-h-[390px] flex flex-col justify-between"; // Updated min height to 390px for consistent card sizes
-
   return (
     <Link href={`/registry/${object.id}`}>
-      <div className={`${cardClassName} held-card p-6 hover:shadow-lg transition-shadow cursor-pointer`}>
+      <div
+        className="bg-white/80 backdrop-blur-lg border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl min-h-[400px] flex flex-col justify-between held-card p-8 transition-transform duration-200 hover:scale-[1.03] hover:shadow-2xl cursor-pointer relative overflow-hidden"
+        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+      >
+        {/* Premium/Public Accent */}
+        {object.isPublic && (
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">Public</span>
+        )}
         {/* Image */}
-        <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
+        <div className="aspect-square bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 rounded-xl mb-6 overflow-hidden flex items-center justify-center border border-gray-200">
           {object.images.length > 0 ? (
             <Image
               src={object.images[0]}
               alt={object.title}
               width={256}
               height={256}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-xl transition-transform duration-300 hover:scale-105"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/img/placeholder.svg';
@@ -194,18 +199,18 @@ function ObjectCard({ object }: { object: HeldObject }) {
 
         {/* Content */}
         <div>
-          <h3 className="font-medium mb-1 line-clamp-1">{object.title}</h3>
+          <h3 className="font-serif text-2xl font-semibold mb-1 line-clamp-1 text-gray-900 tracking-tight drop-shadow-sm">{object.title}</h3>
           {object.maker && (
-            <p className="text-sm text-gray-600 mb-2">{object.maker}</p>
+            <p className="text-base text-gray-600 mb-2 font-light italic">{object.maker}</p>
           )}
-          {/* Chain of Ownership (always visible) * /}
+          {/* Chain of Ownership */}
           <div className="mt-2">
             <span className="font-semibold text-xs text-blue-700">Chain of Ownership:</span>
             {Array.isArray(object.chain) && object.chain.length > 0 ? (
               <ul className="mt-1 mb-2 text-xs text-gray-700">
                 {object.chain.map((owner, idx) => (
                   <li key={idx} className="flex gap-2 items-center">
-                    <span className="font-mono">{owner.owner || <span className="text-gray-400 italic">Unknown</span>}</span>
+                    <span className="font-mono bg-gray-50 px-2 py-1 rounded-full border border-gray-200 text-gray-800 shadow-sm">{owner.owner || <span className="text-gray-400 italic">Unknown</span>}</span>
                     <span className="text-gray-500">{owner.acquiredAt ? `(${owner.acquiredAt})` : ''}</span>
                     {owner.notes && <span className="text-gray-400">{owner.notes}</span>}
                   </li>
@@ -215,54 +220,38 @@ function ObjectCard({ object }: { object: HeldObject }) {
               <span className="text-gray-400 italic ml-2">No chain of ownership</span>
             )}
           </div>
-          {/* Certificate of Authenticity (always visible) 
-          <div className="mt-2">
-            <span className="font-semibold text-xs text-blue-700">COA:</span>
-            {object.certificateOfAuthenticity ? (
-              typeof object.certificateOfAuthenticity === 'string' && object.certificateOfAuthenticity.startsWith('http') ? (
-                <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-2">View Certificate</a>
-              ) : typeof object.certificateOfAuthenticity === 'string' ? (
-                <span className="ml-2">{object.certificateOfAuthenticity}</span>
-              ) : (
-                <span className="ml-2">[Image uploaded]</span>
-              )
-            ) : (
-              <span className="text-gray-400 italic ml-2">No certificate</span>
-            )}
-          </div>
-          */}
 
-          <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
-            <span className="font-mono">
+          <div className="flex items-center justify-between text-sm text-gray-500 mt-4">
+            <span className="font-mono text-base font-semibold text-gray-700">
               {object.year && !isNaN(object.year) ? `${object.year}` : "N/A"}
             </span>
             <div className="flex items-center space-x-2">
               {object.value && (
-                <span className="font-mono">
+                <span className="font-mono text-base font-semibold text-green-700">
                   {isNaN(object.value) ? "N/A" : formatCurrency(object.value)}
                 </span>
               )}
               {object.isPublic ? (
-                <Eye className="h-3 w-3" />
+                <Eye className="h-4 w-4 text-blue-500" />
               ) : (
-                <EyeOff className="h-3 w-3" />
+                <EyeOff className="h-4 w-4 text-gray-400" />
               )}
             </div>
           </div>
 
           {/* Tags */}
           {Array.isArray(object.tags) && object.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-3">
+            <div className="flex flex-wrap gap-2 mt-4">
               {object.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded"
+                  className="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-xs text-gray-700 rounded-full border border-gray-200 shadow-sm font-mono"
                 >
-                  {tag}
+                  #{tag}
                 </span>
               ))}
               {object.tags.length > 3 && (
-                <span className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded">
+                <span className="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-xs text-gray-700 rounded-full border border-gray-200 shadow-sm font-mono">
                   +{object.tags.length - 3}
                 </span>
               )}
