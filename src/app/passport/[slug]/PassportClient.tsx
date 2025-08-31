@@ -317,8 +317,8 @@ export default function PassportClient() {
         <footer className="border-t border-gray-200 pt-12 mt-12">
           <div className="text-center text-gray-600">
             <p className="mb-2">Passport created with</p>
-            <Link href="/" className="text-black font-serif text-lg hover:underline">
-              Held
+            <Link href="/" className="text-black font-serif text-lg hover:underline center align-center align-center">
+              <img src="/held-logomark.svg" alt="Held Seal" className="h-10 w-10 align-center" />
             </Link>
           </div>
         </footer>

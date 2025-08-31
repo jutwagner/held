@@ -22,6 +22,8 @@ export default function RegistryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [showPublicOnly, setShowPublicOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,14 +44,13 @@ export default function RegistryPage() {
 
   useEffect(() => {
     filterObjects();
+    setPage(1); // Reset to first page on filter change
   }, [objects, searchTerm, showPublicOnly]);
 
   // loadObjects removed; now handled by subscribeObjects
 
   const filterObjects = () => {
     let filtered = objects;
-
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(obj => 
         obj.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,12 +58,9 @@ export default function RegistryPage() {
         (Array.isArray(obj.tags) && obj.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
       );
     }
-
-    // Filter by public/private
     if (showPublicOnly) {
       filtered = filtered.filter(obj => obj.isPublic);
     }
-
     setFilteredObjects(filtered);
   };
 
@@ -118,7 +116,7 @@ export default function RegistryPage() {
                 </Button>
               </div>
 
-              {/* Objects Grid */}
+              {/* Objects Grid with Pagination */}
               {loadingObjects ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => (
@@ -151,11 +149,18 @@ export default function RegistryPage() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredObjects.map((obj) => (
-                    <ObjectCard key={obj.id} object={obj} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredObjects.slice((page-1)*pageSize, page*pageSize).map((obj) => (
+                      <ObjectCard key={obj.id} object={obj} />
+                    ))}
+                  </div>
+                  <div className="flex justify-center mt-8 gap-2">
+                    <Button disabled={page === 1} onClick={() => setPage(page-1)} variant="outline">Previous</Button>
+                    <span className="px-4 py-2 text-gray-600">Page {page} of {Math.ceil(filteredObjects.length/pageSize)}</span>
+                    <Button disabled={page*pageSize >= filteredObjects.length} onClick={() => setPage(page+1)} variant="outline">Next</Button>
+                  </div>
+                </>
               )}
             </>
           )}
@@ -185,6 +190,8 @@ function ObjectCard({ object }: { object: HeldObject }) {
               width={256}
               height={256}
               className="w-full h-full object-cover rounded-xl transition-transform duration-300 hover:scale-105"
+              loading="lazy"
+              priority={false}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/img/placeholder.svg';
@@ -192,7 +199,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" />
+              <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
             </div>
           )}
         </div>

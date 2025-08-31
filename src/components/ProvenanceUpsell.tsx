@@ -13,8 +13,10 @@ const ProvenanceUpsell: React.FC = () => {
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
-            <Award className="h-6 w-6 text-white" />
+          <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 rounded-full flex items-center justify-center shadow-lg">
+            <span className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <img src="/held-seal.svg" alt="Held Seal" className="h-10 w-10" />
+            </span>
           </div>
           <div>
             <h3 className="text-2xl font-serif font-semibold text-gray-900">Provenance Documentation</h3>
