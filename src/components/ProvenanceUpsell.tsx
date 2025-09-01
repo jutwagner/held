@@ -19,28 +19,31 @@ const ProvenanceUpsell: React.FC = () => {
             </span>
           </div>
           <div>
-            <h3 className="text-2xl font-serif font-semibold text-gray-900">Provenance Documentation</h3>
+            <h3 className="text-2xl font-serif font-semibold text-gray-900">Provenance</h3>
             <p className="text-grey-700 font-medium">Available with Held+ Premium</p>
           </div>
         </div>
 
-        {/* Lock Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md border border-amber-200">
-            <Lock className="h-8 w-8 text-amber-600" />
+        {/* Lock Icon * /}
+        <div className="flex justify-center">
+          <div className="w-16 h-16 sflex items-center justify-center">
+            <img src="/held-seal-plus.svg" alt="Held+ Seal" className="h-16 w-16" />
           </div>
         </div>
+        */}
 
         {/* Features preview */}
         <div className="mb-8">
+          {/*}
           <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-500" />
             Premium Provenance Features
           </h4>
+          */}
           
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-white bg-opacity-60 rounded-lg p-4 border">
-              <h5 className="font-medium text-gray-900 mb-2">Complete Ownership History</h5>
+              <h5 className="font-medium text-gray-900 mb-2">Ownership History</h5>
               <p className="text-sm text-gray-600">Track the full chain of ownership with dates, notes, and transfer methods.</p>
             </div>
             

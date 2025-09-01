@@ -153,8 +153,27 @@ function RotationPageClient({ id }: { id: string }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Sticky Group Header */}
-      <header className="top-0 z-30 bg-white/90 backdrop-blur  shadow-sm">
-        <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm relative overflow-hidden">
+        {/* Cover Image Background */}
+        {rotation.coverImage && (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={rotation.coverImage}
+              alt="Rotation cover"
+              fill
+              className="object-cover opacity-20"
+              priority
+            />
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
+          </div>
+        )}
+        {/* Debug info - remove this later */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-2 right-2 z-20 bg-black/50 text-white text-xs p-2 rounded">
+            Cover Image: {rotation.coverImage ? 'Yes' : 'No'}
+          </div>
+        )}
+        <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-4">
               {objects.slice(0, 5).map((object, idx) => (

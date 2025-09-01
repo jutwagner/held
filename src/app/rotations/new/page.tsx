@@ -100,9 +100,19 @@ const handleAddNewItem = async (e: React.FormEvent) => {
     setLoading(true);
     setError('');
     try {
+      let coverImageUrl: string | undefined;
+      
+      // Upload cover image if provided
+      if (coverImageFile) {
+        const { uploadImages } = await import('@/lib/firebase-services');
+        const imageUrls = await uploadImages([coverImageFile], user.uid);
+        coverImageUrl = imageUrls[0];
+      }
+      
       const rotationData = {
         ...formData,
         objectIds: selectedObjects,
+        coverImage: coverImageUrl,
       };
       await createRotation(user.uid, rotationData);
       router.push('/rotations');

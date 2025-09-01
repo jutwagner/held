@@ -508,6 +508,7 @@ export const createRotation = async (userId: string, data: CreateRotationData): 
     objectIds: data.objectIds,
     isPublic: typeof data.isPublic === 'boolean' ? data.isPublic : true,
     slug,
+    coverImage: data.coverImage,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
