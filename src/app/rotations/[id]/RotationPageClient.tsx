@@ -154,25 +154,20 @@ function RotationPageClient({ id }: { id: string }) {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Sticky Group Header */}
       <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm relative overflow-hidden">
-        {/* Cover Image Background */}
+        {/* Cover Image Background - Integrated into header */}
         {rotation.coverImage && (
           <div className="absolute inset-0 z-0">
             <Image
               src={rotation.coverImage}
               alt="Rotation cover"
               fill
-              className="object-cover opacity-20"
+              className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
           </div>
         )}
-        {/* Debug info - remove this later */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-2 right-2 z-20 bg-black/50 text-white text-xs p-2 rounded">
-            Cover Image: {rotation.coverImage ? 'Yes' : 'No'}
-          </div>
-        )}
+
         <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-4">
@@ -190,13 +185,14 @@ function RotationPageClient({ id }: { id: string }) {
                 <span className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xs font-mono text-gray-600 border-2 border-white shadow">+{objects.length - 5}</span>
               )}
             </div>
+            {/* Always show title/description with enhanced styling */}
             <div>
-              <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1">{rotation.name || 'Unnamed Rotation'}</h1>
-              <p className="text-gray-500 text-base font-mono">{rotation.description || 'No description available'}</p>
+              <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1 drop-shadow-sm">{rotation.name || 'Unnamed Rotation'}</h1>
+              <p className="text-gray-600 text-base font-mono drop-shadow-sm">{rotation.description || 'No description available'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow-sm">{objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </header>

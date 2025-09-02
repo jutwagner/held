@@ -162,63 +162,94 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
 
   if (disabled) {
     return (
-      <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl transition-all duration-200 cursor-not-allowed relative" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
+      <div className="group relative bg-white rounded-2xl shadow-lg transition-all duration-300 cursor-not-allowed overflow-hidden min-h-[460px]" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
+        {/* Cover Image */}
+        {rotation.coverImage && (
+          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+            <Image
+              src={rotation.coverImage}
+              alt="Rotation Cover"
+              fill
+              className="object-cover opacity-60"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent" />
+          </div>
+        )}
+        
+        {/* Decorative background for cards without cover images */}
+        {!rotation.coverImage && (
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 -z-10" />
+        )}
+        
+        {/* Decorative icon for cards without cover images */}
+        {!rotation.coverImage && (
+          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-60" />
+          </div>
+        )}
+        
         {/* Absolute CTA overlay, card is visible but not clickable */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'auto',  background: 'rgba(255,255,255,0.85)' }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.95)' }}>
           <div className="flex flex-col items-center">
             <span className="text-gray-700 text-base font-semibold mb-2">Held+</span> 
             <Link
               href="/settings/premium"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg  font-semibold shadow hover:bg-blue-700 transition-all text-sm"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
               style={{ pointerEvents: 'auto' }}
             >
               Go
             </Link>
           </div>
         </div>
-        {/* ...existing card content... */}
-        <div className="flex items-center justify-between mb-4 blur">
-          <h3 className="font-medium text-lg blur">{rotation.name}</h3>
-          <div className="flex items-center space-x-2 blur">
-            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600 blur" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+        
+        {/* Card Content */}
+        <div className={`p-6 ${!rotation.coverImage ? 'pt-8' : ''}`}>
+          <div className="flex items-center justify-between mb-4 blur">
+            <h3 className="font-semibold text-xl text-gray-900 blur">{rotation.name}</h3>
+            <div className="flex items-center space-x-2 blur">
+              {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600 blur" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+            </div>
           </div>
-        </div>
-        {rotation.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2 blur">{rotation.description}</p>
-        )}
-        <div className="mb-4 blur">
-          <div className="flex -space-x-6 blur">
-            {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
-              <div key={obj.id} className="w-16 h-16 bg-gray-100 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 overflow-hidden transition-transform duration-200 hover:scale-105 hover:ring-blue-400">
-                {obj.images.length > 0 ? (
-                  <Image src={obj.images[0]} alt={obj.title} width={64} height={64} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-gray-400 text-base">?</span>
+          {rotation.description && (
+            <p className="text-gray-600 text-sm mb-6 line-clamp-2 blur leading-relaxed">{rotation.description}</p>
+          )}
+          <div className="mb-6 blur">
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <div className="flex -space-x-3 justify-center">
+                {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
+                  <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
+                    {obj.images.length > 0 ? (
+                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">?</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {rotation.objects.length > 5 && (
+                  <div className="blur w-14 h-14 bg-gray-200 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
+                    <span className="text-gray-600 text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
               </div>
-            ))}
-            {rotation.objects.length > 4 && (
-              <div className="blur w-16 h-16 bg-gray-200 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 flex items-center justify-center">
-                <span className="text-gray-600 text-base font-medium">+{rotation.objects.length - 4}</span>
-              </div>
-            )}
+              <p className="text-sm text-gray-600 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
-        </div>
-        <div className="flex items-center justify-between text-sm text-gray-500 blur">
-          <div className="flex items-center space-x-1 blur">
-            <Calendar className="h-3 w-3" />
-            <span>{formatDate(
-              rotation.createdAt instanceof Date
-                ? rotation.createdAt
-                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof rotation.createdAt.toDate === 'function')
-                  ? rotation.createdAt.toDate()
-                  : new Date()
-            )}</span>
+          <div className="flex items-center justify-between text-sm text-gray-500 blur">
+            <div className="flex items-center space-x-2 blur">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(
+                rotation.createdAt instanceof Date
+                  ? rotation.createdAt
+                  : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof rotation.createdAt.toDate === 'function')
+                    ? rotation.createdAt.toDate()
+                    : new Date()
+              )}</span>
+            </div>
+            {rotation.isPublic && <span className="text-green-600 text-xs font-medium bg-green-50 px-2 py-1 rounded-full">Public</span>}
           </div>
-          {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
       </div>
     );
@@ -226,78 +257,122 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
 
   return (
     <Link href={`/rotations/${rotation.id}`}>
-      <div className="held-card p-6 min-h-[390px] rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:-translate-y-1">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-lg">{rotation.name}</h3>
-          <div className="flex items-center space-x-2">
-            {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
-            {/* Show delete button for own or public rotations */}
-            {canDelete && (
-              <>
-                <button
-                  className="ml-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition disabled:opacity-50"
-                  onClick={e => { e.preventDefault(); setConfirmOpen(true); }}
-                  disabled={deleting}
-                  title="Delete rotation"
-                >
-                  {deleting ? 'Deleting...' : 'Delete'}
-                </button>
-                {confirmOpen && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
-                      <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
-                      <p className="mb-4">Are you sure you want to delete <span className="font-bold">{rotation.name}</span>? This cannot be undone.</p>
-                      <div className="flex justify-end gap-2">
-                        <button className="px-4 py-2 rounded bg-gray-200" onClick={e => { e.preventDefault(); setConfirmOpen(false); }}>Cancel</button>
-                        <button className="px-4 py-2 rounded bg-red-600 text-white" onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete'}</button>
+      <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-gray-200 min-h-[460px]">
+        {/* Cover Image */}
+        {rotation.coverImage && (
+          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+            <Image
+              src={rotation.coverImage}
+              alt="Rotation Cover"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent" />
+            {/* Public badge overlay */}
+            {rotation.isPublic && (
+              <div className="absolute top-3 right-3">
+                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">Public</span>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Decorative background for cards without cover images */}
+        {!rotation.coverImage && (
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 -z-10" />
+        )}
+        
+        {/* Decorative icon for cards without cover images */}
+        {!rotation.coverImage && (
+          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-60" />
+          </div>
+        )}
+        
+        {/* Card Content */}
+        <div className={`p-6 ${!rotation.coverImage ? 'pt-8' : ''}`}>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <h3 className="font-semibold text-xl text-gray-900 leading-tight">{rotation.name}</h3>
+            <div className="flex items-center space-x-2">
+              {!rotation.coverImage && (
+                <div className="flex items-center space-x-1">
+                  {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+                </div>
+              )}
+              {/* Show delete button for own or public rotations */}
+              {canDelete && (
+                <>
+                  <button
+                    className="ml-2 bg-red-50 text-red-600 px-2 py-1 rounded-lg text-xs hover:bg-red-100 transition-colors disabled:opacity-50 border border-red-200"
+                    onClick={e => { e.preventDefault(); setConfirmOpen(true); }}
+                    disabled={deleting}
+                    title="Delete rotation"
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                  {confirmOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                        <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
+                        <p className="mb-4">Are you sure you want to delete <span className="font-bold">{rotation.name}</span>? This cannot be undone.</p>
+                        <div className="flex justify-end gap-2">
+                          <button className="px-4 py-2 rounded bg-gray-200" onClick={e => { e.preventDefault(); setConfirmOpen(false); }}>Cancel</button>
+                          <button className="px-2 py-1 rounded bg-red-600 text-white" onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete'}</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-        {/* Description */}
-        {rotation.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{rotation.description}</p>
-        )}
-        {/* Objects Preview */}
-        <div className="mb-4">
-          <div className="flex -space-x-6">
-            {rotation.objects.slice(0, 4).map((obj: HeldObject) => (
-              <div key={obj.id} className="w-16 h-16 bg-gray-100 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 overflow-hidden transition-transform duration-200 hover:scale-105 hover:ring-blue-400">
-                {obj.images.length > 0 ? (
-                  <Image src={obj.images[0]} alt={obj.title} width={64} height={64} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-gray-400 text-base">?</span>
+          
+          {/* Description */}
+          {rotation.description && (
+            <p className="text-gray-600 text-sm mb-6 line-clamp-2 leading-relaxed">{rotation.description}</p>
+          )}
+          
+          {/* Objects Preview - Enhanced with better visual weight */}
+          <div className="mb-6">
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <div className="flex -space-x-3 justify-center">
+                {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
+                  <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
+                    {obj.images.length > 0 ? (
+                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">?</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {rotation.objects.length > 5 && (
+                  <div className="w-14 h-14 bg-gray-200 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
+                    <span className="text-gray-600 text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
               </div>
-            ))}
-            {rotation.objects.length > 4 && (
-              <div className="w-16 h-16 bg-gray-200 rounded-full border-4 border-white shadow-lg ring-2 ring-blue-200 flex items-center justify-center">
-                <span className="text-gray-600 text-base font-medium">+{rotation.objects.length - 4}</span>
-              </div>
-            )}
+              <p className="text-sm text-gray-600 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
-        </div>
-        {/* Footer */}
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-1">
-            <Calendar className="h-3 w-3" />
-            <span>{formatDate(
-              rotation.createdAt instanceof Date
-                ? rotation.createdAt
-                : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof (rotation.createdAt as import('firebase/firestore').Timestamp).toDate === 'function')
-                  ? (rotation.createdAt as import('firebase/firestore').Timestamp).toDate()
-                  : new Date()
-            )}</span>
+          
+          {/* Footer */}
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(
+                rotation.createdAt instanceof Date
+                  ? rotation.createdAt
+                  : (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt && typeof (rotation.createdAt as import('firebase/firestore').Timestamp).toDate === 'function')
+                    ? (rotation.createdAt as import('firebase/firestore').Timestamp).toDate()
+                    : new Date()
+              )}</span>
+            </div>
+            {!rotation.coverImage && rotation.isPublic && <span className="text-green-600 text-xs font-medium bg-green-50 px-2 py-1 rounded-full">Public</span>}
           </div>
-          {rotation.isPublic && <span className="text-green-600 text-xs">Public</span>}
         </div>
       </div>
     </Link>
