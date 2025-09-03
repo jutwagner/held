@@ -284,21 +284,6 @@ export default function NewObjectPage() {
                               <div className="text-sm font-medium tracking-wide">{cat}</div>
                             </button>
                           ))}
-                            <input
-                              type="file"
-                              multiple
-                              accept="image/*"
-                              className="hidden"
-                              id="image-upload"
-                            />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              onClick={() => document.getElementById('image-upload')?.click()} 
-                              className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide"
-                            >
-                              Select Files
-                            </Button>
                         </div>
                       </div>
                     </div>
@@ -320,7 +305,7 @@ export default function NewObjectPage() {
                         </label>
                         
                         {/* Image Upload Area */}
-                        <div className="border border-gray-200 p-20 text-center hover:border-black transition-colors">
+                        <div className="border border-gray-200 p-20 text-center hover:border-black transition-colors rounded-lg">
                           <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-8">
                             Image Upload
                           </div>
@@ -336,7 +321,7 @@ export default function NewObjectPage() {
                             type="button" 
                             variant="outline" 
                             onClick={() => document.getElementById('image-upload')?.click()} 
-                            className="border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide"
+                            className="border-black text-black hover:bg-black hover:text-white rounded-sm font-light tracking-wide"
                           >
                             Select Files
                           </Button>
@@ -421,7 +406,7 @@ export default function NewObjectPage() {
                               key={condition.value}
                               type="button"
                               onClick={() => setFormData(prev => ({ ...prev, condition: condition.value as any }))}
-                              className={`py-4 px-6 border border-gray-200 transition-all duration-150 ${
+                              className={`py-4 px-6 border border-gray-200 rounded-sm transition-all duration-150 ${
                                 formData.condition === condition.value
                                   ? 'border-black bg-black text-white'
                                   : 'bg-white text-black hover:border-gray-400'
@@ -442,10 +427,10 @@ export default function NewObjectPage() {
                             value={newTag}
                             onChange={(e) => setNewTag(e.target.value)}
                             placeholder="vintage, limited edition, signed"
-                            className="flex-1 text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
+                            className="flex-1 text-lg py-4 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-sm bg-transparent placeholder-gray-400"
                             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                           />
-                          <Button type="button" onClick={addTag} variant="outline" className="border-black text-black hover:bg-black hover:text-white rounded-none font-light">
+                          <Button type="button" onClick={addTag} variant="outline" className="border-black text-black hover:bg-black hover:text-white rounded-sm font-light">
                             Add
                           </Button>
                         </div>
@@ -566,7 +551,7 @@ export default function NewObjectPage() {
                     type="button" 
                     variant="outline" 
                     onClick={prevStep}
-                    className="flex items-center gap-3 border-black text-black hover:bg-black hover:text-white rounded-none font-light tracking-wide px-8 py-3"
+                    className="flex items-center gap-3 border-black text-black hover:bg-black hover:text-white rounded-sm font-light tracking-wide px-8 py-3"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
@@ -598,7 +583,7 @@ export default function NewObjectPage() {
                     type="button" 
                     onClick={nextStep}
                     disabled={!canProceed()}
-                    className="bg-black hover:bg-gray-800 text-white font-light tracking-wide flex items-center gap-3 px-8 py-3 rounded-none"
+                    className="bg-black hover:bg-gray-800 text-white font-light tracking-wide flex items-center gap-3 px-8 py-3 rounded-sm"
                   >
                     Continue
                     <ChevronRight className="h-4 w-4" />

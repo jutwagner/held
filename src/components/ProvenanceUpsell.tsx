@@ -90,9 +90,8 @@ const ProvenanceUpsell: React.FC = () => {
         <div className="text-center">
           <Link href="/settings/premium">
             <Button className="bg-black hover:from-amber-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
-              <Award className="h-4 w-4 mr-2" />
-              Upgrade to Held+
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <img src="/held-logomark.svg" alt="Held+ Seal" className="h-3 w-3 mr-2" style={{ filter: 'invert(1)' }} />
+              Get Held+
             </Button>
           </Link>
         </div>
