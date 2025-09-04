@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { createObject } from '@/lib/firebase-services';
+import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
 import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import Image from 'next/image';
@@ -111,6 +112,32 @@ export default function NewObjectPage() {
     try {
       const result = await createObject(user.uid, formData);
       console.log('Object created:', result);
+
+      // Auto-anchor core fields on Polygon for all users
+      try {
+        const baseURL = window.location.origin;
+        const uri = generatePassportURI(result as any, baseURL);
+        const anchorRes = await anchorPassport(result as any, uri, 1, 'core');
+        // Persist anchoring metadata
+        await fetch('/api/update-anchoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            objectId: (result as any).id,
+            anchoring: {
+              isAnchored: true,
+              version: 1,
+              txHash: anchorRes.txHash,
+              digest: anchorRes.digest,
+              anchoredAt: new Date().toISOString(),
+              uri,
+            },
+          }),
+        });
+      } catch (anchorErr) {
+        console.warn('Auto-anchor failed (non-blocking):', anchorErr);
+      }
+
       router.push('/registry');
     } catch (err) {
       console.error('Error creating object:', err);

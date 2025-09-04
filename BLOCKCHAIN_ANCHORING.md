@@ -6,11 +6,11 @@ Held now supports on-chain Passport anchoring using the Polygon mainnet and the 
 
 ## Features
 
-- **Automatic Hashing**: Core Passport data is automatically hashed using keccak256
+- **Automatic Basic Anchoring**: Core Passport fields (id, created, label, type) are auto-hashed and anchored for all users
 - **Polygon Integration**: Anchoring occurs on Polygon mainnet for low-cost transactions
 - **Version Control**: Each update creates a new version with incremented version numbers
 - **Verification**: Anyone can verify Passport authenticity by checking the blockchain
-- **Held+ Exclusive**: Blockchain anchoring is a premium feature for Held+ subscribers
+- **Held+ Premium**: Held+ unlocks richer metadata anchoring (attachments, history, images) and anchor updates/transfer
 
 ## Smart Contract
 
@@ -27,19 +27,17 @@ Held now supports on-chain Passport anchoring using the Polygon mainnet and the 
 
 ### 1. Data Hashing
 
-Passport data is deterministically hashed using the following fields:
-- ID, title, maker, year, category, condition
-- Serial number, acquisition date, origin
-- Provenance chain, condition history
-- Associated documents, provenance notes
+- **Basic (all users)**: hash of core public fields `{ id, created, label, type }`
+- **Premium (Held+)**: hash of full Passport + premium data (attachments, history, images, etc.)
 
-The hash is generated using keccak256 and stored as the `digest` field.
+All hashes are keccak256 of a stable JSON encoding and are stored on-chain as `digest`.
 
 ### 2. Blockchain Integration
 
 - **Provider**: Polygon mainnet RPC endpoint
 - **Library**: ethers.js v5.7.2
-- **Transaction Handling**: Automatic transaction confirmation and error handling
+- **Server Signing**: Transactions are signed server-side via Next.js API route (`/api/anchor`)
+- **Client**: Client calls the API; PRIVATE_KEY never reaches the browser
 
 ### 3. Database Schema
 
@@ -61,9 +59,9 @@ anchoring?: {
 
 ### Creating Objects
 
-1. Users can opt-in to blockchain anchoring during object creation
-2. A checkbox appears in the "Provenance" step for Held+ users
-3. Anchoring is initialized but not executed until explicitly requested
+1. Every new Passport auto-anchors basic core fields on creation (server-side)
+2. UI shows an “Anchored on Polygon” badge
+3. Upgrade prompts encourage Held+ to unlock richer on-chain provenance
 
 ### Editing Objects
 
@@ -102,10 +100,10 @@ Updates an object's anchoring data in Firestore.
 
 ## Security Considerations
 
-1. **Private Key Management**: Users must connect their own wallet (Metamask, etc.)
-2. **Transaction Signing**: All blockchain transactions require user approval
+1. **Private Key Management**: PRIVATE_KEY is stored server-side only; never exposed to clients
+2. **Server-Side Signing**: The `/api/anchor` route signs and submits transactions
 3. **Data Privacy**: Only hashes are stored on-chain, not raw data
-4. **Access Control**: Anchoring is restricted to Held+ subscribers
+4. **Access Control**: Premium anchoring (full data, updates/transfers) is Held+-only
 
 ## Future Enhancements
 
@@ -143,8 +141,11 @@ Updates an object's anchoring data in Firestore.
 
 ```bash
 # Add to .env.local for production
-POLYGON_RPC_URL=https://polygon-rpc.com
-HELD_ANCHORS_CONTRACT=0x2E9e8b1E508064415dbADFd2d27D65Ccb3CE5c18
+POLYGON_RPC=https://polygon-rpc.com
+PRIVATE_KEY=your_server_side_wallet_private_key
+# Optional override
+# POLYGON_RPC_URL=https://polygon-rpc.com
+# HELD_ANCHORS_CONTRACT=0x2E9e8b1E508064415dbADFd2d27D65Ccb3CE5c18
 ```
 
 ## Support

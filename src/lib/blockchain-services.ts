@@ -34,34 +34,64 @@ export const HELD_ANCHORS_CONTRACT = {
 };
 
 // Polygon mainnet RPC endpoint
-export const POLYGON_RPC_URL = 'https://polygon-rpc.com';
+export const POLYGON_RPC_URL =
+  process.env.NEXT_PUBLIC_POLYGON_RPC ||
+  process.env.POLYGON_RPC ||
+  process.env.POLYGON_RPC_URL ||
+  'https://polygon-rpc.com';
 
 // Generate a deterministic hash (digest) from Passport data
-export function generatePassportDigest(passport: HeldObject): string {
-  // Create a deterministic representation of the core Passport data
-  const coreData = {
+function toISO(input: any): string | undefined {
+  try {
+    if (!input) return undefined;
+    if (input instanceof Date) return input.toISOString();
+    if (typeof input === 'string') return input;
+    if (typeof input === 'number') return new Date(input).toISOString();
+    // Firestore Timestamp
+    if (typeof input.toDate === 'function') return input.toDate().toISOString();
+  } catch {}
+  return undefined;
+}
+
+// Basic/core fields digest (for free users, auto-anchored)
+export function generateCoreDigest(passport: HeldObject): string {
+  const core = {
     id: passport.id,
-    title: passport.title,
+    created: toISO((passport as any).created ?? passport.createdAt) || '',
+    label: passport.title,
+    type: passport.category,
+  } as const;
+  const json = JSON.stringify(core);
+  return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(json));
+}
+
+// Full/premium digest (richer metadata)
+export function generateFullDigest(passport: HeldObject): string {
+  const full = {
+    id: passport.id,
+    created: toISO((passport as any).created ?? passport.createdAt) || '',
+    label: passport.title,
+    type: passport.category,
     maker: passport.maker,
     year: passport.year,
-    category: passport.category,
     condition: passport.condition,
     serialNumber: passport.serialNumber,
-    acquisitionDate: passport.acquisitionDate,
+    acquisitionDate: toISO(passport.acquisitionDate) || undefined,
     origin: passport.origin,
-    // Include provenance chain if available
     chain: passport.chain,
-    // Include condition history if available
     conditionHistory: passport.conditionHistory,
-    // Include associated documents if available
     associatedDocuments: passport.associatedDocuments,
-    // Include provenance notes if available
     provenanceNotes: passport.provenanceNotes,
+    images: passport.images,
+    notes: passport.notes,
   };
+  const json = JSON.stringify(full);
+  return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(json));
+}
 
-  // Convert to JSON string and hash using keccak256
-  const dataString = JSON.stringify(coreData, Object.keys(coreData).sort());
-  return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(dataString));
+// Backward-compat wrapper; defaults to core digest
+export function generatePassportDigest(passport: HeldObject, kind: 'core' | 'full' = 'core'): string {
+  return kind === 'full' ? generateFullDigest(passport) : generateCoreDigest(passport);
 }
 
 // Generate a deterministic Passport ID
@@ -71,7 +101,7 @@ export function generatePassportId(passport: HeldObject): string {
 
 // Get Polygon provider
 export function getPolygonProvider(): ethers.providers.JsonRpcProvider {
-  return new ethers.providers.JsonRpcProvider(POLYGON_RPC_URL);
+  return new ethers.providers.StaticJsonRpcProvider(POLYGON_RPC_URL, { name: 'matic', chainId: 137 });
 }
 
 // Get contract instance
@@ -85,70 +115,184 @@ export function getHeldAnchorsContract(signer?: ethers.Signer): ethers.Contract 
   );
 }
 
-// Anchor a Passport on-chain
+// Anchor via server API (recommended; keeps PRIVATE_KEY server-side)
 export async function anchorPassport(
   passport: HeldObject,
   uri: string,
   version: number = 1,
-  signer?: ethers.Signer
-): Promise<{ txHash: string; digest: string; passportId: string }> {
+  kind: 'core' | 'full' = 'core'
+): Promise<{ txHash: string; digest: string; passportId: string; blockNumber?: number }> {
   try {
-    const contract = getHeldAnchorsContract(signer);
+    const res = await fetch('/api/anchor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind,
+        passport,
+        uri,
+        version,
+      }),
+    });
     
-    // Generate digest and passport ID
-    const digest = generatePassportDigest(passport);
-    const passportId = generatePassportId(passport);
+    if (!res.ok) {
+      let errorMessage = `Anchor API failed with ${res.status}`;
+      try {
+        const err = await res.json();
+        errorMessage = err?.error || errorMessage;
+      } catch {
+        // If we can't parse the error response, use the status text
+        errorMessage = res.statusText || errorMessage;
+      }
+      
+      // Provide more specific error messages for common issues
+      if (res.status === 500) {
+        if (errorMessage.includes('No working Polygon RPC endpoint found')) {
+          errorMessage = 'Blockchain service temporarily unavailable. Please try again later or contact support if the issue persists.';
+        } else if (errorMessage.includes('PRIVATE_KEY not configured')) {
+          errorMessage = 'Blockchain anchoring is not configured on this server. Please contact support to enable this feature.';
+        } else if (errorMessage.includes('Invalid PRIVATE_KEY format')) {
+          errorMessage = 'Server configuration error: Invalid private key format. Please contact support.';
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
     
-    // Call the anchor function
-    const tx = await contract.anchor(
-      passportId,
-      digest,
-      'keccak256',
-      uri,
-      version
-    );
+    return await res.json();
+  } catch (error) {
+    console.error('Failed to anchor via API:', error);
     
-    // Wait for transaction confirmation
-    await tx.wait();
+    // Provide user-friendly error messages
+    let userMessage = 'Failed to anchor Passport';
+    if (error instanceof Error) {
+      if (error.message.includes('Blockchain service temporarily unavailable')) {
+        userMessage = error.message;
+      } else if (error.message.includes('Blockchain anchoring is not configured')) {
+        userMessage = error.message;
+      } else if (error.message.includes('timeout') || error.message.includes('network')) {
+        userMessage = 'Network timeout. Please check your connection and try again.';
+      } else {
+        userMessage = `Failed to anchor Passport: ${error.message}`;
+      }
+    }
+    
+    throw new Error(userMessage);
+  }
+}
+
+// Check if blockchain anchoring is available
+export async function isBlockchainAnchoringAvailable(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/anchor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind: 'core',
+        passport: { id: 'test' },
+        uri: 'test',
+        version: 1,
+      }),
+    });
+    
+    // If we get a 500 with PRIVATE_KEY not configured, anchoring is not set up
+    if (res.status === 500) {
+      const error = await res.json().catch(() => ({}));
+      return !error?.error?.includes('PRIVATE_KEY not configured');
+    }
+    
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Get blockchain service status information
+export async function getBlockchainServiceStatus(): Promise<{
+  isAvailable: boolean;
+  status: 'configured' | 'not_configured' | 'unavailable' | 'unknown';
+  message: string;
+  details?: string;
+}> {
+  try {
+    const res = await fetch('/api/anchor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind: 'core',
+        passport: { id: 'test' },
+        uri: 'test',
+        version: 1,
+      }),
+    });
+    
+    if (res.ok) {
+      return {
+        isAvailable: true,
+        status: 'configured',
+        message: 'Blockchain anchoring is available and working',
+      };
+    }
+    
+    if (res.status === 500) {
+      const error = await res.json().catch(() => ({}));
+      
+      if (error?.error?.includes('PRIVATE_KEY not configured')) {
+        return {
+          isAvailable: false,
+          status: 'not_configured',
+          message: 'Blockchain anchoring is not configured',
+          details: 'The PRIVATE_KEY environment variable is not set. Please configure blockchain anchoring to use this feature.',
+        };
+      }
+      
+      if (error?.error?.includes('No working Polygon RPC endpoint found')) {
+        return {
+          isAvailable: false,
+          status: 'unavailable',
+          message: 'Blockchain service is unavailable',
+          details: 'Unable to connect to Polygon network. This may be a temporary issue.',
+        };
+      }
+      
+      return {
+        isAvailable: false,
+        status: 'unavailable',
+        message: 'Blockchain service error',
+        details: error?.error || 'Unknown error occurred',
+      };
+    }
     
     return {
-      txHash: tx.hash,
-      digest,
-      passportId
+      isAvailable: false,
+      status: 'unknown',
+      message: `Unexpected response: ${res.status}`,
+      details: res.statusText,
     };
   } catch (error) {
-    console.error('Failed to anchor Passport:', error);
-    throw new Error(`Failed to anchor Passport: ${error instanceof Error ? error.message : String(error)}`);
+    return {
+      isAvailable: false,
+      status: 'unknown',
+      message: 'Unable to check blockchain service status',
+      details: error instanceof Error ? error.message : 'Network error',
+    };
   }
 }
 
 // Verify a Passport's on-chain anchoring
 export async function verifyPassportAnchoring(
   passport: HeldObject,
-  expectedDigest?: string
+  expectedDigest?: string,
+  kind: 'core' | 'full' = 'core'
 ): Promise<{ isAnchored: boolean; txHash?: string; blockNumber?: number }> {
   try {
-    const contract = getHeldAnchorsContract();
-    const digest = expectedDigest || generatePassportDigest(passport);
-    const passportId = generatePassportId(passport);
-    
-    // Get past events for this Passport ID
-    const events = await contract.queryFilter(
-      contract.filters.Anchored(passportId, digest),
-      0, // fromBlock
-      'latest' // toBlock
-    );
-    
-    if (events.length > 0) {
-      const latestEvent = events[events.length - 1];
-      return {
-        isAnchored: true,
-        txHash: latestEvent.transactionHash,
-        blockNumber: latestEvent.blockNumber
-      };
-    }
-    
-    return { isAnchored: false };
+    // If caller supplied digest, prefer server verify by recomputing to avoid mismatch
+    const res = await fetch('/api/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passport, kind }),
+    });
+    if (!res.ok) return { isAnchored: false };
+    return await res.json();
   } catch (error) {
     console.error('Failed to verify Passport anchoring:', error);
     return { isAnchored: false };
@@ -160,35 +304,14 @@ export async function getLatestAnchoringEvent(
   passport: HeldObject
 ): Promise<{ digest: string; uri: string; version: number; txHash: string; blockNumber: number } | null> {
   try {
-    const contract = getHeldAnchorsContract();
-    const passportId = generatePassportId(passport);
-    
-    // Get past events for this Passport ID
-    const events = await contract.queryFilter(
-      contract.filters.Anchored(passportId),
-      0, // fromBlock
-      'latest' // toBlock
-    );
-    
-    if (events.length > 0) {
-      const latestEvent = events[events.length - 1];
-      const args = latestEvent.args;
-      
-      if (!args) {
-        console.error('Event args are undefined');
-        return null;
-      }
-      
-      return {
-        digest: args.digest,
-        uri: args.uri,
-        version: args.version.toNumber(),
-        txHash: latestEvent.transactionHash,
-        blockNumber: latestEvent.blockNumber
-      };
-    }
-    
-    return null;
+    const res = await fetch('/api/anchoring-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passport }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.latest ?? null;
   } catch (error) {
     console.error('Failed to get latest anchoring event:', error);
     return null;

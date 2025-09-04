@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/Badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ExternalLink, Anchor, CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
+import { ExternalLink, Anchor, CheckCircle, XCircle, Loader2, Shield, Crown, Clock, Sparkles } from 'lucide-react';
 import { HeldObject } from '@/types';
 import {
   anchorPassport,
@@ -39,6 +39,8 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
     txHash: string;
     blockNumber: number;
   } | null>(null);
+  const [anchoringStartTime, setAnchoringStartTime] = useState<Date | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Check if user is Held+ subscriber
   const isUserHeldPlus = isHeldPlus(user);
@@ -48,6 +50,18 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       loadLatestAnchoringEvent();
     }
   }, [passport.anchoring?.isAnchored]);
+
+  // Timer for long-running transactions
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isAnchoring && anchoringStartTime) {
+      interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - anchoringStartTime.getTime()) / 1000);
+        setElapsedTime(elapsed);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isAnchoring, anchoringStartTime]);
 
   const loadLatestAnchoringEvent = async () => {
     try {
@@ -63,7 +77,11 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
     setError(null);
     
     try {
-      const result = await verifyPassportAnchoring(passport);
+      // Try core verification first, then full if not found
+      let result = await verifyPassportAnchoring(passport, undefined, 'core');
+      if (!result.isAnchored) {
+        result = await verifyPassportAnchoring(passport, undefined, 'full');
+      }
       setVerificationResult(result);
       
       if (result.isAnchored) {
@@ -79,12 +97,14 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
 
   const handleAnchorPassport = async () => {
     if (!isUserHeldPlus) {
-      setError('Blockchain anchoring is a Held+ feature');
+      setError('Enhanced blockchain anchoring is a Held+ feature');
       return;
     }
 
     setIsAnchoring(true);
     setError(null);
+    setAnchoringStartTime(new Date());
+    setElapsedTime(0);
     
     try {
       // Generate URI for the Passport
@@ -94,8 +114,8 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       // Get current version (increment if already anchored)
       const currentVersion = (passport.anchoring?.version || 0) + 1;
       
-      // Anchor the Passport
-      const result = await anchorPassport(passport, uri, currentVersion);
+      // Anchor the Passport (premium/full data for Held+)
+      const result = await anchorPassport(passport, uri, currentVersion, 'full');
       
       // Update the anchoring data
       const newAnchoring = {
@@ -104,9 +124,21 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
         digest: result.digest,
         version: currentVersion,
         anchoredAt: new Date(),
-        uri
+        uri,
+        blockNumber: (result as any).blockNumber,
       };
       
+      // Persist anchoring to backend
+      try {
+        await fetch('/api/update-anchoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ objectId: passport.id, anchoring: newAnchoring }),
+        });
+      } catch (e) {
+        console.warn('Failed to persist anchoring (non-blocking):', e);
+      }
+
       // Call the callback to update the parent component
       if (onAnchoringUpdate) {
         onAnchoringUpdate(newAnchoring);
@@ -126,6 +158,53 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       console.error('Anchoring error:', error);
     } finally {
       setIsAnchoring(false);
+      setAnchoringStartTime(null);
+      setElapsedTime(0);
+    }
+  };
+
+  // Basic anchoring available to all users
+  const handleAnchorBasic = async () => {
+    setIsAnchoring(true);
+    setError(null);
+    setAnchoringStartTime(new Date());
+    setElapsedTime(0);
+    
+    try {
+      const baseURL = window.location.origin;
+      const uri = generatePassportURI(passport, baseURL);
+      const version = (passport.anchoring?.version || 0) + 1 || 1;
+      const result = await anchorPassport(passport, uri, version, 'core');
+      const newAnchoring = {
+        isAnchored: true,
+        txHash: result.txHash,
+        digest: result.digest,
+        version,
+        anchoredAt: new Date(),
+        uri,
+        blockNumber: (result as any).blockNumber,
+      };
+      // Persist anchoring to backend
+      try {
+        await fetch('/api/update-anchoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ objectId: passport.id, anchoring: newAnchoring }),
+        });
+      } catch (e) {
+        console.warn('Failed to persist anchoring (non-blocking):', e);
+      }
+
+      if (onAnchoringUpdate) onAnchoringUpdate(newAnchoring);
+      setVerificationResult({ isAnchored: true, txHash: result.txHash });
+      await loadLatestAnchoringEvent();
+    } catch (error) {
+      setError(`Failed to anchor basic proof: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Basic anchoring error:', error);
+    } finally {
+      setIsAnchoring(false);
+      setAnchoringStartTime(null);
+      setElapsedTime(0);
     }
   };
 
@@ -162,142 +241,206 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
   const status = getAnchoringStatus();
   const StatusIcon = status.icon;
 
+  const formatElapsedTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Blockchain Anchoring
-        </CardTitle>
-        <CardDescription>
-          Anchor this Passport on the Polygon blockchain for immutable provenance verification
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Status Display */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Badge className={status.color}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {status.label}
-            </Badge>
-            {passport.anchoring?.version && (
-              <Badge variant="outline">
-                Version {passport.anchoring.version}
-              </Badge>
-            )}
-          </div>
-          
-          {!isUserHeldPlus && (
-            <Badge variant="outline" className="text-orange-600 border-orange-200">
-              Held+ Required
-            </Badge>
-          )}
-        </div>
-
-        <p className="text-sm text-gray-600">{status.description}</p>
-
-        {/* Anchoring Details */}
-        {passport.anchoring?.isAnchored && latestEvent && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <h4 className="font-medium text-sm">Anchoring Details</h4>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-gray-500">Transaction:</span>
-                <a
-                  href={getPolygonExplorerURL(latestEvent.txHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  View on Polygon
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-              <div>
-                <span className="text-gray-500">Block:</span>
-                <a
-                  href={getPolygonBlockExplorerURL(latestEvent.blockNumber)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  #{latestEvent.blockNumber}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-              <div>
-                <span className="text-gray-500">Digest:</span>
-                <span className="ml-2 font-mono text-xs">
-                  {latestEvent.digest.slice(0, 10)}...{latestEvent.digest.slice(-8)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500">URI:</span>
-                <span className="ml-2 text-xs truncate">{latestEvent.uri}</span>
-              </div>
+    <div className="space-y-6">
+      {/* Status Display */}
+      {passport.anchoring?.isAnchored ? (
+        <div className="border-2 border-black p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <CheckCircle className="h-6 w-6 text-black" />
+            <div>
+              <h3 className="text-lg font-light text-black">Blockchain Verified</h3>
+              <p className="text-sm text-gray-600">This passport is anchored on the Polygon blockchain</p>
             </div>
           </div>
-        )}
-
-        {/* Error Display */}
-        {error && (
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button
-            onClick={handleVerifyAnchoring}
-            disabled={isVerifying}
-            variant="outline"
-            size="sm"
-          >
-            {isVerifying ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <CheckCircle className="h-4 w-4 mr-2" />
-            )}
-            Verify Status
-          </Button>
-
-          {(!passport.anchoring?.isAnchored || passport.anchoring?.version) && (
-            <Button
-              onClick={handleAnchorPassport}
-              disabled={isAnchoring || !isUserHeldPlus}
-              size="sm"
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              {isAnchoring ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Anchor className="h-4 w-4 mr-2" />
-              )}
-              {passport.anchoring?.isAnchored ? 'Update Anchor' : 'Anchor on Polygon'}
-            </Button>
+          
+          {latestEvent && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-gray-500">Transaction:</span>
+                  <a
+                    href={getPolygonExplorerURL(latestEvent.txHash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-black hover:text-gray-600 border-b border-black hover:border-gray-600 pb-1 transition-colors"
+                  >
+                    {latestEvent.txHash.slice(0, 8)}...{latestEvent.txHash.slice(-6)}
+                  </a>
+                </div>
+                <div>
+                  <span className="text-gray-500">Block:</span>
+                  <a
+                    href={getPolygonBlockExplorerURL(latestEvent.blockNumber)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-black hover:text-gray-600 border-b border-black hover:border-gray-600 pb-1 transition-colors"
+                  >
+                    {latestEvent.blockNumber}
+                  </a>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-
-        {/* Held+ Upsell */}
-        {!isUserHeldPlus && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-medium text-purple-900 mb-2">Upgrade to Held+</h4>
-            <p className="text-sm text-purple-700 mb-3">
-              Anchor your Passports on the Polygon blockchain for immutable provenance verification.
-            </p>
+          
+          <div className="mt-6">
             <Button
+              onClick={handleVerifyAnchoring}
+              disabled={isVerifying}
               variant="outline"
-              size="sm"
-              className="border-purple-300 text-purple-700 hover:bg-purple-100"
+              className="border-black text-black hover:bg-black hover:text-white transition-colors"
             >
-              Learn More
+              {isVerifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Verify Again
+                </>
+              )}
             </Button>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ) : (
+        <div className="border-2 border-black p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <XCircle className="h-6 w-6 text-black" />
+            <div>
+              <h3 className="text-lg font-light text-black">Not Yet Anchored</h3>
+              <p className="text-sm text-gray-600">This passport has not been anchored on the blockchain</p>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {/* Basic anchoring for all users */}
+            <Button
+              onClick={handleAnchorBasic}
+              disabled={isAnchoring}
+              className="w-full bg-black hover:bg-gray-800 text-white border-0 transition-colors"
+            >
+              {isAnchoring ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Anchoring...
+                </>
+              ) : (
+                <>
+                  <Anchor className="h-4 w-4 mr-2" />
+                  Create Basic Proof
+                </>
+              )}
+            </Button>
+            
+            {/* Enhanced anchoring for Held+ users */}
+            {isUserHeldPlus && (
+              <Button
+                onClick={handleAnchorPassport}
+                disabled={isAnchoring}
+                variant="outline"
+                className="w-full border-black text-black hover:bg-black hover:text-white transition-colors"
+              >
+                {isAnchoring ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Anchoring...
+                  </>
+                ) : (
+                  <>
+                    <Crown className="h-4 w-4 mr-2" />
+                    Enhanced Anchoring
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Long-running Transaction Feedback */}
+      {isAnchoring && (
+        <div className="border-2 border-black p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Loader2 className="h-6 w-6 text-black animate-spin" />
+            <div>
+              <h4 className="text-lg font-light text-black">Transaction in Progress</h4>
+              <p className="text-sm text-gray-600">Waiting for blockchain confirmation...</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>Elapsed: {formatElapsedTime(elapsedTime)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <span>Polygon Network</span>
+            </div>
+          </div>
+          
+          <div className="p-4 bg-gray-50 border border-gray-200">
+            <p className="text-sm text-gray-800">
+              This process typically takes 2-5 minutes. Please don't close this page.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="border-2 border-red-300 p-6">
+          <div className="flex items-center gap-4 mb-2">
+            <XCircle className="h-5 w-5 text-red-600" />
+            <span className="text-red-600 font-medium">Error</span>
+          </div>
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {/* Verification Result */}
+      {verificationResult && !passport.anchoring?.isAnchored && (
+        <div className="border-2 border-green-300 p-6">
+          <div className="flex items-center gap-4 mb-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span className="text-green-600 font-medium">Verification Complete</span>
+          </div>
+          <p className="text-sm text-green-600">
+            Passport verification completed successfully.
+          </p>
+        </div>
+      )}
+
+      {/* Held+ Upsell - Only show if not anchored and user is not Held+ */}
+      {!isUserHeldPlus && !passport.anchoring?.isAnchored && (
+        <div className="border-2 border-black p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Crown className="h-6 w-6 text-black" />
+            <div>
+              <h3 className="text-lg font-light text-black">Enhanced Features</h3>
+              <p className="text-sm text-gray-600">
+                Held+ subscribers can anchor full metadata and access advanced provenance features.
+              </p>
+            </div>
+          </div>
+          
+          <Button
+            onClick={() => window.location.href = '/settings/premium'}
+            className="bg-black hover:bg-gray-800 text-white border-0 transition-colors"
+          >
+            <Crown className="h-4 w-4 mr-2" />
+            Upgrade to Held+
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
