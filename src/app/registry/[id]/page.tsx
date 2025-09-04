@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import passportSvg from '@/img/passport.svg';
 import ProvenanceSection from '@/components/ProvenanceSection';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
+import BlockchainAnchoring from '@/components/BlockchainAnchoring';
 
 function hasDynamicIsland() {
   if (typeof window === 'undefined') return false;
@@ -726,6 +727,16 @@ export default function ObjectDetailPage() {
             <ProvenanceUpsell />
           </div>
         )}
+
+        {/* Blockchain Anchoring Section */}
+        <div className="mt-20">
+          <BlockchainAnchoring 
+            passport={object} 
+            onAnchoringUpdate={(anchoring) => {
+              setObject(prev => prev ? { ...prev, anchoring } : null);
+            }}
+          />
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

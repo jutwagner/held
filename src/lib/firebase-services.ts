@@ -177,10 +177,15 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
   // Fill missing fields with sensible defaults
   const avatarUrl = userData.avatarUrl || (typeof (userData as { photoURL?: string }).photoURL === 'string' ? (userData as { photoURL?: string }).photoURL! : '');
   const userToSave: UserDoc = {
+    id: userData.uid,
+    name: userData.displayName || '',
     displayName: userData.displayName || '',
     handle: userData.handle || userData.uid.slice(0, 8),
     bio: userData.bio || '',
     avatarUrl,
+    objectIds: [],
+    isPublic: false,
+    quarterlyReview: false,
     theme: userData.theme || 'light',
     typeTitleSerif: userData.typeTitleSerif ?? true,
     typeMetaMono: userData.typeMetaMono ?? false,
@@ -203,6 +208,8 @@ export const createUser = async (userData: Partial<UserDoc> & { uid: string; ema
     email: userData.email,
     uid: userData.uid,
     isPublicProfile: userData.isPublicProfile ?? false,
+    push: false,
+    createdAt: now,
   };
   console.log('[DEBUG] createUser returned object:', userToSave);
   await setDoc(userRef, { ...userToSave, createdAt: now, updatedAt: now });
@@ -330,6 +337,16 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
   if (objectData.images && Array.isArray(objectData.images) && objectData.images.some((img: unknown) => img instanceof File)) {
     objectData.images = imageUrls;
   }
+  
+  // Initialize blockchain anchoring if requested
+  if (data.anchorOnChain) {
+    objectData.anchoring = {
+      isAnchored: false,
+      version: 0,
+      anchoredAt: undefined,
+    };
+  }
+  
   // Write to Firestore
   const docRef = await addDoc(collection(db, 'objects'), objectData);
   return { id: docRef.id, ...objectData } as HeldObject;
@@ -416,6 +433,25 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     console.debug('[updateObject] Update successful for object:', id);
   } catch (err) {
     console.error('[updateObject] Firestore update failed:', err);
+    throw err;
+  }
+};
+
+// Update object's blockchain anchoring data
+export const updateObjectAnchoring = async (
+  id: string, 
+  anchoring: NonNullable<HeldObject['anchoring']>
+): Promise<void> => {
+  const objectRef = doc(db, 'objects', id);
+  
+  try {
+    await updateDoc(objectRef, {
+      anchoring,
+      updatedAt: new Date(),
+    });
+    console.debug('[updateObjectAnchoring] Anchoring update successful for object:', id);
+  } catch (err) {
+    console.error('[updateObjectAnchoring] Firestore update failed:', err);
     throw err;
   }
 };

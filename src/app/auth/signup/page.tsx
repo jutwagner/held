@@ -148,7 +148,7 @@ export default function SignUpPage() {
         email: user.email!,
         displayName: displayName.trim(),
         handle: '', // Will be set later in profile
-        bio: '',
+        description: '',
         avatarUrl: '',
         isPublicProfile: true,
         notifications: {

@@ -11,6 +11,7 @@ import { ArrowLeft, Share2, Calendar, DollarSign, Tag, Award, X, ExternalLink } 
 import Link from 'next/link';
 import Image from 'next/image';
 import passportSvg from '@/img/passport.svg';
+import BlockchainAnchoring from '@/components/BlockchainAnchoring';
 
 export default function PassportClient() {
   const params = useParams();
@@ -313,6 +314,16 @@ export default function PassportClient() {
           </div>
         )}
 
+        {/* Blockchain Anchoring Section */}
+        <div className="border-t border-gray-200 pt-12">
+          <BlockchainAnchoring 
+            passport={object} 
+            onAnchoringUpdate={(anchoring) => {
+              setObject(prev => prev ? { ...prev, anchoring } : null);
+            }}
+          />
+        </div>
+
         {/* Footer */}
         <footer className="border-t border-gray-200 pt-12 mt-12">
           <div className="text-center text-gray-600">
@@ -372,6 +383,7 @@ export default function PassportClient() {
     </div>
   );
 }
+
 
 
 

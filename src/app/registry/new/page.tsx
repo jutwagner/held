@@ -508,33 +508,74 @@ export default function NewObjectPage() {
                     </div>
 
                     {isHeldPlus(user) ? (
-                      <ProvenanceSection 
-                        data={{
-                          serialNumber: formData.serialNumber,
-                          acquisitionDate: formData.acquisitionDate,
-                          certificateOfAuthenticity: formData.certificateOfAuthenticity,
-                          certificateImage: formData.certificateImage,
-                          certificateUrl: formData.certificateUrl,
-                          origin: formData.origin,
-                          transferMethod: formData.transferMethod,
-                          associatedDocuments: Array.isArray(formData.associatedDocuments) 
-                            ? formData.associatedDocuments 
-                            : [],
-                          provenanceNotes: formData.provenanceNotes,
-                          chain: Array.isArray(formData.chain) 
-                            ? formData.chain 
-                            : []
-                        }}
-                        onChange={(provenanceData) => {
-                          setFormData(prev => ({
-                            ...prev,
-                            ...provenanceData,
-                            associatedDocuments: Array.isArray(provenanceData.associatedDocuments) 
-                              ? provenanceData.associatedDocuments
+                      <>
+                        <ProvenanceSection 
+                          data={{
+                            serialNumber: formData.serialNumber,
+                            acquisitionDate: formData.acquisitionDate,
+                            certificateOfAuthenticity: formData.certificateOfAuthenticity,
+                            certificateImage: formData.certificateImage,
+                            certificateUrl: formData.certificateUrl,
+                            origin: formData.origin,
+                            transferMethod: formData.transferMethod,
+                            associatedDocuments: Array.isArray(formData.associatedDocuments) 
+                              ? formData.associatedDocuments 
+                              : [],
+                            provenanceNotes: formData.provenanceNotes,
+                            chain: Array.isArray(formData.chain) 
+                              ? formData.chain 
                               : []
-                          }));
-                        }}
-                      />
+                          }}
+                          onChange={(provenanceData) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              ...provenanceData,
+                              associatedDocuments: Array.isArray(provenanceData.associatedDocuments) 
+                                ? provenanceData.associatedDocuments
+                                : []
+                            }));
+                          }}
+                        />
+                        
+                        {/* Blockchain Anchoring Option */}
+                        <div className="border-t border-gray-100 pt-8">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-lg font-medium text-black mb-2">Blockchain Anchoring</h3>
+                              <p className="text-sm text-gray-600">
+                                Anchor this Passport on the Polygon blockchain for immutable provenance verification
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <input
+                                type="checkbox"
+                                id="anchorOnChain"
+                                checked={formData.anchorOnChain || false}
+                                onChange={(e) => setFormData(prev => ({ ...prev, anchorOnChain: e.target.checked }))}
+                                className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                              />
+                              <label htmlFor="anchorOnChain" className="text-black font-light text-sm tracking-wide">
+                                Anchor on Polygon
+                              </label>
+                            </div>
+                          </div>
+                          <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                            <div className="flex items-start gap-3">
+                              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-purple-600 text-xs font-medium">ℹ</span>
+                              </div>
+                              <div className="text-sm text-purple-800">
+                                <p className="font-medium mb-1">What is blockchain anchoring?</p>
+                                <p className="text-purple-700">
+                                  Your Passport data will be cryptographically hashed and stored on the Polygon blockchain, 
+                                  creating an immutable record that can be verified by anyone. This ensures the authenticity 
+                                  and provenance of your object can never be disputed.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       <ProvenanceUpsell />
                     )}

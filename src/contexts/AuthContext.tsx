@@ -67,13 +67,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Google sign-in error:', error);
       // Check if it's a popup blocked error
-      if (error.code === 'auth/popup-blocked') {
-        throw new Error('Popup was blocked. Please allow popups for this app.');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in was cancelled.');
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const code = (error as { code: string }).code;
+        if (code === 'auth/popup-blocked') {
+          throw new Error('Popup was blocked. Please allow popups for this app.');
+        } else if (code === 'auth/popup-closed-by-user') {
+          throw new Error('Sign-in was cancelled.');
+        } else {
+          throw new Error('Google sign-in failed. This feature requires proper Firebase iOS configuration.');
+        }
       } else {
         throw new Error('Google sign-in failed. This feature requires proper Firebase iOS configuration.');
       }

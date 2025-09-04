@@ -8,6 +8,8 @@ export interface UserDoc {
   id: string;
   name: string;
   description?: string;
+  bio?: string;
+  avatarUrl?: string;
   objectIds: string[];
   isPublic: boolean;
   createdAt: Date | Timestamp | FieldValue;
@@ -15,7 +17,17 @@ export interface UserDoc {
   slug?: string;
   coverImage?: string;
   quarterlyReview: boolean;
-  // ...existing code...
+  theme?: 'light' | 'dim' | 'dark';
+  typeTitleSerif?: boolean;
+  typeMetaMono?: boolean;
+  density?: 'cozy' | 'standard' | 'spacious';
+  notifications?: {
+    monthlyRotation: boolean;
+    quarterlyReview: boolean;
+    email: boolean;
+    push: boolean;
+    dms: boolean;
+  };
   push: boolean;
   dms?: boolean;
   premium: {
@@ -71,6 +83,16 @@ export interface HeldObject {
   transferMethod?: string;
   associatedDocuments?: string[];
   provenanceNotes?: string;
+  // Blockchain anchoring fields
+  anchoring?: {
+    isAnchored: boolean;
+    txHash?: string;
+    blockNumber?: number;
+    digest?: string;
+    version: number;
+    anchoredAt?: Date;
+    uri?: string;
+  };
 }
 
 export interface Rotation {
@@ -115,6 +137,8 @@ export interface CreateObjectData {
   transferMethod?: string;
   associatedDocuments?: string[];
   provenanceNotes?: string;
+  // Blockchain anchoring fields
+  anchorOnChain?: boolean;
 }
 
 export interface UpdateObjectData {
@@ -143,6 +167,8 @@ export interface UpdateObjectData {
   transferMethod?: string;
   associatedDocuments?: string[];
   provenanceNotes?: string;
+  // Blockchain anchoring fields
+  anchorOnChain?: boolean;
 }
 
 export interface CreateRotationData {

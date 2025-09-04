@@ -31,6 +31,7 @@ type UpdateObjectData = {
   associatedDocuments?: string[];
   provenanceNotes?: string;
   transferMethod?: string;
+  anchorOnChain?: boolean;
 };
 
 export default function EditObjectPage() {
@@ -85,6 +86,7 @@ export default function EditObjectPage() {
           associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments : [],
           provenanceNotes: obj.provenanceNotes || '',
           transferMethod: obj.transferMethod || '',
+          anchorOnChain: obj.anchoring?.isAnchored || false,
         });
       }
       setLoading(false);
@@ -128,6 +130,7 @@ export default function EditObjectPage() {
         transferMethod: formData.transferMethod,
         associatedDocuments: formData.associatedDocuments ?? [],
         provenanceNotes: formData.provenanceNotes,
+        anchorOnChain: formData.anchorOnChain,
       }));
       router.push(`/registry/${objectId}`);
     } catch (err) {
@@ -343,6 +346,41 @@ export default function EditObjectPage() {
                     <p className="text-gray-500">No chain of ownership entries</p>
                   )}
                   <Button type="button" variant="outline" className="mt-2" onClick={() => setFormData({ ...formData, chain: [...(formData.chain ?? []), { owner: '', acquiredAt: '', notes: '' }] })}>Add Entry</Button>
+                </div>
+                
+                {/* Blockchain Anchoring Section */}
+                <div className="mt-8 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Blockchain Anchoring</h3>
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="text-sm font-medium text-purple-900">Anchor on Polygon</p>
+                        <p className="text-xs text-purple-700">
+                          Immutable provenance verification on the blockchain
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="checkbox"
+                          id="anchorOnChain"
+                          checked={formData.anchorOnChain || false}
+                          onChange={(e) => setFormData({ ...formData, anchorOnChain: e.target.checked })}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-purple-300 rounded"
+                        />
+                        <label htmlFor="anchorOnChain" className="text-sm font-medium text-purple-900">
+                          Enable Anchoring
+                        </label>
+                      </div>
+                    </div>
+                    <div className="text-xs text-purple-700">
+                      <p className="mb-2">When enabled, this Passport will be:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Cryptographically hashed and stored on Polygon</li>
+                        <li>Immutable and verifiable by anyone</li>
+                        <li>Updated with each edit to maintain provenance</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end mt-8">

@@ -42,11 +42,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         console.error('Error fetching user:', error);
         // Set fallback user data
         setPostUser({
+          id: post.userId,
           uid: post.userId,
+          name: 'Anonymous',
           displayName: 'Anonymous',
           handle: 'anonymous',
           avatarUrl: '',
           bio: '',
+          objectIds: [],
+          isPublic: false,
+          quarterlyReview: false,
+          push: false,
           theme: 'light',
           typeTitleSerif: false,
           typeMetaMono: false,
@@ -56,6 +62,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             quarterlyReview: false,
             email: false,
             push: false,
+            dms: false,
           },
           premium: {
             active: false,
@@ -69,6 +76,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             sessions: [],
           },
           isPublicProfile: false,
+          createdAt: new Date(),
         });
       }
     };
