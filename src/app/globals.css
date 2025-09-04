@@ -235,3 +235,10 @@ nav .held-container{
   0% { transform: translateX(0); }
   100% { transform: translateX(420%); }
 }
+
+
+
+.text-5xl {
+    font-size: 3.25rem;
+    line-height: 3.5rem;
+}

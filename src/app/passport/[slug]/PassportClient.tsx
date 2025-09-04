@@ -109,7 +109,7 @@ export default function PassportClient() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="w-full bg-white border-b border-gray-200">
-        <div className="w-full px-8 py-4">
+        <div className="w-full px-4 sm:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link
               href={user ? "/registry" : "/"}
@@ -128,17 +128,17 @@ export default function PassportClient() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-8 py-12">
-                <Image src={passportSvg} alt="Passport" width={40} height={40} className="opacity-100 float-left mr-5" />
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+                <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-5" />
         {/* Passport Header */}
-        <div className="mb-16">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-light text-black leading-tight tracking-wide mb-4">
+        <div className="mb-10 sm:mb-16">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0">
+            <div className="flex-1 w-full">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-black leading-tight tracking-tight mb-2 sm:mb-4 text-center md:text-left">
                 {object.title}
               </h1>
               
-              <div className="flex items-center gap-6 text-sm text-black">
+              <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-black justify-center md:justify-start text-center md:text-left w-full">
                 {object.maker && (
                   <span className="font-light tracking-wide">
                     {object.maker}
@@ -157,24 +157,30 @@ export default function PassportClient() {
               </div>
             </div>
             
-            <div className="ml-12">
-              <div className="border border-black p-4 text-center">
+            <div className="md:ml-12 mt-2 md:mt-0 self-center md:self-auto">
+              <div className="border border-black p-3 sm:p-4 text-center">
                 <div className="text-xs uppercase tracking-widest text-black mb-1">Passport</div>
                 <div className="text-lg font-light text-black">#{object.id?.slice(-8) || '00000000'}</div>
                 {object.anchoring?.isAnchored && (
-                  <div className="mt-2 text-xs text-black border-t border-black pt-2">
+                  <div className=" text-xs text-black border-black pt-2">
                     {object.anchoring?.txHash ? (
-                      <a
-                        href={getPolygonExplorerURL(object.anchoring.txHash)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:no-underline"
-                        title={object.anchoring.txHash}
-                      >
-                        Anchored on Polygon
-                      </a>
+                      <div className="flex flex-col items-center gap-1">
+                        <Image src="/img/Polygon.svg" alt="Polygon" width={18} height={18} />
+                        <a
+                          href={getPolygonExplorerURL(object.anchoring.txHash)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:no-underline"
+                          title={object.anchoring.txHash}
+                        >
+                          Anchored on Polygon
+                        </a>
+                      </div>
                     ) : (
-                      <span>Anchored on Polygon</span>
+                      <div className="flex flex-col items-center gap-2">
+                        <span>Anchored on Polygon</span>
+                        <Image src="/img/Polygon.svg" alt="Polygon" width={18} height={18} />
+                      </div>
                     )}
                   </div>
                 )}
@@ -184,15 +190,14 @@ export default function PassportClient() {
         </div>
 
         {/* Main Content - Full Width */}
-        <div className="grid grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Left Column - Images */}
           <div>
             {object.images && object.images.length > 0 && (
               <div className="space-y-4">
                 {object.images.length === 1 ? (
                   <div
-                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center"
-                    style={{ minHeight: '420px', maxHeight: '80vh' }}
+                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[420px] max-h-[80vh]"
                   >
                     <Image
                       src={object.images[0]}
@@ -207,8 +212,7 @@ export default function PassportClient() {
                     {object.images.map((image, index) => (
                       <div
                         key={index}
-                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center"
-                        style={{ minHeight: '420px', maxHeight: '80vh' }}
+                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[420px] max-h-[80vh]"
                       >
                         <Image
                           src={image}
@@ -228,8 +232,8 @@ export default function PassportClient() {
           {/* Right Column - Details & Content */}
           <div>
             {/* Object Details */}
-            <div className="mb-16">
-              <h2 className="text-xl font-light text-black mb-8 tracking-wide border-b border-black pb-2">Details</h2>
+            <div className="mb-10 sm:mb-16">
+              <h2 className="text-lg sm:text-xl font-light text-black mb-6 sm:mb-8 tracking-wide pb-2">Details</h2>
               
               <div className="space-y-6">
                 {object.maker && (
@@ -264,8 +268,8 @@ export default function PassportClient() {
 
             {/* Tags */}
             {object.tags && object.tags.length > 0 && (
-              <div className="mb-16">
-                <h3 className="text-sm font-light text-black mb-4 tracking-wide uppercase">Tags</h3>
+              <div className="mb-10 sm:mb-16">
+                <h3 className="text-sm font-light text-black mb-3 sm:mb-4 tracking-wide uppercase">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {object.tags.map((tag, index) => (
                     <span
@@ -281,7 +285,7 @@ export default function PassportClient() {
 
             {/* Notes */}
             {object.notes && (
-              <div className="mb-16">
+              <div className="mb-10 sm:mb-16">
                 <h3 className="text-sm font-light text-black mb-4 tracking-wide uppercase">Notes</h3>
                 <div className="text-black font-light leading-relaxed text-base">
                   {object.notes}
@@ -290,8 +294,8 @@ export default function PassportClient() {
             )}
 
             {/* Blockchain Verification */}
-            <div className="mb-16">
-              <h2 className="text-xl font-light text-black mb-8 tracking-wide">Verification</h2>
+            <div className="mb-10 sm:mb-16">
+              <h2 className="text-lg sm:text-xl font-light text-black mb-6 sm:mb-8 tracking-wide">Verification</h2>
               <BlockchainAnchoring 
                 passport={object} 
                 onAnchoringUpdate={(anchoring) => {
@@ -302,8 +306,8 @@ export default function PassportClient() {
 
             {/* Enhanced Provenance */}
             {hasProvenance && (
-              <div className="mb-16">
-                <h2 className="text-xl font-light text-black mb-8 tracking-wide border-b border-black pb-2">Provenance</h2>
+              <div className="mb-10 sm:mb-16">
+                <h2 className="text-lg sm:text-xl font-light text-black mb-6 sm:mb-8 tracking-wide border-b border-black pb-2">Provenance</h2>
                 
                 <div className="space-y-8">
                   {object.serialNumber && (
@@ -365,12 +369,12 @@ export default function PassportClient() {
         </div>
 
         {/* Footer */}
-        <footer className="border-t border-black pt-16 mt-20">
-          <div className="flex items-center justify-between">
+        <footer className="border-t border-black pt-10 sm:pt-16 mt-12 sm:mt-20">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <Link href="/" className="inline-block">
               <img src="/held-logomark.svg" alt="Held" className="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity" />
             </Link>
-            <p className="text-gray-600 font-light tracking-wide text-sm">
+            <p className="text-gray-600 font-light tracking-wide text-sm text-center sm:text-left">
               Immutable blockchain verification • Professional provenance tracking
             </p>
           </div>
@@ -425,5 +429,3 @@ export default function PassportClient() {
     </div>
   );
 }
-
-
