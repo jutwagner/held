@@ -120,8 +120,9 @@ export async function anchorPassport(
   passport: HeldObject,
   uri: string,
   version: number = 1,
-  kind: 'core' | 'full' = 'core'
-): Promise<{ txHash: string; digest: string; passportId: string; blockNumber?: number }> {
+  kind: 'core' | 'full' = 'core',
+  mode: 'sync' | 'async' = 'sync'
+): Promise<{ txHash: string; digest: string; passportId: string; blockNumber?: number; mode?: 'sync' | 'async'; message?: string }> {
   try {
     const res = await fetch('/api/anchor', {
       method: 'POST',
@@ -131,6 +132,7 @@ export async function anchorPassport(
         passport,
         uri,
         version,
+        mode,
       }),
     });
     

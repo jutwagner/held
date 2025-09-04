@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/Badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import {
   getPolygonBlockExplorerURL
 } from '@/lib/blockchain-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
+import { subscribeObject } from '@/lib/firebase-services';
 
 interface BlockchainAnchoringProps {
   passport: HeldObject;
@@ -41,6 +42,9 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
   } | null>(null);
   const [anchoringStartTime, setAnchoringStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [submittedTxHash, setSubmittedTxHash] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const startedPollingRef = useRef(false);
 
   // Check if user is Held+ subscriber
   const isUserHeldPlus = isHeldPlus(user);
@@ -71,6 +75,25 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       console.error('Failed to load anchoring event:', error);
     }
   };
+
+  // Realtime Firestore listener to flip UI when worker confirms anchoring
+  useEffect(() => {
+    if (!passport?.id) return;
+    const unsubscribe = subscribeObject(passport.id, (obj) => {
+      if (obj?.anchoring?.isAnchored) {
+        const txHash = obj.anchoring.txHash;
+        const blockNumber = obj.anchoring.blockNumber;
+        setVerificationResult({ isAnchored: true, txHash, blockNumber });
+        setIsAnchoring(false);
+        setSubmittedTxHash(txHash || null);
+        loadLatestAnchoringEvent();
+      }
+    });
+    return () => unsubscribe();
+  }, [passport?.id]);
+
+  // Disabled receipt polling to minimize RPC usage; Firestore listener above updates UI when worker confirms
+  useEffect(() => { /* no-op: using Firestore realtime updates instead */ }, [submittedTxHash]);
 
   const handleVerifyAnchoring = async () => {
     setIsVerifying(true);
@@ -114,44 +137,10 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       // Get current version (increment if already anchored)
       const currentVersion = (passport.anchoring?.version || 0) + 1;
       
-      // Anchor the Passport (premium/full data for Held+)
-      const result = await anchorPassport(passport, uri, currentVersion, 'full');
-      
-      // Update the anchoring data
-      const newAnchoring = {
-        isAnchored: true,
-        txHash: result.txHash,
-        digest: result.digest,
-        version: currentVersion,
-        anchoredAt: new Date(),
-        uri,
-        blockNumber: (result as any).blockNumber,
-      };
-      
-      // Persist anchoring to backend
-      try {
-        await fetch('/api/update-anchoring', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ objectId: passport.id, anchoring: newAnchoring }),
-        });
-      } catch (e) {
-        console.warn('Failed to persist anchoring (non-blocking):', e);
-      }
-
-      // Call the callback to update the parent component
-      if (onAnchoringUpdate) {
-        onAnchoringUpdate(newAnchoring);
-      }
-      
-      // Update local state
-      setVerificationResult({
-        isAnchored: true,
-        txHash: result.txHash
-      });
-      
-      // Load the latest event
-      await loadLatestAnchoringEvent();
+      // Anchor the Passport (premium/full data for Held+) in async mode
+      const result = await anchorPassport(passport, uri, currentVersion, 'full', 'async');
+      setSubmittedTxHash(result.txHash);
+      setInfo('Anchoring started. Confirmation will complete in background.');
       
     } catch (error) {
       setError(`Failed to anchor Passport: ${error instanceof Error ? error.message : String(error)}`);
@@ -174,30 +163,9 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       const baseURL = window.location.origin;
       const uri = generatePassportURI(passport, baseURL);
       const version = (passport.anchoring?.version || 0) + 1 || 1;
-      const result = await anchorPassport(passport, uri, version, 'core');
-      const newAnchoring = {
-        isAnchored: true,
-        txHash: result.txHash,
-        digest: result.digest,
-        version,
-        anchoredAt: new Date(),
-        uri,
-        blockNumber: (result as any).blockNumber,
-      };
-      // Persist anchoring to backend
-      try {
-        await fetch('/api/update-anchoring', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ objectId: passport.id, anchoring: newAnchoring }),
-        });
-      } catch (e) {
-        console.warn('Failed to persist anchoring (non-blocking):', e);
-      }
-
-      if (onAnchoringUpdate) onAnchoringUpdate(newAnchoring);
-      setVerificationResult({ isAnchored: true, txHash: result.txHash });
-      await loadLatestAnchoringEvent();
+      const result = await anchorPassport(passport, uri, version, 'core', 'async');
+      setSubmittedTxHash(result.txHash);
+      setInfo('Anchoring started. Confirmation will complete in background.');
     } catch (error) {
       setError(`Failed to anchor basic proof: ${error instanceof Error ? error.message : String(error)}`);
       console.error('Basic anchoring error:', error);
@@ -217,6 +185,15 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
         color: 'bg-green-100 text-green-800 border-green-200',
         description: 'This Passport is anchored on the Polygon blockchain'
       };
+    }
+    if (passport.anchoring?.txHash) {
+      return {
+        status: 'pending',
+        label: 'Pending on Polygon',
+        icon: Clock,
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        description: 'Transaction submitted. Waiting for blockchain confirmation'
+      } as const;
     }
     
     if (verificationResult?.isAnchored) {
@@ -251,7 +228,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
     <div className="space-y-6">
       {/* Status Display */}
       {passport.anchoring?.isAnchored ? (
-        <div className="border-2 border-black p-6">
+        <div className="">
           <div className="flex items-center gap-4 mb-4">
             <CheckCircle className="h-6 w-6 text-black" />
             <div>
@@ -311,34 +288,53 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
           </div>
         </div>
       ) : (
-        <div className="border-2 border-black p-6">
+        <div className="">
           <div className="flex items-center gap-4 mb-4">
-            <XCircle className="h-6 w-6 text-black" />
+            {status.status === 'pending' ? <Clock className="h-6 w-6 text-black" /> : <XCircle className="h-6 w-6 text-black" />}
             <div>
-              <h3 className="text-lg font-light text-black">Not Yet Anchored</h3>
-              <p className="text-sm text-gray-600">This passport has not been anchored on the blockchain</p>
+              <h3 className="text-lg font-light text-black">{status.label}</h3>
+              <p className="text-sm text-gray-600">{status.description}</p>
             </div>
           </div>
-          
+
           <div className="space-y-3">
-            {/* Basic anchoring for all users */}
-            <Button
-              onClick={handleAnchorBasic}
-              disabled={isAnchoring}
-              className="w-full bg-black hover:bg-gray-800 text-white border-0 transition-colors"
-            >
-              {isAnchoring ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Anchoring...
-                </>
-              ) : (
-                <>
-                  <Anchor className="h-4 w-4 mr-2" />
-                  Create Basic Proof
-                </>
-              )}
-            </Button>
+            {/* Pending state: show progress indicator instead of button */}
+            {status.status === 'pending' ? (
+              <div className="w-full">
+                <div className="held-progress rounded" />
+                {(passport.anchoring?.txHash || submittedTxHash) && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    Submitted. Waiting for confirmation.{' '}
+                    <a
+                      href={getPolygonExplorerURL(passport.anchoring?.txHash || submittedTxHash!)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline"
+                    >
+                      View on Polygonscan
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                onClick={handleAnchorBasic}
+                disabled={isAnchoring}
+                className="w-full bg-black hover:bg-gray-800 text-white border-0 transition-colors"
+              >
+                {isAnchoring ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Anchoring...
+                  </>
+                ) : (
+                  <>
+                    <Anchor className="h-4 w-4 mr-2" />
+                    Create Basic Proof
+                  </>
+                )}
+              </Button>
+            )}
             
             {/* Enhanced anchoring for Held+ users */}
             {isUserHeldPlus && (
@@ -366,14 +362,26 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       )}
 
       {/* Long-running Transaction Feedback */}
-      {isAnchoring && (
-        <div className="border-2 border-black p-6">
+      {(isAnchoring || submittedTxHash) && (
+        <div className="">
           <div className="flex items-center gap-4 mb-4">
-            <Loader2 className="h-6 w-6 text-black animate-spin" />
-            <div>
-              <h4 className="text-lg font-light text-black">Transaction in Progress</h4>
-              <p className="text-sm text-gray-600">Waiting for blockchain confirmation...</p>
-            </div>
+            {isAnchoring ? (
+              <>
+                <Loader2 className="h-6 w-6 text-black animate-spin" />
+                <div>
+                  <h4 className="text-lg font-light text-black">Transaction in Progress</h4>
+                  <p className="text-sm text-gray-600">Waiting for blockchain confirmation...</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-6 w-6 text-black" />
+                <div>
+                  <h4 className="text-lg font-light text-black">Submitted</h4>
+                  <p className="text-sm text-gray-600">Confirmation continues in the background.</p>
+                </div>
+              </>
+            )}
           </div>
           
           <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
@@ -388,9 +396,22 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
           </div>
           
           <div className="p-4 bg-gray-50 border border-gray-200">
-            <p className="text-sm text-gray-800">
-              This process typically takes 2-5 minutes. Please don't close this page.
-            </p>
+            {submittedTxHash ? (
+              <div className="text-sm text-gray-800">
+                <p className="mb-2">Anchoring started. You can safely leave this page; the server will confirm in the background.</p>
+                <a
+                  href={getPolygonExplorerURL(submittedTxHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-black underline"
+                >
+                  View on Polygonscan
+                </a>
+                {info && <p className="mt-2 text-gray-600">{info}</p>}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-800">This process typically takes 2-5 minutes. Please don't close this page.</p>
+            )}
           </div>
         </div>
       )}
@@ -421,7 +442,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
 
       {/* Held+ Upsell - Only show if not anchored and user is not Held+ */}
       {!isUserHeldPlus && !passport.anchoring?.isAnchored && (
-        <div className="border-2 border-black p-6">
+        <div className="">
           <div className="flex items-center gap-4 mb-4">
             <Crown className="h-6 w-6 text-black" />
             <div>

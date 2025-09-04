@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { getWorkingPolygonProvider } from '@/lib/polygon-provider';
 import { HELD_ANCHORS_CONTRACT, generateCoreDigest, generateFullDigest } from '@/lib/blockchain-services';
+import { db } from '@/lib/firebase.admin';
 
 type Body = {
   kind?: 'core' | 'full';
   passport: any; // Keep lax; server only uses select fields for digest
   uri?: string;
   version?: number;
+  mode?: 'sync' | 'async'; // async returns quickly and confirms in background
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { kind = 'core', passport, uri = '', version = 1 } = (await req.json()) as Body;
+    const { kind = 'core', passport, uri = '', version = 1, mode = 'sync' } = (await req.json()) as Body;
 
     if (!passport?.id) {
       return NextResponse.json({ error: 'Missing passport.id' }, { status: 400 });
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
     try {
       console.log('[API/anchor] Attempting to get working Polygon provider...');
       provider = await getWorkingPolygonProvider();
+      // Lower internal polling frequency to reduce background RPC load
+      try { (provider as any).pollingInterval = 10_000; } catch {}
       console.log('[API/anchor] Successfully connected to Polygon provider');
     } catch (error) {
       console.error('[API/anchor] Failed to get working Polygon provider:', error);
@@ -77,15 +81,84 @@ export async function POST(req: NextRequest) {
 
     console.log(`[API/anchor] Anchoring passport ${passport.id} with digest ${digest}`);
 
-    const tx = await contract.anchor(passportId, digest, 'keccak256', uri, ethers.BigNumber.from(version));
+    // Propose fees for Polygon with fallback to legacy gasPrice if EIP-1559 data looks wrong
+    const feeData = await provider.getFeeData();
+    const gasLimit = ethers.BigNumber.from(200_000);
+    const floorPriority = ethers.BigNumber.from(30_000_000_000); // 30 gwei
+    const floorMaxFee = ethers.BigNumber.from(60_000_000_000);   // 60 gwei
+    const floorLegacy = ethers.BigNumber.from(60_000_000_000);   // 60 gwei
+
+    const useLegacy = !feeData.maxFeePerGas || feeData.maxFeePerGas.lt(ethers.BigNumber.from(5_000_000_000));
+    let overrides: any = { gasLimit };
+    if (useLegacy) {
+      const rawGasPrice = (await provider.getGasPrice()).mul(2);
+      const gasPrice = rawGasPrice.lt(floorLegacy) ? floorLegacy : rawGasPrice;
+      overrides.gasPrice = gasPrice;
+      console.log(`[API/anchor] Using legacy gasPrice=${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
+    } else {
+      const suggestedPriority = (feeData.maxPriorityFeePerGas ?? floorPriority).mul(2);
+      const suggestedMaxFee = (feeData.maxFeePerGas ?? floorMaxFee).mul(2);
+      let maxPriorityFeePerGas = suggestedPriority.lt(floorPriority) ? floorPriority : suggestedPriority;
+      let maxFeePerGas = suggestedMaxFee.lt(floorMaxFee) ? floorMaxFee : suggestedMaxFee;
+      if (maxFeePerGas.lt(maxPriorityFeePerGas)) {
+        maxFeePerGas = maxPriorityFeePerGas.add(ethers.BigNumber.from(10_000_000_000));
+      }
+      overrides.maxPriorityFeePerGas = maxPriorityFeePerGas;
+      overrides.maxFeePerGas = maxFeePerGas;
+      console.log(`[API/anchor] Using EIP-1559 maxPriority=${ethers.utils.formatUnits(maxPriorityFeePerGas, 'gwei')} gwei, maxFee=${ethers.utils.formatUnits(maxFeePerGas, 'gwei')} gwei`);
+    }
+
+    const tx = await contract.anchor(
+      passportId,
+      digest,
+      'keccak256',
+      uri,
+      ethers.BigNumber.from(version),
+      overrides
+    );
     console.log(`[API/anchor] Transaction submitted: ${tx.hash}`);
+
+    // If async mode, persist a background job and return immediately (202)
+    if (mode === 'async') {
+      try {
+        await db.collection('anchorJobs').doc(tx.hash).set({
+          objectId: String(passport.id),
+          txHash: tx.hash,
+          digest,
+          version,
+          uri,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: 'pending',
+          attempts: 0,
+          lastCheckedAt: null,
+        });
+      } catch (e) {
+        console.warn('[API/anchor] Failed to persist anchor job (non-blocking):', e);
+      }
+      return NextResponse.json({ 
+        txHash: tx.hash,
+        digest,
+        passportId,
+        mode: 'async',
+        message: 'Anchoring started. Confirmation will complete in background.'
+      }, { status: 202 });
+    }
     
     // Custom transaction confirmation handling to bypass ethers wait() issues
     let receipt;
     try {
       console.log(`[API/anchor] Waiting for transaction confirmation...`);
-      receipt = await tx.wait();
-      console.log(`[API/anchor] Transaction confirmed in block: ${receipt?.blockNumber}`);
+      // Use provider-level wait with explicit timeout to avoid indefinite polling
+      // Timeout: 5 minutes
+      receipt = await provider.waitForTransaction(tx.hash, 1, 5 * 60 * 1000);
+      if (!receipt) {
+        throw new Error('Transaction confirmation timeout');
+      }
+      if (!receipt || receipt.status !== 1) {
+        throw new Error('Transaction failed on-chain');
+      }
+      console.log(`[API/anchor] Transaction confirmed in block: ${receipt.blockNumber}`);
     } catch (waitError) {
       console.warn(`[API/anchor] Ethers wait() failed, trying manual confirmation:`, waitError);
       

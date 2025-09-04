@@ -51,7 +51,7 @@ export default function RotationsPage() {
   if (!hydrated || loading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <div className="held-container py-24">
+        <div className="held-container held-container-wide py-24">
           <div className="text-center">
             <p className="text-gray-600">Loading...</p>
           </div>
@@ -67,7 +67,7 @@ export default function RotationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <MobileBottomBar />
-      <div className="held-container py-8">
+      <div className="held-container held-container-wide py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-serif font-medium mb-2">Rotations</h1>
@@ -378,4 +378,3 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
     </Link>
   );
 }
-

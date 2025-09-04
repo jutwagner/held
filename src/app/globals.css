@@ -52,6 +52,11 @@
     @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
+  /* Wider variant for pages that need more columns breathing room */
+  .held-container-wide {
+    @apply max-w-7xl;
+  }
+  
   /* Safe area utilities - iOS only */
   @supports (padding: env(safe-area-inset-top)) {
     .safe-area-top {
@@ -194,4 +199,39 @@ nav .held-container{
 .align-center{
   text-align: center;
   margin: 0 auto;
+}
+
+
+.rounded-xlg{
+  border-radius: 100px;
+}
+
+.float-left {
+  float: left;
+}
+
+/* Lightweight indeterminate progress bar for anchoring pending state */
+.held-progress {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #f3f4f6, #e5e7eb);
+  overflow: hidden;
+}
+.held-progress::after {
+  content: "";
+  position: absolute;
+  left: -30%;
+  top: 0;
+  height: 100%;
+  width: 26%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(17,24,39,0), rgba(17,24,39,0.9), rgba(75,85,99,0));
+  box-shadow: 0 0 12px rgba(17,24,39,0.25);
+  animation: held-progress-move 1.15s ease-in-out infinite;
+}
+@keyframes held-progress-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(420%); }
 }

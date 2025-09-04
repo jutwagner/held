@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import passportSvg from '@/img/passport.svg';
 import BlockchainAnchoring from '@/components/BlockchainAnchoring';
+import { getPolygonExplorerURL } from '@/lib/blockchain-services';
 import { Button } from '@/components/ui/button';
 
 export default function PassportClient() {
@@ -110,9 +111,11 @@ export default function PassportClient() {
       <header className="w-full bg-white border-b border-gray-200">
         <div className="w-full px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 text-black hover:text-gray-600 transition-colors font-light tracking-wide text-base">
-              <Image src={passportSvg} alt="Passport" width={20} height={20} className="opacity-80" />
-              ← Back to Held
+            <Link
+              href={user ? "/registry" : "/"}
+              className="flex items-center gap-3 text-black hover:text-gray-600 transition-colors font-light tracking-wide text-base"
+            >
+              {user ? '← Back to Registry' : '← Back to Held'}
             </Link>
             
             <button
@@ -126,6 +129,7 @@ export default function PassportClient() {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-12">
+                <Image src={passportSvg} alt="Passport" width={40} height={40} className="opacity-100 float-left mr-5" />
         {/* Passport Header */}
         <div className="mb-16">
           <div className="flex items-start justify-between">
@@ -159,7 +163,19 @@ export default function PassportClient() {
                 <div className="text-lg font-light text-black">#{object.id?.slice(-8) || '00000000'}</div>
                 {object.anchoring?.isAnchored && (
                   <div className="mt-2 text-xs text-black border-t border-black pt-2">
-                    Anchored on Polygon
+                    {object.anchoring?.txHash ? (
+                      <a
+                        href={getPolygonExplorerURL(object.anchoring.txHash)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:no-underline"
+                        title={object.anchoring.txHash}
+                      >
+                        Anchored on Polygon
+                      </a>
+                    ) : (
+                      <span>Anchored on Polygon</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -174,23 +190,32 @@ export default function PassportClient() {
             {object.images && object.images.length > 0 && (
               <div className="space-y-4">
                 {object.images.length === 1 ? (
-                  <div className="aspect-[4/3] relative overflow-hidden rounded-lg">
+                  <div
+                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center"
+                    style={{ minHeight: '420px', maxHeight: '80vh' }}
+                  >
                     <Image
                       src={object.images[0]}
                       alt={object.title}
-                      fill
-                      className="object-cover"
+                      width={1600}
+                      height={1600}
+                      className="w-auto max-w-full h-auto max-h-[80vh] object-contain"
                     />
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {object.images.map((image, index) => (
-                      <div key={index} className="aspect-[4/3] relative overflow-hidden rounded-lg">
+                      <div
+                        key={index}
+                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center"
+                        style={{ minHeight: '420px', maxHeight: '80vh' }}
+                      >
                         <Image
                           src={image}
                           alt={`${object.title} - Image ${index + 1}`}
-                          fill
-                          className="object-cover"
+                          width={1600}
+                          height={1600}
+                          className="w-auto max-w-full h-auto max-h-[80vh] object-contain"
                         />
                       </div>
                     ))}
@@ -245,7 +270,7 @@ export default function PassportClient() {
                   {object.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="text-sm text-black font-light tracking-wide border border-black px-3 py-1"
+                      className="text-sm text-white font-bold tracking-wide bg-gray-400 px-3 py-1 rounded-xlg"
                     >
                       {tag}
                     </span>
@@ -266,7 +291,7 @@ export default function PassportClient() {
 
             {/* Blockchain Verification */}
             <div className="mb-16">
-              <h2 className="text-xl font-light text-black mb-8 tracking-wide border-b border-black pb-2">Verification</h2>
+              <h2 className="text-xl font-light text-black mb-8 tracking-wide">Verification</h2>
               <BlockchainAnchoring 
                 passport={object} 
                 onAnchoringUpdate={(anchoring) => {
@@ -400,8 +425,5 @@ export default function PassportClient() {
     </div>
   );
 }
-
-
-
 
 

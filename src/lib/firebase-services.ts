@@ -58,6 +58,24 @@ async function convertImageToWebP(file: File): Promise<File> {
   });
 }
 
+// Ensure slug uniqueness by appending numeric suffixes (-2, -3, ...)
+async function ensureUniqueSlug(base: string, excludeId?: string): Promise<string> {
+  let candidate = base;
+  let suffix = 2;
+  // Try until no collision (or only collision is the excluded doc)
+  // Cap attempts to avoid infinite loops in pathological cases
+  for (let i = 0; i < 50; i++) {
+    const snap = await getDocs(query(collection(db, 'objects'), where('slug', '==', candidate), limit(1)));
+    const docHit = snap.docs[0];
+    if (!docHit) return candidate;
+    if (excludeId && docHit.id === excludeId) return candidate;
+    // Bump suffix
+    candidate = `${base}-${suffix++}`;
+  }
+  // As a last resort, append a timestamp
+  return `${base}-${Date.now()}`;
+}
+
 // Get user by handle (for vanity URLs)
 export const getUserByHandle = async (handle: string): Promise<UserDoc | null> => {
   // Decode and strip '@' from handle
@@ -321,11 +339,15 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
     Object.entries(data).filter(([, value]) => value !== undefined)
   );
   
+  // Generate a unique slug
+  const baseSlug = generateSlug(data.title);
+  const uniqueSlug = await ensureUniqueSlug(baseSlug);
+
   const objectData: Record<string, unknown> = {
     ...cleanData,
     userId,
     images: imageUrls,
-    slug: generateSlug(data.title),
+    slug: uniqueSlug,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -379,6 +401,20 @@ export const getObject = async (id: string): Promise<HeldObject | null> => {
   return null;
 };
 
+// Subscribe to a single object document for real-time updates
+export function subscribeObject(id: string, callback: (object: HeldObject | null) => void): () => void {
+  const objectRef = doc(db, 'objects', id);
+  const unsubscribe = onSnapshot(objectRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data() as Record<string, unknown>;
+      callback({ id: snap.id, ...data } as HeldObject);
+    } else {
+      callback(null);
+    }
+  });
+  return unsubscribe;
+}
+
 export const updateObject = async (id: string, data: UpdateObjectData): Promise<void> => {
   const objectRef = doc(db, 'objects', id);
   const updateData: Partial<UpdateObjectData> = {
@@ -415,9 +451,10 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     }
   }
 
-  // Update slug if title changed
+  // Update slug if title changed; ensure uniqueness (excluding current id)
   if (data.title) {
-    updateData.slug = generateSlug(data.title);
+    const baseSlug = generateSlug(data.title);
+    updateData.slug = await ensureUniqueSlug(baseSlug, id);
   }
 
   delete updateData.id; // Remove id from update data

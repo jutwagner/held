@@ -1,9 +1,16 @@
 import { ethers } from 'ethers';
 
+// Toggle verbose logging with POLYGON_DEBUG=1
+const DEBUG = process.env.POLYGON_DEBUG === '1';
+
 // Custom provider that bypasses ethers provider testing issues
 class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
   constructor(url: string) {
     super(url, { name: 'matic', chainId: 137 });
+    // Reduce provider polling frequency to avoid excessive RPC calls
+    // when ethers attaches block listeners internally (e.g., during wait).
+    // Default is ~4s; bump to 10s for lower load in our use-cases.
+    try { (this as any).pollingInterval = 10_000; } catch {}
   }
   
   // Override getBlockNumber to use direct HTTP request if ethers fails
@@ -12,13 +19,14 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
       // Try the normal ethers method first
       return await super.getBlockNumber();
     } catch (error) {
-      console.log(`[polygon-provider] Ethers getBlockNumber failed, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
+      if (DEBUG) console.log(`[polygon-provider] Ethers getBlockNumber failed, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
       
       // Fallback to direct HTTP request
       try {
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: 'eth_blockNumber',
@@ -31,13 +39,13 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
           const data = await response.json();
           if (data.result) {
             const blockNumber = parseInt(data.result, 16);
-            console.log(`[polygon-provider] Direct HTTP getBlockNumber successful: ${blockNumber}`);
+            if (DEBUG) console.log(`[polygon-provider] Direct HTTP getBlockNumber successful: ${blockNumber}`);
             return blockNumber;
           }
         }
         throw new Error(`HTTP request failed: ${response.status}`);
       } catch (httpError) {
-        console.error(`[polygon-provider] Direct HTTP also failed:`, httpError);
+        if (DEBUG) console.error(`[polygon-provider] Direct HTTP also failed:`, httpError);
         throw error; // Re-throw the original error
       }
     }
@@ -48,7 +56,7 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
     try {
       return await super.getNetwork();
     } catch (error) {
-      console.log(`[polygon-provider] Ethers getNetwork failed, returning default:`, error instanceof Error ? error.message : String(error));
+      if (DEBUG) console.log(`[polygon-provider] Ethers getNetwork failed, returning default:`, error instanceof Error ? error.message : String(error));
       // Return default Polygon network info
       return {
         name: 'matic',
@@ -62,13 +70,14 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
     try {
       return await super.getBlock(blockHashOrBlockTag);
     } catch (error) {
-      console.log(`[polygon-provider] Ethers getBlock failed for ${blockHashOrBlockTag}, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
+      if (DEBUG) console.log(`[polygon-provider] Ethers getBlock failed for ${blockHashOrBlockTag}, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
       
       try {
         const blockTag = typeof blockHashOrBlockTag === 'number' ? `0x${blockHashOrBlockTag.toString(16)}` : blockHashOrBlockTag;
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: 'eth_getBlockByNumber',
@@ -88,13 +97,13 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
               timestamp: parseInt(data.result.timestamp, 16),
               transactions: data.result.transactions || []
             };
-            console.log(`[polygon-provider] Direct HTTP getBlock successful for block ${block.number}`);
+            if (DEBUG) console.log(`[polygon-provider] Direct HTTP getBlock successful for block ${block.number}`);
             return block as ethers.providers.Block;
           }
         }
         throw new Error(`HTTP request failed: ${response.status}`);
       } catch (httpError) {
-        console.error(`[polygon-provider] Direct HTTP getBlock also failed:`, httpError);
+        if (DEBUG) console.error(`[polygon-provider] Direct HTTP getBlock also failed:`, httpError);
         throw error; // Re-throw the original error
       }
     }
@@ -105,12 +114,13 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
     try {
       return await super.send(method, params);
     } catch (error) {
-      console.log(`[polygon-provider] Ethers send failed for ${method}, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
+      if (DEBUG) console.log(`[polygon-provider] Ethers send failed for ${method}, trying direct HTTP:`, error instanceof Error ? error.message : String(error));
       
       try {
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: method,
@@ -122,13 +132,13 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
         if (response.ok) {
           const data = await response.json();
           if (data.result !== undefined) {
-            console.log(`[polygon-provider] Direct HTTP send successful for ${method}`);
+            if (DEBUG) console.log(`[polygon-provider] Direct HTTP send successful for ${method}`);
             return data.result;
           }
         }
         throw new Error(`HTTP request failed: ${response.status}`);
       } catch (httpError) {
-        console.error(`[polygon-provider] Direct HTTP send also failed:`, httpError);
+        if (DEBUG) console.error(`[polygon-provider] Direct HTTP send also failed:`, httpError);
         throw error; // Re-throw the original error
       }
     }
@@ -140,6 +150,7 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
       const response = await fetch(this.connection.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        referrerPolicy: 'no-referrer',
         body: JSON.stringify({
           jsonrpc: '2.0',
           method: 'eth_getBlockByNumber',
@@ -151,66 +162,71 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
       if (response.ok) {
         const data = await response.json();
         if (data.result) {
-          console.log(`[polygon-provider] Direct HTTP getLatestBlock successful`);
+          if (DEBUG) console.log(`[polygon-provider] Direct HTTP getLatestBlock successful`);
           return data.result;
         }
       }
       throw new Error(`HTTP request failed: ${response.status}`);
     } catch (error) {
-      console.error(`[polygon-provider] Direct HTTP getLatestBlock failed:`, error);
+      if (DEBUG) console.error(`[polygon-provider] Direct HTTP getLatestBlock failed:`, error);
       throw error;
     }
   }
 }
 
 function parseRpcList(): string[] {
-  const raw = process.env.POLYGON_RPC || process.env.POLYGON_RPC_URL || '';
+  // 1) Explicit env URL(s) first (comma-separated supported)
+  const raw = process.env.POLYGON_RPC || process.env.POLYGON_RPC_URL || process.env.NEXT_PUBLIC_POLYGON_RPC || '';
   const fromEnv = raw
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
-  const alchemyKey = process.env.ALCHEMY_API_KEY;
+
+  // 2) Vendor keys (Alchemy/Infura) next
+  const alchemyKey = process.env.ALCHEMY_API_KEY || extractAlchemyKeyFromUrl(fromEnv[0]);
   const infuraId = process.env.INFURA_PROJECT_ID || process.env.INFURA_API_KEY;
   const fromVendors: string[] = [];
   if (alchemyKey) fromVendors.push(`https://polygon-mainnet.g.alchemy.com/v2/${alchemyKey}`);
   if (infuraId) fromVendors.push(`https://polygon-mainnet.infura.io/v3/${infuraId}`);
-  
-  // Updated list of more reliable public RPC endpoints
+
+  // 3) Minimal, reliable public fallbacks (keep short to avoid request storms)
   const defaults = [
     'https://polygon.llamarpc.com',
-    'https://polygon.rpc.blxrbdn.com',
-    'https://polygon.meowrpc.com',
-    'https://rpc-mainnet.maticvigil.com',
-    'https://polygon-rpc.com',
     'https://rpc.ankr.com/polygon',
-    'https://1rpc.io/matic',
     'https://polygon-bor-rpc.publicnode.com',
-    'https://polygon.blockpi.network/v1/rpc/public',
-    'https://polygon.drpc.org',
-    'https://polygon-mainnet.public.blastapi.io',
-    'https://rpc-mainnet.matic.network',
   ];
-  
+
   // Deduplicate preserving order
   const seen = new Set<string>();
   const list = [...fromEnv, ...fromVendors, ...defaults].filter(u => (seen.has(u) ? false : (seen.add(u), true)));
-  
-  // Debug logging
-  console.log('[polygon-provider] Environment variables:');
-  console.log(`  POLYGON_RPC: ${process.env.POLYGON_RPC || 'not set'}`);
-  console.log(`  POLYGON_RPC_URL: ${process.env.POLYGON_RPC_URL || 'not set'}`);
-  console.log(`  ALCHEMY_API_KEY: ${alchemyKey ? 'set' : 'not set'}`);
-  console.log(`  INFURA_PROJECT_ID: ${infuraId ? 'set' : 'not set'}`);
-  console.log(`[polygon-provider] Parsed RPC list: ${list.length} endpoints`);
-  console.log(`  From env: ${fromEnv.length}, From vendors: ${fromVendors.length}, Defaults: ${defaults.length}`);
-  
+
+  if (DEBUG) {
+    console.log('[polygon-provider] Environment variables:');
+    console.log(`  POLYGON_RPC: ${process.env.POLYGON_RPC || 'not set'}`);
+    console.log(`  POLYGON_RPC_URL: ${process.env.POLYGON_RPC_URL || 'not set'}`);
+    console.log(`  NEXT_PUBLIC_POLYGON_RPC: ${process.env.NEXT_PUBLIC_POLYGON_RPC || 'not set'}`);
+    console.log(`  ALCHEMY_API_KEY: ${alchemyKey ? 'set' : 'not set'}`);
+    console.log(`  INFURA_PROJECT_ID: ${infuraId ? 'set' : 'not set'}`);
+    console.log(`[polygon-provider] Parsed RPC list: ${list.length} endpoints`);
+  }
+
   return list;
+}
+
+function extractAlchemyKeyFromUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  try {
+    // Match ...alchemy.com/v2/<KEY>
+    const m = url.match(/alchemy\.com\/v2\/([A-Za-z0-9_-]+)/);
+    return m?.[1];
+  } catch {}
+  return undefined;
 }
 
 async function testProvider(p: ethers.providers.JsonRpcProvider, timeoutMs = 5000): Promise<boolean> {
   const startTime = Date.now();
   try {
-    console.log(`[polygon-provider] Testing provider with ${timeoutMs}ms timeout...`);
+    if (DEBUG) console.log(`[polygon-provider] Testing provider with ${timeoutMs}ms timeout...`);
     
     const race = Promise.race([
       p.getBlockNumber(),
@@ -220,51 +236,44 @@ async function testProvider(p: ethers.providers.JsonRpcProvider, timeoutMs = 500
     const blockNumber = await race;
     const duration = Date.now() - startTime;
     
-    console.log(`[polygon-provider] ✅ Provider test successful in ${duration}ms, block: ${blockNumber}`);
+    if (DEBUG) console.log(`[polygon-provider] ✅ Provider test successful in ${duration}ms, block: ${blockNumber}`);
     return true;
   } catch (error) {
     const duration = Date.now() - startTime;
     if (error instanceof Error && error.message === 'timeout') {
-      console.log(`[polygon-provider] ⏰ Provider test timed out after ${timeoutMs}ms`);
+      if (DEBUG) console.log(`[polygon-provider] ⏰ Provider test timed out after ${timeoutMs}ms`);
     } else {
-      console.log(`[polygon-provider] ❌ Provider test failed after ${duration}ms:`, error instanceof Error ? error.message : String(error));
+      if (DEBUG) console.log(`[polygon-provider] ❌ Provider test failed after ${duration}ms:`, error instanceof Error ? error.message : String(error));
     }
     return false;
   }
 }
 
-export async function getWorkingPolygonProvider(): Promise<ethers.providers.JsonRpcProvider> {
-  console.log('[polygon-provider] Getting working Polygon provider...');
-  
-  // Force use a working RPC endpoint instead of the failing Alchemy one
-  const workingEndpoints = [
-    'https://polygon.llamarpc.com',
-    'https://polygon.rpc.blxrbdn.com',
-    'https://polygon.meowrpc.com',
-    'https://rpc-mainnet.maticvigil.com',
-    'https://polygon-rpc.com',
-    'https://rpc.ankr.com/polygon',
-    'https://1rpc.io/matic',
-    'https://polygon-bor-rpc.publicnode.com',
-    'https://polygon.blockpi.network/v1/rpc/public',
-    'https://polygon.drpc.org',
-    'https://polygon-mainnet.public.blastapi.io',
-    'https://rpc-mainnet.matic.network'
-  ];
+let cachedProvider: { url: string; provider: ethers.providers.JsonRpcProvider } | null = null;
 
-  for (const endpoint of workingEndpoints) {
+export async function getWorkingPolygonProvider(): Promise<ethers.providers.JsonRpcProvider> {
+  if (cachedProvider) return cachedProvider.provider;
+
+  const endpoints = parseRpcList();
+  if (endpoints.length === 0) throw new Error('No Polygon RPC endpoint configured');
+
+  // Try env/vendor first, then a couple of public fallbacks
+  const toTry = endpoints.slice(0, 4);
+
+  for (const endpoint of toTry) {
     try {
-      console.log(`[polygon-provider] Testing endpoint: ${endpoint}`);
+      if (DEBUG) console.log(`[polygon-provider] Testing endpoint: ${endpoint}`);
       const provider = new CustomPolygonProvider(endpoint);
-      const isWorking = await testProvider(provider, 10000);
+      const isWorking = await testProvider(provider, 8000);
       if (isWorking) {
-        console.log(`[polygon-provider] Found working endpoint: ${endpoint}`);
+        if (DEBUG) console.log(`[polygon-provider] Using endpoint: ${endpoint}`);
+        cachedProvider = { url: endpoint, provider };
         return provider;
       }
     } catch (error) {
-      console.log(`[polygon-provider] Endpoint ${endpoint} failed:`, error);
+      if (DEBUG) console.log(`[polygon-provider] Endpoint ${endpoint} failed:`, error);
     }
   }
 
-  throw new Error('No working Polygon RPC endpoint found after testing all endpoints.');
+  throw new Error('No working Polygon RPC endpoint found after testing configured endpoints.');
 }

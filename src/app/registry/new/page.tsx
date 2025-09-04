@@ -7,7 +7,7 @@ import { isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { createObject } from '@/lib/firebase-services';
+import { createObject, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
 import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check } from 'lucide-react';
@@ -113,27 +113,19 @@ export default function NewObjectPage() {
       const result = await createObject(user.uid, formData);
       console.log('Object created:', result);
 
-      // Auto-anchor core fields on Polygon for all users
+      // Auto-anchor core fields on Polygon for all users (async mode)
       try {
         const baseURL = window.location.origin;
         const uri = generatePassportURI(result as any, baseURL);
-        const anchorRes = await anchorPassport(result as any, uri, 1, 'core');
-        // Persist anchoring metadata
-        await fetch('/api/update-anchoring', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            objectId: (result as any).id,
-            anchoring: {
-              isAnchored: true,
-              version: 1,
-              txHash: anchorRes.txHash,
-              digest: anchorRes.digest,
-              anchoredAt: new Date().toISOString(),
-              uri,
-            },
-          }),
-        });
+        const anchorRes = await anchorPassport(result as any, uri, 1, 'core', 'async');
+        // Mark as pending locally; background worker will flip to confirmed
+        await updateObjectAnchoring((result as any).id, {
+          isAnchored: false,
+          version: 1,
+          txHash: anchorRes.txHash,
+          digest: anchorRes.digest,
+          uri,
+        } as any);
       } catch (anchorErr) {
         console.warn('Auto-anchor failed (non-blocking):', anchorErr);
       }
