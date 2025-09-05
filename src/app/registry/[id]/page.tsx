@@ -197,35 +197,8 @@ export default function RegistryItemPage() {
               placeholder="Untitled"
             />
           )}
-          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-700">
-            {item.maker && (
-              <span>{item.maker}{item.year ? `, ${item.year}` : ''}</span>
-            )}
-            <span className="px-2.5 py-1 rounded-full bg-white border border-gray-200">{item.isPublic ? 'Public' : 'Private'}</span>
-            <span className={`px-2.5 py-1 rounded-full border ${item.anchoring?.isAnchored ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : (item.anchoring?.txHash ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-700')}`}>
-              {item.anchoring?.isAnchored ? 'Anchored' : (item.anchoring?.txHash ? 'Pending' : 'Not Anchored')}
-            </span>
-          </div>
-          {/* Tags under the title */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {((form?.tags || '')
-              .split(',')
-              .map(t => t.trim())
-              .filter(Boolean)).map((t, i) => (
-              <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 inline-flex items-center gap-2">
-                {t}
-                {editing && (
-                  <button
-                    type="button"
-                    className="text-red-600"
-                    onClick={() => setForm(prev => ({...prev!, tags: prev!.tags.split(',').map(s=>s.trim()).filter(Boolean).filter(x => x !== t).join(', ')}))}
-                  >
-                    ×
-                  </button>
-                )}
-              </span>
-            ))}
-          </div>
+          {/* Status chips removed; shown in right rail */}
+          {/* Tags moved to right rail Specifications */}
         </div>
 
         {/* Main grid */}
@@ -242,45 +215,7 @@ export default function RegistryItemPage() {
               )}
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">Specifications</div>
-              {!editing ? (
-                <div className="space-y-4 text-black">
-                  {item.description && (
-                    <div>
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Description</div>
-                      <p className="leading-relaxed">{item.description}</p>
-                    </div>
-                  )}
-                  {item.category && (
-                    <div>
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Category</div>
-                      <p>{item.category}</p>
-                    </div>
-                  )}
-                  {item.condition && (
-                    <div>
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Condition</div>
-                      <p className="capitalize">{item.condition}</p>
-                    </div>
-                  )}
-                  {typeof item.value !== 'undefined' && (
-                    <div>
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Estimated Value (Private)</div>
-                      <p>{isNaN(item.value as any) ? '—' : formatCurrency(item.value as number)}</p>
-                    </div>
-                  )}
-                  {item.notes && (
-                    <div>
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Private Notes</div>
-                      <p className="text-gray-800">{item.notes}</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500">Use the right‑side Quick Edit panel to update fields. Title and tags edit inline above.</div>
-              )}
-            </div>
+            {/* Specifications moved to right-rail in OwnerTools */}
 
             {/* Provenance summary / upsell */}
             {isHeldPlus(user) ? (

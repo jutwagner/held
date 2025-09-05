@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { HeldObject } from '@/types';
 import { Button } from '@/components/ui/button';
 import { getPolygonExplorerURL, anchorPassport, generatePassportURI, generateCoreDigest, generateFullDigest } from '@/lib/blockchain-services';
+import { formatCurrency } from '@/lib/utils';
 import { updateObjectAnchoring } from '@/lib/firebase-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { CheckCircle, Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
@@ -109,6 +110,65 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           </span>
         </div>
       </div>
+
+      {/* Specifications (read-only, right rail) */}
+      {!editing && (
+        <div className="mb-6">
+          <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">Specifications</div>
+          <div className="space-y-4 text-black">
+            {(Array.isArray((object as any).tags) && (object as any).tags.length > 0) && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Tags</div>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {((object as any).tags as string[]).map((t, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 inline-flex items-center gap-2 text-xs">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(object.maker || object.year) && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Maker</div>
+                <p className="text-sm text-gray-800">
+                  {object.maker || '—'}{object.year ? `, ${object.year}` : ''}
+                </p>
+              </div>
+            )}
+            {object.description && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Description</div>
+                <p className="leading-relaxed text-sm text-gray-800">{object.description}</p>
+              </div>
+            )}
+            {object.category && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Category</div>
+                <p className="text-sm">{object.category}</p>
+              </div>
+            )}
+            {object.condition && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Condition</div>
+                <p className="capitalize text-sm">{object.condition}</p>
+              </div>
+            )}
+            {typeof object.value !== 'undefined' && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Estimated Value (Private)</div>
+                <p className="text-sm">{isNaN(object.value as any) ? '—' : formatCurrency(object.value as number)}</p>
+              </div>
+            )}
+            {object.notes && (
+              <div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Private Notes</div>
+                <p className="text-sm text-gray-800">{object.notes}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Inline Edit Panel (only when editing). Focus on fields not on the main view */}
       {editing && form && setForm && (
