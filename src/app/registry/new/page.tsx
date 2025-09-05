@@ -7,6 +7,7 @@ import { isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import Switch from '@/components/ui/switch';
 import { createObject, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
@@ -488,30 +489,22 @@ export default function NewObjectPage() {
                       </div>
 
                       <div className="space-y-6 pt-8 border-t border-gray-100">
-                        <div className="flex items-center space-x-4">
-                          <input
-                            type="checkbox"
-                            id="isPublic"
-                            checked={formData.isPublic}
-                            onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
-                            className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                        <div className="flex items-center justify-between border border-gray-200 px-3 py-3">
+                          <label className="text-black font-light text-sm tracking-wide">Private</label>
+                          <Switch
+                            ariaLabel="Toggle Private"
+                            checked={!formData.isPublic}
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: !checked }))}
                           />
-                          <label htmlFor="isPublic" className="text-black font-light text-sm tracking-wide">
-                            Public Visibility
-                          </label>
                         </div>
-                        
-                        <div className="flex items-center space-x-4">
-                          <input
-                            type="checkbox"
-                            id="shareInCollaborative"
+
+                        <div className="flex items-center justify-between border border-gray-200 px-3 py-3">
+                          <label className="text-black font-light text-sm tracking-wide">Collaborative</label>
+                          <Switch
+                            ariaLabel="Toggle Collaborative Sharing"
                             checked={formData.shareInCollaborative}
-                            onChange={(e) => setFormData(prev => ({ ...prev, shareInCollaborative: e.target.checked }))}
-                            className="h-4 w-4 text-black focus:ring-0 border-gray-300 rounded-none"
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shareInCollaborative: checked }))}
                           />
-                          <label htmlFor="shareInCollaborative" className="text-black font-light text-sm tracking-wide">
-                            Collaborative Sharing
-                          </label>
                         </div>
                       </div>
                     </div>

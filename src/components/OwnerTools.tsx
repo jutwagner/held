@@ -7,8 +7,36 @@ import { getPolygonExplorerURL, anchorPassport, generatePassportURI, generateCor
 import { updateObjectAnchoring } from '@/lib/firebase-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { CheckCircle, Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
+import Switch from '@/components/ui/switch';
 
-type Props = { object: HeldObject };
+type Props = {
+  object: HeldObject;
+  // Inline edit wiring from parent
+  editing?: boolean;
+  form?: {
+    title: string;
+    category: string;
+    description?: string;
+    maker: string;
+    year?: number;
+    value?: number;
+    condition: 'excellent' | 'good' | 'fair' | 'poor';
+    tags: string; // comma separated in form
+    notes: string;
+    isPublic: boolean;
+    shareInCollaborative: boolean;
+    serialNumber?: string;
+    acquisitionDate?: string;
+    certificateOfAuthenticity?: string;
+    origin?: string;
+    transferMethod?: string;
+    associatedDocuments?: string;
+    provenanceNotes?: string;
+  } | null;
+  setForm?: (updater: (prev: any) => any) => void;
+  onSaveInline?: () => void;
+  onCancelInline?: () => void;
+};
 
 function getProvenanceScore(o: HeldObject): number {
   let score = 0;
@@ -20,7 +48,7 @@ function getProvenanceScore(o: HeldObject): number {
   return Math.round((score / total) * 100);
 }
 
-export default function OwnerTools({ object }: Props) {
+export default function OwnerTools({ object, editing, form, setForm, onSaveInline, onCancelInline }: Props) {
   const { user } = useAuth();
   const heldPlus = isHeldPlus(user);
   const [busy, setBusy] = useState(false);
@@ -81,6 +109,142 @@ export default function OwnerTools({ object }: Props) {
           </span>
         </div>
       </div>
+
+      {/* Inline Edit Panel (only when editing). Focus on fields not on the main view */}
+      {editing && form && setForm && (
+        <div className="mb-6 border border-gray-200 p-4">
+          <div className="text-sm text-gray-600 mb-3">Quick Edit</div>
+          <div className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center justify-between border border-gray-200 px-2 py-2">
+                <span className="text-xs text-gray-700">Private</span>
+                <Switch
+                  ariaLabel="Toggle Private"
+                  checked={!form.isPublic}
+                  onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: !checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between border border-gray-200 px-2 py-2">
+                <span className="text-xs text-gray-700">Collaborative</span>
+                <Switch
+                  ariaLabel="Toggle Collaborative Sharing"
+                  checked={form.shareInCollaborative}
+                  onCheckedChange={(checked) => setForm(prev => ({ ...prev, shareInCollaborative: checked }))}
+                />
+              </div>
+            </div>
+            {/* Item Details */}
+            <div className="pt-2">
+              <div className="text-xs text-gray-500 mb-2 uppercase tracking-widest">Details</div>
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Category</label>
+                  <select
+                    className="w-full border px-3 py-2 bg-white"
+                    value={form.category || ''}
+                    onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
+                  >
+                    <option value="">Select…</option>
+                    {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Condition</label>
+                  <select
+                    className="w-full border px-3 py-2 bg-white"
+                    value={form.condition}
+                    onChange={e => setForm(prev => ({ ...prev, condition: e.target.value as any }))}
+                  >
+                    {['excellent','good','fair','poor'].map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Estimated Value (USD)</label>
+                  <input
+                    type="number"
+                    className="w-full border px-3 py-2"
+                    value={typeof form.value === 'number' && !isNaN(form.value as any) ? String(form.value) : ''}
+                    onChange={e => setForm(prev => ({ ...prev, value: e.target.value === '' ? undefined : Number(e.target.value) }))}
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Maker</label>
+                  <input
+                    className="w-full border px-3 py-2"
+                    value={form.maker || ''}
+                    onChange={e => setForm(prev => ({ ...prev, maker: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Year</label>
+                  <input
+                    type="number"
+                    className="w-full border px-3 py-2"
+                    value={typeof form.year === 'number' && !isNaN(form.year as any) ? String(form.year) : ''}
+                    onChange={e => setForm(prev => ({ ...prev, year: e.target.value === '' ? undefined : Number(e.target.value) }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Description</label>
+                  <textarea
+                    className="w-full border px-3 py-2"
+                    value={form.description || ''}
+                    onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Private Notes</label>
+                  <textarea
+                    className="w-full border px-3 py-2"
+                    value={form.notes || ''}
+                    onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Provenance fields */}
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Serial Number</label>
+                <input className="w-full border px-3 py-2" value={form.serialNumber || ''} onChange={e => setForm(prev => ({...prev, serialNumber: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Acquisition Date</label>
+                <input className="w-full border px-3 py-2" type="date" value={form.acquisitionDate || ''} onChange={e => setForm(prev => ({...prev, acquisitionDate: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Certificate URL</label>
+                <input className="w-full border px-3 py-2" value={form.certificateOfAuthenticity || ''} onChange={e => setForm(prev => ({...prev, certificateOfAuthenticity: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Origin</label>
+                <input className="w-full border px-3 py-2" value={form.origin || ''} onChange={e => setForm(prev => ({...prev, origin: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Transfer Method</label>
+                <input className="w-full border px-3 py-2" value={form.transferMethod || ''} onChange={e => setForm(prev => ({...prev, transferMethod: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Associated Documents (comma separated URLs)</label>
+                <input className="w-full border px-3 py-2" value={form.associatedDocuments || ''} onChange={e => setForm(prev => ({...prev, associatedDocuments: e.target.value}))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Provenance Notes</label>
+                <textarea className="w-full border px-3 py-2" value={form.provenanceNotes || ''} onChange={e => setForm(prev => ({...prev, provenanceNotes: e.target.value}))} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              {onCancelInline && <Button variant="outline" onClick={onCancelInline}>Cancel</Button>}
+              {onSaveInline && <Button onClick={onSaveInline}>Save</Button>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Anchoring Panel */}
       <div className="mb-6">

@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { HeldObject } from '@/types';
-import { getObject, deleteObject } from '@/lib/firebase-services';
+import { getObject, deleteObject, updateObject } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import OwnerTools from '@/components/OwnerTools';
 import DeleteDialog from '@/components/DeleteDialog';
@@ -24,6 +24,31 @@ export default function RegistryItemPage() {
   const [error, setError] = useState<string>('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+
+  type FormState = {
+    title: string;
+    category: string;
+    description?: string;
+    maker: string;
+    year?: number;
+    value?: number;
+    condition: 'excellent' | 'good' | 'fair' | 'poor';
+    tags: string;
+    notes: string;
+    images: string[];
+    isPublic: boolean;
+    shareInCollaborative: boolean;
+    // Provenance
+    serialNumber?: string;
+    acquisitionDate?: string;
+    certificateOfAuthenticity?: string;
+    origin?: string;
+    transferMethod?: string;
+    associatedDocuments?: string;
+    provenanceNotes?: string;
+  };
+  const [form, setForm] = useState<FormState | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -33,6 +58,29 @@ export default function RegistryItemPage() {
         const obj = await getObject(objectId);
         if (!active) return;
         setItem(obj);
+        if (obj) {
+          setForm({
+            title: obj.title || '',
+            category: obj.category || '',
+            description: obj.description || '',
+            maker: obj.maker || '',
+            year: obj.year,
+            value: obj.value,
+            condition: (obj.condition as any) || 'good',
+            tags: Array.isArray(obj.tags) ? obj.tags.join(', ') : '',
+            notes: obj.notes || '',
+            images: obj.images || [],
+            isPublic: !!obj.isPublic,
+            shareInCollaborative: !!obj.shareInCollaborative,
+            serialNumber: obj.serialNumber || '',
+            acquisitionDate: typeof (obj as any).acquisitionDate === 'string' ? (obj as any).acquisitionDate : '',
+            certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
+            origin: obj.origin || '',
+            transferMethod: obj.transferMethod || '',
+            associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
+            provenanceNotes: obj.provenanceNotes || '',
+          });
+        }
       } catch (e) {
         setError('Failed to load object');
       } finally {
@@ -52,6 +100,43 @@ export default function RegistryItemPage() {
       setDeleting(false);
       setConfirmOpen(false);
     }
+  }
+
+  async function handleInlineSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form || !item) return;
+    const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
+    const associatedDocuments = (form.associatedDocuments || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    await updateObject(item.id, {
+      id: item.id,
+      title: form.title,
+      category: form.category,
+      description: form.description,
+      maker: form.maker,
+      year: form.year,
+      value: form.value,
+      condition: form.condition,
+      tags,
+      notes: form.notes,
+      images: form.images,
+      isPublic: form.isPublic,
+      shareInCollaborative: form.shareInCollaborative,
+      // provenance
+      serialNumber: form.serialNumber,
+      acquisitionDate: form.acquisitionDate,
+      certificateOfAuthenticity: form.certificateOfAuthenticity,
+      origin: form.origin,
+      transferMethod: form.transferMethod,
+      associatedDocuments,
+      provenanceNotes: form.provenanceNotes,
+    } as any);
+    // Refresh local item
+    const updated = await getObject(item.id);
+    setItem(updated);
+    setEditing(false);
   }
 
   if (loading) {
@@ -89,8 +174,8 @@ export default function RegistryItemPage() {
             )}
             {user && item.userId === user.uid && (
               <>
-                <Button asChild variant="outline" className="border-black text-black">
-                  <Link href={`/registry/${item.id}/edit`} className="flex items-center gap-2"><Edit className="h-4 w-4" /> Edit</Link>
+                <Button variant="outline" className="border-black text-black" onClick={() => setEditing(v => !v)}>
+                  <Edit className="h-4 w-4 mr-2" /> {editing ? 'Cancel' : 'Edit'}
                 </Button>
                 <Button variant="outline" className="text-gray-600" onClick={() => setConfirmOpen(true)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
@@ -102,7 +187,16 @@ export default function RegistryItemPage() {
 
         {/* Title + chips */}
         <div className="mb-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3">{item.title || 'Untitled'}</h1>
+          {!editing ? (
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3">{item.title || 'Untitled'}</h1>
+          ) : (
+            <input
+              className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3 w-full border-b border-gray-300 focus:border-black outline-none bg-transparent"
+              value={form?.title || ''}
+              onChange={e => setForm(prev => ({...prev!, title: e.target.value}))}
+              placeholder="Untitled"
+            />
+          )}
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-700">
             {item.maker && (
               <span>{item.maker}{item.year ? `, ${item.year}` : ''}</span>
@@ -111,6 +205,26 @@ export default function RegistryItemPage() {
             <span className={`px-2.5 py-1 rounded-full border ${item.anchoring?.isAnchored ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : (item.anchoring?.txHash ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-700')}`}>
               {item.anchoring?.isAnchored ? 'Anchored' : (item.anchoring?.txHash ? 'Pending' : 'Not Anchored')}
             </span>
+          </div>
+          {/* Tags under the title */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {((form?.tags || '')
+              .split(',')
+              .map(t => t.trim())
+              .filter(Boolean)).map((t, i) => (
+              <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 inline-flex items-center gap-2">
+                {t}
+                {editing && (
+                  <button
+                    type="button"
+                    className="text-red-600"
+                    onClick={() => setForm(prev => ({...prev!, tags: prev!.tags.split(',').map(s=>s.trim()).filter(Boolean).filter(x => x !== t).join(', ')}))}
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -130,38 +244,42 @@ export default function RegistryItemPage() {
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">Specifications</div>
-              <div className="space-y-4 text-black">
-                {item.description && (
-                  <div>
-                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Description</div>
-                    <p className="leading-relaxed">{item.description}</p>
-                  </div>
-                )}
-                {item.category && (
-                  <div>
-                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Category</div>
-                    <p>{item.category}</p>
-                  </div>
-                )}
-                {item.condition && (
-                  <div>
-                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Condition</div>
-                    <p className="capitalize">{item.condition}</p>
-                  </div>
-                )}
-                {typeof item.value !== 'undefined' && (
-                  <div>
-                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Estimated Value (Private)</div>
-                    <p>{isNaN(item.value as any) ? '—' : formatCurrency(item.value as number)}</p>
-                  </div>
-                )}
-                {item.notes && (
-                  <div>
-                    <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Private Notes</div>
-                    <p className="text-gray-800">{item.notes}</p>
-                  </div>
-                )}
-              </div>
+              {!editing ? (
+                <div className="space-y-4 text-black">
+                  {item.description && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Description</div>
+                      <p className="leading-relaxed">{item.description}</p>
+                    </div>
+                  )}
+                  {item.category && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Category</div>
+                      <p>{item.category}</p>
+                    </div>
+                  )}
+                  {item.condition && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Condition</div>
+                      <p className="capitalize">{item.condition}</p>
+                    </div>
+                  )}
+                  {typeof item.value !== 'undefined' && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Estimated Value (Private)</div>
+                      <p>{isNaN(item.value as any) ? '—' : formatCurrency(item.value as number)}</p>
+                    </div>
+                  )}
+                  {item.notes && (
+                    <div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Private Notes</div>
+                      <p className="text-gray-800">{item.notes}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">Use the right‑side Quick Edit panel to update fields. Title and tags edit inline above.</div>
+              )}
             </div>
 
             {/* Provenance summary / upsell */}
@@ -188,7 +306,18 @@ export default function RegistryItemPage() {
 
           {/* Right: sticky owner tools */}
           <div className="xl:col-span-1 xl:sticky xl:top-6 h-fit">
-            <OwnerTools object={item} />
+            <OwnerTools
+              object={item}
+              editing={editing}
+              form={form as any}
+              setForm={setForm as any}
+              onSaveInline={() => {
+                // Trigger the same save handler used for inline form
+                const fake = { preventDefault() {} } as any;
+                handleInlineSave(fake);
+              }}
+              onCancelInline={() => setEditing(false)}
+            />
           </div>
         </div>
       </div>
@@ -206,4 +335,3 @@ export default function RegistryItemPage() {
     </div>
   );
 }
-
