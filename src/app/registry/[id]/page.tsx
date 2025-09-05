@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { HeldObject } from '@/types';
-import { getObject, deleteObject, updateObject } from '@/lib/firebase-services';
+import { getObject, deleteObject, updateObject, uploadCOAImage } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import OwnerTools from '@/components/OwnerTools';
 import ProvenanceSection from '@/components/ProvenanceSection';
@@ -309,6 +309,7 @@ export default function RegistryItemPage() {
                   provenanceNotes: form.provenanceNotes,
                   chain: Array.isArray(form.chain) ? form.chain : [],
                 }}
+                objectId={item.id}
                 onChange={(provenanceData) => {
                   setForm(prev => ({
                     ...(prev as any),

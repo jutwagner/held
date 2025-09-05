@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Upload, X, Plus, Calendar, MapPin, FileText, Link2, Award, Hash, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { uploadCOAImage } from '@/lib/firebase-services';
 
 interface ChainEntry {
   owner: string;
@@ -26,10 +27,14 @@ interface ProvenanceData {
 interface ProvenanceSectionProps {
   data: ProvenanceData;
   onChange: (data: ProvenanceData) => void;
+  objectId?: string; // Optional: enable direct upload to this object's storage path
+  onUploadCOA?: (file: File) => Promise<string>; // Optional custom uploader
 }
 
-const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange }) => {
+const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, objectId, onUploadCOA }) => {
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const updateData = (updates: Partial<ProvenanceData>) => {
     onChange({ ...data, ...updates });
@@ -58,6 +63,28 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange })
     if (!doc.trim()) return;
     const current = Array.isArray(data.associatedDocuments) ? data.associatedDocuments : [];
     updateData({ associatedDocuments: [...current, doc.trim()] });
+  };
+
+  const performUpload = async (file?: File) => {
+    if (!file) return;
+    try {
+      setUploading(true);
+      let url: string | undefined;
+      if (typeof onUploadCOA === 'function') {
+        url = await onUploadCOA(file);
+      } else if (objectId) {
+        url = await uploadCOAImage(file, objectId);
+      } else {
+        alert('Upload available after saving the object.');
+        return;
+      }
+      if (url) updateData({ certificateImage: url });
+    } catch (e) {
+      console.error('Certificate upload failed', e);
+      alert('Failed to upload certificate image');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeDocument = (index: number) => {
@@ -191,25 +218,44 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange })
               {/* Certificate Image Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Certificate Image</label>
-                <div 
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    dragActive ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                  onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={() => setDragActive(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setDragActive(false);
-                    // Handle file drop - implement upload logic
-                  }}
-                >
-                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-2">Drop certificate image here, or</p>
-                  <Button variant="outline" size="sm">
-                    Choose File
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB</p>
-                </div>
+                {data.certificateImage ? (
+                  <div className="flex items-center gap-3">
+                    <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border" />
+                    <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>
+                  </div>
+                ) : (
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      dragActive ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={() => setDragActive(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragActive(false);
+                      const file = Array.from(e.dataTransfer.files || []).find(f => f.type.startsWith('image/'));
+                      performUpload(file);
+                    }}
+                  >
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Drop certificate image here, or</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = (e.target.files || [])[0];
+                        performUpload(f);
+                        if (e.currentTarget) e.currentTarget.value = '';
+                      }}
+                    />
+                    <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                      {uploading ? 'Uploading…' : 'Choose File'}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
