@@ -427,27 +427,32 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     updateData.shareInCollaborative = data.shareInCollaborative;
   }
 
-  // Handle new images if provided
-  if (data.images && data.images.length > 0) {
+  // Handle images if provided: allow clearing when empty
+  if (data.images) {
     const object = await getObject(id);
     let newImageUrls: string[] = [];
     if (object) {
-      for (const img of data.images) {
-        if (typeof img !== 'string' && img instanceof File) {
-          try {
-            const storageRef = ref(storage, `objects/${id}/${img.name}`);
-            await uploadBytes(storageRef, img);
-            const url = await getDownloadURL(storageRef);
-            newImageUrls.push(url);
-            console.debug('[updateObject] Uploaded image:', url);
-          } catch (err) {
-            console.error('[updateObject] Image upload failed:', err);
+      if (data.images.length > 0) {
+        for (const img of data.images) {
+          if (typeof img !== 'string' && img instanceof File) {
+            try {
+              const storageRef = ref(storage, `objects/${id}/${img.name}`);
+              await uploadBytes(storageRef, img);
+              const url = await getDownloadURL(storageRef);
+              newImageUrls.push(url);
+              console.debug('[updateObject] Uploaded image:', url);
+            } catch (err) {
+              console.error('[updateObject] Image upload failed:', err);
+            }
+          } else if (typeof img === 'string') {
+            newImageUrls.push(img);
           }
-        } else if (typeof img === 'string') {
-          newImageUrls.push(img);
         }
+        updateData.images = newImageUrls.filter(url => typeof url === 'string');
+      } else {
+        // Explicitly clear images
+        updateData.images = [];
       }
-      updateData.images = newImageUrls.filter(url => typeof url === 'string');
     }
   }
 

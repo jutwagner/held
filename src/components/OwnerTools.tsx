@@ -24,6 +24,7 @@ type Props = {
     condition: 'excellent' | 'good' | 'fair' | 'poor';
     tags: string; // comma separated in form
     notes: string;
+    images: Array<string | File>;
     isPublic: boolean;
     shareInCollaborative: boolean;
     serialNumber?: string;
@@ -53,6 +54,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
   const { user } = useAuth();
   const heldPlus = isHeldPlus(user);
   const [busy, setBusy] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const prov = useMemo(() => getProvenanceScore(object), [object]);
 
   const anchored = !!object.anchoring?.isAnchored;
@@ -175,6 +177,100 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
         <div className="mb-6">
           <div className="text-sm text-gray-600 mb-3">Quick Edit</div>
           <div className="space-y-3 text-sm">
+            {/* Images */}
+            <div>
+              <div className="text-xs text-gray-500 mb-2 uppercase tracking-widest">Images</div>
+              {(!form.images || form.images.length === 0) ? (
+                <div
+                  className={`border border-dashed p-4 text-center transition-colors ${dragActive ? 'border-black bg-gray-50' : 'border-gray-300'}`}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); }}
+                  onDrop={(e) => {
+                    e.preventDefault(); e.stopPropagation(); setDragActive(false);
+                    const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+                    if (files.length) setForm(prev => ({ ...prev, images: [...(prev.images || []), ...files] }));
+                  }}
+                >
+                  <div className="text-xs text-gray-600 mb-2">Drop images here or click to upload</div>
+                  <label className="inline-block px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer">
+                    Add Images
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) {
+                          setForm(prev => ({ ...prev, images: [...(prev.images || []), ...files] }));
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div
+                    className={`border border-dashed p-2 text-center text-xs transition-colors ${dragActive ? 'border-black bg-gray-50' : 'border-gray-200'}`}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); }}
+                    onDrop={(e) => {
+                      e.preventDefault(); e.stopPropagation(); setDragActive(false);
+                      const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+                      if (files.length) setForm(prev => ({ ...prev, images: [...(prev.images || []), ...files] }));
+                    }}
+                  >
+                    Drop more images to add
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {form.images.map((img: string | File, idx: number) => {
+                      const src = typeof img === 'string' ? img : URL.createObjectURL(img);
+                      return (
+                        <div key={idx} className="relative border border-gray-200 bg-white">
+                          <img src={src} alt="Preview" className="w-full h-24 object-cover" />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 text-xs bg-white/90 border border-gray-300 px-1 py-0.5"
+                            onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                            aria-label="Remove image"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div>
+                    <label className="inline-block px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer">
+                      Add More
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (files.length) {
+                            setForm(prev => ({ ...prev, images: [...(prev.images || []), ...files] }));
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="ml-2 px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-50"
+                      onClick={() => setForm(prev => ({ ...prev, images: [] }))}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center justify-between px-2 py-2">
                 <span className="text-xs text-gray-700">Private</span>

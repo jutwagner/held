@@ -38,7 +38,7 @@ export default function RegistryItemPage() {
     condition: 'excellent' | 'good' | 'fair' | 'poor';
     tags: string;
     notes: string;
-    images: string[];
+    images: Array<string | File>;
     isPublic: boolean;
     shareInCollaborative: boolean;
     // Provenance
@@ -197,6 +197,18 @@ export default function RegistryItemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {editing && (
+        <div className="sticky top-0 z-50 w-full">
+          <div className="bg-black text-white px-6 sm:px-8 py-3 flex items-center justify-between">
+            <div className="text-sm font-medium tracking-wide uppercase">Editing</div>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setEditing(false)} className="bg-black border border-white-70 text-white">Cancel</Button>
+              <Button onClick={() => { const fake = { preventDefault() {} } as any; handleInlineSave(fake); }} className="bg-white text-black hover:bg-gray-300">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
