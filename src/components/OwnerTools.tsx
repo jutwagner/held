@@ -172,11 +172,11 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
 
       {/* Inline Edit Panel (only when editing). Focus on fields not on the main view */}
       {editing && form && setForm && (
-        <div className="mb-6 border border-gray-200 p-4">
+        <div className="mb-6">
           <div className="text-sm text-gray-600 mb-3">Quick Edit</div>
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center justify-between border border-gray-200 px-2 py-2">
+              <div className="flex items-center justify-between px-2 py-2">
                 <span className="text-xs text-gray-700">Private</span>
                 <Switch
                   ariaLabel="Toggle Private"
@@ -184,7 +184,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                   onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: !checked }))}
                 />
               </div>
-              <div className="flex items-center justify-between border border-gray-200 px-2 py-2">
+              <div className="flex items-center justify-between px-2 py-2">
                 <span className="text-xs text-gray-700">Collaborative</span>
                 <Switch
                   ariaLabel="Toggle Collaborative Sharing"

@@ -11,6 +11,8 @@ import { HeldObject } from '@/types';
 import { getObject, deleteObject, updateObject } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import OwnerTools from '@/components/OwnerTools';
+import ProvenanceSection from '@/components/ProvenanceSection';
+import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 import DeleteDialog from '@/components/DeleteDialog';
 
 export default function RegistryItemPage() {
@@ -43,10 +45,13 @@ export default function RegistryItemPage() {
     serialNumber?: string;
     acquisitionDate?: string;
     certificateOfAuthenticity?: string;
+    certificateUrl?: string;
+    certificateImage?: string;
     origin?: string;
     transferMethod?: string;
-    associatedDocuments?: string;
+    associatedDocuments?: string; // comma-separated for inline editor
     provenanceNotes?: string;
+    chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
   };
   const [form, setForm] = useState<FormState | null>(null);
 
@@ -73,12 +78,41 @@ export default function RegistryItemPage() {
             isPublic: !!obj.isPublic,
             shareInCollaborative: !!obj.shareInCollaborative,
             serialNumber: obj.serialNumber || '',
-            acquisitionDate: typeof (obj as any).acquisitionDate === 'string' ? (obj as any).acquisitionDate : '',
+            acquisitionDate: ((): string => {
+              const d: any = (obj as any).acquisitionDate;
+              try {
+                if (!d) return '';
+                if (typeof d === 'string') return d;
+                if (d.seconds) return new Date(d.seconds * 1000).toISOString().slice(0, 10);
+                const dt = new Date(d);
+                if (!isNaN(dt.getTime())) return dt.toISOString().slice(0, 10);
+              } catch {}
+              return '';
+            })(),
             certificateOfAuthenticity: obj.certificateOfAuthenticity || '',
+            certificateUrl: (obj as any).certificateUrl || '',
+            certificateImage: (obj as any).certificateImage || '',
             origin: obj.origin || '',
             transferMethod: obj.transferMethod || '',
             associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
             provenanceNotes: obj.provenanceNotes || '',
+            chain: Array.isArray(obj.chain)
+              ? (obj.chain as any[]).map((c) => ({
+                  owner: c?.owner || '',
+                  acquiredAt: ((): string => {
+                    const d: any = c?.acquiredAt;
+                    try {
+                      if (!d) return '';
+                      if (typeof d === 'string') return d;
+                      if (d?.seconds) return new Date(d.seconds * 1000).toISOString().slice(0, 10);
+                      const dt = new Date(d);
+                      if (!isNaN(dt.getTime())) return dt.toISOString().slice(0, 10);
+                    } catch {}
+                    return '';
+                  })(),
+                  notes: c?.notes || ''
+                }))
+              : [],
           });
         }
       } catch (e) {
@@ -106,10 +140,12 @@ export default function RegistryItemPage() {
     e.preventDefault();
     if (!form || !item) return;
     const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
-    const associatedDocuments = (form.associatedDocuments || '')
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
+    const associatedDocuments = Array.isArray((form as any).associatedDocuments)
+      ? ((form as any).associatedDocuments as string[])
+      : (form.associatedDocuments || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
     await updateObject(item.id, {
       id: item.id,
       title: form.title,
@@ -128,10 +164,13 @@ export default function RegistryItemPage() {
       serialNumber: form.serialNumber,
       acquisitionDate: form.acquisitionDate,
       certificateOfAuthenticity: form.certificateOfAuthenticity,
+      certificateUrl: form.certificateUrl,
+      certificateImage: form.certificateImage,
       origin: form.origin,
       transferMethod: form.transferMethod,
       associatedDocuments,
       provenanceNotes: form.provenanceNotes,
+      chain: form.chain,
     } as any);
     // Refresh local item
     const updated = await getObject(item.id);
@@ -217,26 +256,7 @@ export default function RegistryItemPage() {
 
             {/* Specifications moved to right-rail in OwnerTools */}
 
-            {/* Provenance summary / upsell */}
-            {isHeldPlus(user) ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">Provenance (Summary)</div>
-                <div className="space-y-2 text-sm text-gray-800">
-                  <div>Serial Number: {item.serialNumber || '—'}</div>
-                  <div>Acquisition Date: {item.acquisitionDate ? new Date(item.acquisitionDate as any).toLocaleDateString() : '—'}</div>
-                  <div>Ownership Chain: {Array.isArray(item.chain) && item.chain.length > 0 ? `${item.chain.length} entr${item.chain.length === 1 ? 'y' : 'ies'}` : '—'}</div>
-                  <div>Documents: {item.certificateOfAuthenticity ? 'Certificate attached' : (item.associatedDocuments && item.associatedDocuments.length ? `${item.associatedDocuments.length} document(s)` : '—')}</div>
-                </div>
-                <div className="mt-4">
-                  <Button asChild variant="outline"><Link href={`/registry/${item.id}/edit`}>Open Provenance Editor</Link></Button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">Provenance (Held+)</div>
-                <p className="text-sm text-gray-600">Upgrade to track serials, documents and ownership history.</p>
-              </div>
-            )}
+            {/* Provenance moved to full-width section below */}
           </div>
 
           {/* Right: sticky owner tools */}
@@ -254,6 +274,43 @@ export default function RegistryItemPage() {
               onCancelInline={() => setEditing(false)}
             />
           </div>
+        </div>
+        {/* Full-width Provenance documentation */}
+        <div className="mt-16">
+          {isHeldPlus(user) ? (
+            form && (
+              <ProvenanceSection
+                data={{
+                  serialNumber: form.serialNumber,
+                  acquisitionDate: form.acquisitionDate,
+                  certificateOfAuthenticity: form.certificateOfAuthenticity,
+                  certificateImage: form.certificateImage,
+                  certificateUrl: form.certificateUrl,
+                  origin: form.origin,
+                  transferMethod: form.transferMethod,
+                  associatedDocuments: Array.isArray((form as any).associatedDocuments)
+                    ? ((form as any).associatedDocuments as string[])
+                    : (form.associatedDocuments || '')
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(Boolean),
+                  provenanceNotes: form.provenanceNotes,
+                  chain: Array.isArray(form.chain) ? form.chain : [],
+                }}
+                onChange={(provenanceData) => {
+                  setForm(prev => ({
+                    ...(prev as any),
+                    ...provenanceData,
+                    associatedDocuments: Array.isArray(provenanceData.associatedDocuments)
+                      ? provenanceData.associatedDocuments
+                      : [],
+                  }) as any);
+                }}
+              />
+            )
+          ) : (
+            <ProvenanceUpsell />
+          )}
         </div>
       </div>
 
