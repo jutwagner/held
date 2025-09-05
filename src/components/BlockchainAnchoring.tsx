@@ -277,7 +277,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-gray-500">Transaction:</span>
+                  <span className="text-gray-500">Chain:</span>
                   <a
                     href={getPolygonExplorerURL(latestEvent.txHash)}
                     target="_blank"

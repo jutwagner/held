@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
-import { subscribeObjects } from '@/lib/firebase-services';
-import { Plus, Search, Eye, EyeOff } from 'lucide-react';
+import { subscribeObjects, updateObjectAnchoring } from '@/lib/firebase-services';
+import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
+import { Plus, Search, Eye, EyeOff, List, Columns, CheckCircle, Clock, Shield, Edit2, Save, X as XIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
@@ -24,6 +25,13 @@ export default function RegistryPage() {
   const [showPublicOnly, setShowPublicOnly] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 9;
+  const [view, setView] = useState<'grid' | 'table'>('grid');
+  const [anchoringFilter, setAnchoringFilter] = useState<'all' | 'anchored' | 'pending' | 'not'>('all');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -45,7 +53,7 @@ export default function RegistryPage() {
   useEffect(() => {
     filterObjects();
     setPage(1); // Reset to first page on filter change
-  }, [objects, searchTerm, showPublicOnly]);
+  }, [objects, searchTerm, showPublicOnly, anchoringFilter]);
 
   // loadObjects removed; now handled by subscribeObjects
 
@@ -61,7 +69,72 @@ export default function RegistryPage() {
     if (showPublicOnly) {
       filtered = filtered.filter(obj => obj.isPublic);
     }
+    if (anchoringFilter !== 'all') {
+      filtered = filtered.filter(obj => {
+        const anchored = !!obj.anchoring?.isAnchored;
+        const pending = !!obj.anchoring?.txHash && !anchored;
+        if (anchoringFilter === 'anchored') return anchored;
+        if (anchoringFilter === 'pending') return pending;
+        return !anchored && !pending;
+      });
+    }
     setFilteredObjects(filtered);
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  const startEdit = (obj: HeldObject) => {
+    setEditingId(obj.id);
+    setEditingTitle(obj.title);
+  };
+
+  const saveEdit = async (obj: HeldObject) => {
+    try {
+      await import('@/lib/firebase-services').then(mod => mod.updateObject(obj.id, { ...obj, title: editingTitle } as any));
+      setEditingId(null);
+    } catch (e) {
+      console.error('Inline save failed', e);
+    }
+  };
+
+  const anchorSelectedBasic = async () => {
+    if (!user) return;
+    setBulkBusy(true);
+    try {
+      const baseURL = window.location.origin;
+      const tasks = Array.from(selected).map(async id => {
+        const obj = objects.find(o => o.id === id);
+        if (!obj) return;
+        const uri = generatePassportURI(obj as any, baseURL);
+        const version = (obj.anchoring?.version || 0) + 1 || 1;
+        const res = await anchorPassport(obj as any, uri, version, 'core', 'async');
+        await updateObjectAnchoring(obj.id, {
+          isAnchored: false,
+          version,
+          txHash: res.txHash,
+          digest: res.digest,
+          uri,
+        } as any);
+      });
+      await Promise.all(tasks);
+      clearSelection();
+    } catch (e) {
+      console.error('Bulk anchor failed', e);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const runWorker = async () => {
+    try { await fetch('/api/anchor/worker'); } catch {}
   };
 
 
@@ -87,12 +160,16 @@ export default function RegistryPage() {
                     {objects.length} object{objects.length !== 1 ? 's' : ''} in your collection
                   </p>
                 </div>
-                <Button asChild className="mt-4 sm:mt-0 shadow-lg">
-                  <Link href="/registry/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Object
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                  <Button variant={view === 'grid' ? 'default' : 'outline'} onClick={() => setView('grid')} title="Grid view"><Columns className="h-4 w-4" /></Button>
+                  <Button variant={view === 'table' ? 'default' : 'outline'} onClick={() => setView('table')} title="Table view"><List className="h-4 w-4" /></Button>
+                  <Button asChild className="shadow-lg">
+                    <Link href="/registry/new">
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Item
+                    </Link>
+                  </Button>
+                </div>
               </div>
 
               {/* Search and Filters */}
@@ -114,7 +191,58 @@ export default function RegistryPage() {
                   {showPublicOnly ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
                   {showPublicOnly ? 'Public Only' : 'All Objects'}
                 </Button>
+                <select
+                  value={anchoringFilter}
+                  onChange={(e) => setAnchoringFilter(e.target.value as any)}
+                  className="h-12 border border-gray-200 bg-white px-3"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="anchored">Anchored</option>
+                  <option value="not">Not Anchored</option>
+                </select>
               </div>
+
+              {/* Status board */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {(() => {
+                  const anchored = objects.filter(o => o.anchoring?.isAnchored).length;
+                  const pending = objects.filter(o => !!o.anchoring?.txHash && !o.anchoring?.isAnchored).length;
+                  const not = objects.length - anchored - pending;
+                  return (
+                    <>
+                      <StatusCard label="Anchored" value={anchored} icon={CheckCircle} />
+                      <StatusCard label="Pending" value={pending} icon={Clock} />
+                      <StatusCard label="Not Anchored" value={not} icon={Shield} />
+                      <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-gray-600">Anchoring Queue</div>
+                          <div className="text-xs text-gray-500">Run worker to finalize pending</div>
+                        </div>
+                        <Button variant="outline" onClick={runWorker}>Run Now</Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Documents manager toggle */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-sm text-gray-600">Documents Manager</div>
+                <Button variant="outline" onClick={() => setShowDocs(!showDocs)}>{showDocs ? 'Hide' : 'Show'} Documents</Button>
+              </div>
+              {showDocs && <DocumentsManager objects={objects} />}
+
+              {/* Bulk actions bar */}
+              {selected.size > 0 && (
+                <div className="flex items-center justify-between border border-gray-200 bg-white p-3 mb-4">
+                  <div className="text-sm text-gray-700">{selected.size} selected</div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={clearSelection}>Clear</Button>
+                    <Button onClick={anchorSelectedBasic} disabled={bulkBusy}>{bulkBusy ? 'Anchoring...' : 'Anchor Basic'}</Button>
+                  </div>
+                </div>
+              )}
 
               {/* Objects Grid with Pagination */}
               {loadingObjects ? (
@@ -150,16 +278,87 @@ export default function RegistryPage() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredObjects.slice((page-1)*pageSize, page*pageSize).map((obj) => (
-                      <ObjectCard key={obj.id} object={obj} />
-                    ))}
-                  </div>
-                  <div className="flex justify-center mt-8 gap-2">
-                    <Button disabled={page === 1} onClick={() => setPage(page-1)} variant="outline">Previous</Button>
-                    <span className="px-4 py-2 text-gray-600">Page {page} of {Math.ceil(filteredObjects.length/pageSize)}</span>
-                    <Button disabled={page*pageSize >= filteredObjects.length} onClick={() => setPage(page+1)} variant="outline">Next</Button>
-                  </div>
+                  {view === 'grid' ? (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {filteredObjects.slice((page-1)*pageSize, page*pageSize).map((obj) => (
+                          <div key={obj.id}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
+                              <Link href={`/registry/${obj.id}`} className="text-sm text-gray-600 underline">Edit</Link>
+                            </div>
+                            <ObjectCard object={obj} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-center mt-8 gap-2">
+                        <Button disabled={page === 1} onClick={() => setPage(page-1)} variant="outline">Previous</Button>
+                        <span className="px-4 py-2 text-gray-600">Page {page} of {Math.ceil(filteredObjects.length/pageSize)}</span>
+                        <Button disabled={page*pageSize >= filteredObjects.length} onClick={() => setPage(page+1)} variant="outline">Next</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="overflow-x-auto border border-gray-200 bg-white">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50">
+                          <tr className="text-left">
+                            <th className="p-3"><input type="checkbox" onChange={(e) => {
+                              if (e.target.checked) setSelected(new Set(filteredObjects.map(o => o.id))); else clearSelection();
+                            }} /></th>
+                            <th className="p-3">Title</th>
+                            <th className="p-3">Category</th>
+                            <th className="p-3">Visibility</th>
+                            <th className="p-3">Anchoring</th>
+                            <th className="p-3">Prov.</th>
+                            <th className="p-3">Updated</th>
+                            <th className="p-3">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredObjects.map(obj => {
+                            const anchored = !!obj.anchoring?.isAnchored;
+                            const pending = !!obj.anchoring?.txHash && !anchored;
+                            const prov = getProvenanceScore(obj);
+                            return (
+                              <tr key={obj.id} className="border-t">
+                                <td className="p-3 align-top"><input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} /></td>
+                                <td className="p-3 align-top">
+                                  {editingId === obj.id ? (
+                                    <div className="flex items-center gap-2">
+                                      <input value={editingTitle} onChange={e => setEditingTitle(e.target.value)} className="border px-2 py-1 w-full" />
+                                      <button onClick={() => saveEdit(obj)} title="Save"><Save className="h-4 w-4" /></button>
+                                      <button onClick={() => setEditingId(null)} title="Cancel"><XIcon className="h-4 w-4" /></button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{obj.title}</span>
+                                      <button onClick={() => startEdit(obj)} title="Edit"><Edit2 className="h-3.5 w-3.5 text-gray-500" /></button>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="p-3 align-top">{obj.category || '-'}</td>
+                                <td className="p-3 align-top">{obj.isPublic ? 'Public' : 'Private'}</td>
+                                <td className="p-3 align-top">
+                                  {anchored ? (
+                                    <span className="inline-flex items-center gap-1 text-emerald-700"><CheckCircle className="h-4 w-4" /> Anchored</span>
+                                  ) : pending ? (
+                                    <span className="inline-flex items-center gap-1 text-amber-700"><Clock className="h-4 w-4" /> Pending</span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-gray-500"><Shield className="h-4 w-4" /> Not Anchored</span>
+                                  )}
+                                </td>
+                                <td className="p-3 align-top">{prov}%</td>
+                                <td className="p-3 align-top">{obj.updatedAt ? new Date((obj.updatedAt as any).seconds ? (obj.updatedAt as any).seconds * 1000 : obj.updatedAt).toLocaleDateString() : '-'}</td>
+                                <td className="p-3 align-top">
+                                  <Link href={`/registry/${obj.id}`} className="text-blue-600 underline">Open</Link>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </>
               )}
             </>
@@ -231,26 +430,40 @@ function ObjectCard({ object }: { object: HeldObject }) {
             )}
           </div>
 
-          {/* Meta row */}
-          <div className="flex items-center justify-between text-sm mt-4">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-gray-800">
-                {object.year && !isNaN(object.year) ? `${object.year}` : 'Year N/A'}
+        {/* Meta row */}
+        <div className="flex items-center justify-between text-sm mt-4">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-gray-800">
+              {object.year && !isNaN(object.year) ? `${object.year}` : 'Year N/A'}
+            </span>
+            {typeof object.value !== 'undefined' && (
+              <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-emerald-700">
+                {isNaN(object.value) ? 'Value N/A' : formatCurrency(object.value)}
               </span>
-              {typeof object.value !== 'undefined' && (
-                <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-emerald-700">
-                  {isNaN(object.value) ? 'Value N/A' : formatCurrency(object.value)}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-gray-500">
-              {object.isPublic ? (
-                <span className="inline-flex items-center gap-1 text-blue-600"><Eye className="h-4 w-4" /> Public</span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-gray-400"><EyeOff className="h-4 w-4" /> Private</span>
-              )}
-            </div>
+            )}
           </div>
+          <div className="flex items-center gap-2 text-gray-500">
+            {object.isPublic ? (
+              <span className="inline-flex items-center gap-1 text-blue-600"><Eye className="h-4 w-4" /> Public</span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-gray-400"><EyeOff className="h-4 w-4" /> Private</span>
+            )}
+          </div>
+        </div>
+
+        {/* Provenance completeness */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+            <span>Provenance</span>
+            <span className="font-mono">{getProvenanceScore(object)}%</span>
+          </div>
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gray-900"
+              style={{ width: `${getProvenanceScore(object)}%` }}
+            />
+          </div>
+        </div>
 
           {/* Tags */}
           {Array.isArray(object.tags) && object.tags.length > 0 && (
@@ -274,4 +487,71 @@ function ObjectCard({ object }: { object: HeldObject }) {
       </div>
     </Link>
   );
+}
+
+function StatusCard({ label, value, icon: Icon }: { label: string; value: number; icon: any }) {
+  return (
+    <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
+      <div>
+        <div className="text-sm text-gray-600">{label}</div>
+        <div className="text-2xl font-semibold">{value}</div>
+      </div>
+      <Icon className="h-5 w-5 text-gray-500" />
+    </div>
+  );
+}
+
+function DocumentsManager({ objects }: { objects: HeldObject[] }) {
+  const docs = new Map<string, string[]>();
+  for (const o of objects) {
+    const url = o.certificateOfAuthenticity;
+    if (url && typeof url === 'string') {
+      const arr = docs.get(url) || [];
+      arr.push(o.title);
+      docs.set(url, arr);
+    }
+  }
+  if (docs.size === 0) {
+    return (
+      <div className="border border-gray-200 bg-white p-4 mb-8 text-sm text-gray-600">No documents found.</div>
+    );
+  }
+  return (
+    <div className="overflow-x-auto border border-gray-200 bg-white mb-8">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr className="text-left">
+            <th className="p-3">Document</th>
+            <th className="p-3">Used By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from(docs.entries()).map(([url, titles]) => (
+            <tr key={url} className="border-t">
+              <td className="p-3 align-top">
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{url}</a>
+              </td>
+              <td className="p-3 align-top">
+                <div className="flex flex-wrap gap-2">
+                  {titles.map((t, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 text-xs">{t}</span>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function getProvenanceScore(o: HeldObject): number {
+  let score = 0;
+  let total = 4;
+  if (o.serialNumber) score++;
+  if (o.certificateOfAuthenticity) score++;
+  if (Array.isArray(o.chain) && o.chain.length > 0) score++;
+  if (o.acquisitionDate) score++;
+  return Math.round((score / total) * 100);
 }
