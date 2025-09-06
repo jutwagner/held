@@ -88,11 +88,11 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
         <aside className="hidden md:block w-64 border-r bg-white">
           <SectionNav section={section} />
         </aside>
-        {/* Mobile bottom nav - persistent */}
+        {/* Mobile bottom nav - persistent 
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
           <SectionNav section={section} mobile />
         </nav>
-
+*/}
         {/* Mobile top tabs outside main to avoid main overflow */}
         <div className="md:hidden">
           <SectionNav section={section} mobileTop />

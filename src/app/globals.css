@@ -254,3 +254,7 @@ nav .held-container{
   height: 100px;
   width: 100px;
 }
+
+.space-evenly{
+  justify-content: space-evenly;
+}

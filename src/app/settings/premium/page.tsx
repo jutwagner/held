@@ -12,11 +12,16 @@ export default function PremiumSettings() {
       <aside className="hidden md:block w-64 border-r bg-white">
         <SectionNav section="premium" />
       </aside>
-      {/* Mobile bottom nav - persistent */}
+      {/* Mobile bottom nav - persistent
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
         <SectionNav section="premium" mobile />
       </nav>
-      <main className="flex-1 p-4 md:p-8 max-w-2xl mx-auto pb-16 md:pb-8 flex flex-col items-center justify-center">
+      */}
+      {/* Mobile top tabs */}
+      <div className="md:hidden">
+        <SectionNav section="premium" mobileTop />
+      </div>
+      <main className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-2xl md:mx-auto pb-16 md:pb-8 flex flex-col items-center justify-center">
   <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Libre Baskerville, serif' }}>Held+</h1>
         <PremiumSection user={user ?? undefined} />
       </main>

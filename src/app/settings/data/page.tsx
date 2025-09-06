@@ -13,9 +13,6 @@ export default function DataSettings() {
         <SectionNav section="data" />
       </aside>
       {/* Mobile bottom nav - persistent */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
-        <SectionNav section="data" mobile />
-      </nav>
       <main className="flex-1 p-4 md:p-8 max-w-2xl mx-auto pb-16 md:pb-8">
         <DataSection user={user ?? undefined} />
         <DangerZoneSection user={user ?? undefined} />

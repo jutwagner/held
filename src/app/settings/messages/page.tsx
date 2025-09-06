@@ -6,6 +6,7 @@ import { getUserConversations, getMessages, sendMessage, getUserDisplayName } fr
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Send } from 'lucide-react';
+import SectionNav from '@/components/settings/SectionNav';
 
 interface Conversation {
   id: string;
@@ -146,29 +147,35 @@ export default function MessagesPage() {
 
   if (!user) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <p>Please sign in to view your messages.</p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Messages</h1>
-        <p>Loading conversations...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Please sign in to view your messages.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white rounded-lg border border-gray-200 h-[600px] flex">
-        {/* Conversations List */}
-        <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r border-gray-200`}>
-          <div className="p-4 border-b border-gray-200">
-            <h1 className="text-xl font-semibold">Messages</h1>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Desktop side nav */}
+      <aside className="hidden md:block w-64 border-r bg-white">
+        <SectionNav section={'messages'} />
+      </aside>
+      {/* Mobile bottom nav
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
+        <SectionNav section={'messages'} mobile />
+      </nav>*/}
+      {/* Main content */}
+      <div className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-6xl md:mx-auto pb-16 md:pb-8">
+        {/* Mobile top tabs */}
+        <div className="md:hidden mb-2">
+          <SectionNav section={'messages'} mobileTop />
+        </div>
+        <h1 className="text-2xl font-bold mb-4">Messages</h1>
+        <div className="bg-white rounded-lg border border-gray-200 h-[600px] flex">
+          {/* Conversations List */}
+          <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r border-gray-200`}>
+            <div className="p-4 border-b border-gray-200">
+              <h1 className="text-xl font-semibold">Messages</h1>
+            </div>
           
           <div className="overflow-y-auto h-full">
             {conversations.length === 0 ? (
@@ -353,6 +360,7 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
