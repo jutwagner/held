@@ -55,6 +55,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
   const heldPlus = isHeldPlus(user);
   const [busy, setBusy] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showCertModal, setShowCertModal] = useState(false);
   const prov = useMemo(() => getProvenanceScore(object), [object]);
 
   const anchored = !!object.anchoring?.isAnchored;
@@ -449,8 +450,21 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           {object.certificateOfAuthenticity || (object.associatedDocuments && object.associatedDocuments.length>0) ? (
             <ul className="list-disc list-inside text-sm text-gray-700">
               {object.certificateOfAuthenticity && (
-                <li>
-                  <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-black underline">Certificate of Authenticity</a>
+                <li className="flex items-center gap-2">
+                  {/^https?:\/\//i.test(object.certificateOfAuthenticity) ? (
+                    <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-black underline">Certificate of Authenticity</a>
+                  ) : (
+                    <span className="text-gray-700">Certificate of Authenticity</span>
+                  )}
+                  {object.certificateImage && (
+                    <button
+                      type="button"
+                      className="ml-2 px-2 py-0.5 border border-gray-300 text-xs hover:bg-gray-50"
+                      onClick={() => setShowCertModal(true)}
+                    >
+                      View
+                    </button>
+                  )}
                 </li>
               )}
               {(object.associatedDocuments||[]).map((d, i) => (
@@ -462,6 +476,23 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           )}
         </div>
       ) : null}
+
+      {showCertModal && object.certificateImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white p-2 md:p-4 max-w-3xl w-[90vw] shadow-lg relative">
+            <button
+              type="button"
+              className="absolute top-2 right-2 px-2 py-1 text-xs border border-gray-300 bg-white hover:bg-gray-50"
+              onClick={() => setShowCertModal(false)}
+            >
+              Close
+            </button>
+            <div className="overflow-auto max-h-[80vh]">
+              <img src={object.certificateImage} alt="Certificate of Authenticity" className="w-full h-auto" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Activity */}
       <div>

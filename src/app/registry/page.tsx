@@ -191,6 +191,8 @@ export default function RegistryPage() {
                   {showPublicOnly ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
                   {showPublicOnly ? 'Public Only' : 'All Objects'}
                 </Button>
+                </div>
+                {/*
                 <select
                   value={anchoringFilter}
                   onChange={(e) => setAnchoringFilter(e.target.value as any)}
@@ -201,10 +203,11 @@ export default function RegistryPage() {
                   <option value="anchored">Anchored</option>
                   <option value="not">Not Anchored</option>
                 </select>
-              </div>
+              
 
-              {/* Status board */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {/* Status board * /}
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {(() => {
                   const anchored = objects.filter(o => o.anchoring?.isAnchored).length;
                   const pending = objects.filter(o => !!o.anchoring?.txHash && !o.anchoring?.isAnchored).length;
@@ -214,7 +217,7 @@ export default function RegistryPage() {
                       <StatusCard label="Anchored" value={anchored} icon={CheckCircle} />
                       <StatusCard label="Pending" value={pending} icon={Clock} />
                       <StatusCard label="Not Anchored" value={not} icon={Shield} />
-                      <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
+                       <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
                         <div>
                           <div className="text-sm text-gray-600">Anchoring Queue</div>
                           <div className="text-xs text-gray-500">Run worker to finalize pending</div>
@@ -225,15 +228,15 @@ export default function RegistryPage() {
                   );
                 })()}
               </div>
-
-              {/* Documents manager toggle */}
+             
+              {/* Documents manager toggle * /}
               <div className="flex items-center justify-between mb-6">
                 <div className="text-sm text-gray-600">Documents Manager</div>
                 <Button variant="outline" onClick={() => setShowDocs(!showDocs)}>{showDocs ? 'Hide' : 'Show'} Documents</Button>
               </div>
               {showDocs && <DocumentsManager objects={objects} />}
 
-              {/* Bulk actions bar */}
+              {/* Bulk actions bar * /}
               {selected.size > 0 && (
                 <div className="flex items-center justify-between border border-gray-200 bg-white p-3 mb-4">
                   <div className="text-sm text-gray-700">{selected.size} selected</div>
@@ -243,7 +246,7 @@ export default function RegistryPage() {
                   </div>
                 </div>
               )}
-
+*/}
               {/* Objects Grid with Pagination */}
               {loadingObjects ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -284,8 +287,8 @@ export default function RegistryPage() {
                         {filteredObjects.slice((page-1)*pageSize, page*pageSize).map((obj) => (
                           <div key={obj.id}>
                             <div className="flex items-center gap-2 mb-2">
-                              <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
-                              <Link href={`/registry/${obj.id}`} className="text-sm text-gray-600 underline">Edit</Link>
+                              {/* <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
+                             <Link href={`/registry/${obj.id}`} className="text-sm text-gray-600 underline">Edit</Link>*/}
                             </div>
                             <ObjectCard object={obj} />
                           </div>
@@ -444,7 +447,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
           </div>
           <div className="flex items-center gap-2 text-gray-500">
             {object.isPublic ? (
-              <span className="inline-flex items-center gap-1 text-blue-600"><Eye className="h-4 w-4" /> Public</span>
+              <span></span>
             ) : (
               <span className="inline-flex items-center gap-1 text-gray-400"><EyeOff className="h-4 w-4" /> Private</span>
             )}
