@@ -51,7 +51,7 @@ export default function HomePage() {
             The quiet home for the things you hold
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            A way to catalog and share the objects that matter to you. 
+            A way to catalog and share the things that matter to you. 
             No social pressure, no algorithms&mdash;just your collection, your way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -85,8 +85,8 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 md:gap-12">
           {/* Registry */}
           <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Package className="h-8 w-8 text-gray-600" />
+            <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
+              <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
             <h3 className="text-xl font-serif font-medium mb-4">Registry</h3>
             <p className="text-gray-600 leading-relaxed">
@@ -97,8 +97,8 @@ export default function HomePage() {
 
           {/* Passport */}
           <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Eye className="h-8 w-8 text-gray-600" />
+            <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
+              <Image src="/img/passport.svg" alt="Passport" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
             <h3 className="text-xl font-serif font-medium mb-4">Passport</h3>
             <p className="text-gray-600 leading-relaxed">
@@ -109,12 +109,12 @@ export default function HomePage() {
 
           {/* Rotation */}
           <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <RotateCcw className="h-8 w-8 text-gray-600" />
+            <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
+              <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
-            <h3 className="text-xl font-serif font-medium mb-4">Rotation</h3>
+            <h3 className="text-xl font-serif font-medium mb-4">Rotations</h3>
             <p className="text-gray-600 leading-relaxed">
-              Curated, time-specific snapshots of your collection. Share seasonal setups, 
+              Time-specific snapshots of your collection. Share seasonal setups, 
               themed collections, or current favorites.
             </p>
           </div>
