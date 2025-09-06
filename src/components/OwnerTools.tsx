@@ -457,13 +457,21 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                     <span className="text-gray-700">Certificate of Authenticity</span>
                   )}
                   {object.certificateImage && (
-                    <button
-                      type="button"
-                      className="ml-2 px-2 py-0.5 border border-gray-300 text-xs hover:bg-gray-50"
-                      onClick={() => setShowCertModal(true)}
-                    >
-                      View
-                    </button>
+                    <>
+                      <img
+                        src={object.certificateImage}
+                        alt="Certificate thumbnail"
+                        className="h-6 w-auto border rounded cursor-pointer"
+                        onClick={() => setShowCertModal(true)}
+                      />
+                      <button
+                        type="button"
+                        className="px-2 py-0.5 border border-gray-300 text-xs hover:bg-gray-50"
+                        onClick={() => setShowCertModal(true)}
+                      >
+                        View
+                      </button>
+                    </>
                   )}
                 </li>
               )}
