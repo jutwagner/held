@@ -4,8 +4,9 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getFirestore } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
-import { getObject, getRotation, subscribeRotations } from '@/lib/firebase-services';
-import { useAuth } from '@/contexts/AuthContext';
+import { getObject, getRotation, subscribeRotations, updateRotation, subscribeObjects } from '@/lib/firebase-services';
+import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
+import Switch from '@/components/ui/switch';
 import { HeldObject } from '@/types';
 import type { RotationWithObjects } from '@/types';
 
@@ -28,6 +29,9 @@ function RotationPageClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [objects, setObjects] = useState<HeldObject[]>([]);
+  const [allObjects, setAllObjects] = useState<HeldObject[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<{ name: string; description?: string; isPublic: boolean; objectIds: string[] }>({ name: '', description: '', isPublic: false, objectIds: [] });
   // Get current user from AuthContext
   const { user, loading: authLoading } = useAuth();
 
@@ -45,6 +49,7 @@ function RotationPageClient({ id }: { id: string }) {
         // If public, show it
         if (rot.isPublic === true) {
           setRotation({ ...rot, objects: [] });
+          setForm({ name: rot.name || '', description: rot.description || '', isPublic: !!rot.isPublic, objectIds: Array.isArray((rot as any).objectIds) ? (rot as any).objectIds : [] });
           setLoading(false);
           return;
         }
@@ -54,6 +59,7 @@ function RotationPageClient({ id }: { id: string }) {
             const ownedRot = rots.find(r => r.id === id);
             if (ownedRot) {
               setRotation({ ...ownedRot, objects: [] });
+              setForm({ name: ownedRot.name || '', description: ownedRot.description || '', isPublic: !!ownedRot.isPublic, objectIds: Array.isArray((ownedRot as any).objectIds) ? (ownedRot as any).objectIds : [] });
             } else {
               setError('Rotation not found');
             }
@@ -87,6 +93,27 @@ function RotationPageClient({ id }: { id: string }) {
 
     fetchObjects();
   }, [rotation?.objectIds]);
+
+  // Load all user's objects for adding/removing when editing
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = subscribeObjects(user.uid, (list) => setAllObjects(list));
+    return () => { if (typeof unsub === 'function') unsub(); };
+  }, [user?.uid]);
+
+  const canEdit = !!user && !!rotation && rotation.userId === user.uid && isHeldPlus(user);
+
+  async function saveEdits() {
+    if (!rotation || !user) return;
+    try {
+      await updateRotation(rotation.id, { id: rotation.id, name: form.name, description: form.description, isPublic: form.isPublic, objectIds: form.objectIds });
+      const updated = await getRotation(rotation.id);
+      if (updated) setRotation({ ...(updated as any), objects });
+      setEditing(false);
+    } catch (e) {
+      console.error('Failed to update rotation', e);
+    }
+  }
 
   if (loading) {
     return (
@@ -154,6 +181,17 @@ function RotationPageClient({ id }: { id: string }) {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Sticky Group Header */}
       <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm relative overflow-hidden">
+        {editing && (
+          <div className="sticky top-0 z-40">
+            <div className="bg-black text-white px-6 sm:px-8 py-3 flex items-center justify-between">
+              <div className="text-sm font-medium tracking-wide uppercase">Editing Rotation</div>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1 rounded bg-white text-black text-xs" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="px-3 py-1 rounded bg-white text-black text-xs" onClick={saveEdits}>Save</button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Cover Image Background - Integrated into header */}
         {rotation.coverImage && (
           <div className="absolute inset-0 z-0">
@@ -186,13 +224,45 @@ function RotationPageClient({ id }: { id: string }) {
               )}
             </div>
             {/* Always show title/description with enhanced styling */}
-            <div>
-              <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1 drop-shadow-sm">{rotation.name || 'Unnamed Rotation'}</h1>
-              <p className="text-gray-600 text-base font-mono drop-shadow-sm">{rotation.description || 'No description available'}</p>
+            <div className="max-w-full">
+              {!editing ? (
+                <>
+                  <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1 drop-shadow-sm truncate">{rotation.name || 'Unnamed Rotation'}</h1>
+                  <p className="text-gray-600 text-base font-mono drop-shadow-sm truncate">{rotation.description || 'No description available'}</p>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <input
+                    className="border-0 border-b border-gray-300 focus:border-black outline-none bg-transparent text-3xl font-serif tracking-tight w-full"
+                    value={form.name}
+                    onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                    maxLength={80}
+                  />
+                  <textarea
+                    className="border-0 border-b border-gray-200 focus:border-black outline-none bg-transparent w-full text-base text-gray-700"
+                    value={form.description || ''}
+                    onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                    rows={2}
+                  />
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <span>Private</span>
+                    <Switch checked={!form.isPublic} onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: !checked }))} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow-sm">{objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</span>
+            {canEdit && !editing && (
+              <button className="ml-2 px-3 py-1 rounded bg-black text-white text-xs" onClick={() => setEditing(true)}>Edit</button>
+            )}
+            {canEdit && editing && (
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1 rounded bg-white border text-xs" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="px-3 py-1 rounded bg-black text-white text-xs" onClick={saveEdits}>Save</button>
+              </div>
+            )}
           </div>
         </div>
       </header>

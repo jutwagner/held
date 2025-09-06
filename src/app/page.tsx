@@ -47,12 +47,11 @@ export default function HomePage() {
               />
             )}
           </div>
-          <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6">
-            The quiet home for the things you hold
+          <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6 orientational">
+            Quiet home for the things you hold
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            A way to catalog and share the things that matter to you. 
-            No social pressure, no algorithms&mdash;just your collection, your way.
+          <p className="text-lg md:text-xl text-gray-600 mb-8 mt-10 leading-loose">
+            A way to catalog the things that matter to you, with no social pressure and no algorithms. Just your collection, your way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {hydrated ? (
@@ -102,9 +101,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-serif font-medium mb-4">Passport</h3>
             <p className="text-gray-600 leading-relaxed">
-              Public, shareable identity pages for any object. Clean permalinks with metadata 
-              optimized for sharing and discovery.
-            </p>
+            Shareable identity pages for any object. Clean permalinks with metadata optimized for discovery, for those who want their favorite things to be seen, not just stored.</p>
           </div>
 
           {/* Rotation */}
@@ -125,13 +122,12 @@ export default function HomePage() {
       <section className="held-container py-16 md:py-24 border-t border-gray-200">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-serif font-medium mb-6">
-            For people who care deeply about the objects they own
+            All the tools. Sharing’s up to you.
           </h2>
           <p className="text-gray-600 leading-relaxed">
-            Held is designed for collectors, enthusiasts, and anyone who finds meaning in their 
-            physical possessions. Whether you&apos;re documenting family heirlooms, tracking your 
-            design collection, or simply want a beautiful way to remember what you own, 
-            Held provides the tools you need without the noise of social media.
+            Held is designed for collectors, enthusiasts, and anyone who finds meaning in things. 
+            Whether you&apos;re documenting family heirlooms, tracking your 
+            design collection, or simply want a beautiful way to remember what you own.
           </p>
         </div>
       </section>

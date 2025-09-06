@@ -14,6 +14,7 @@ import OwnerTools from '@/components/OwnerTools';
 import ProvenanceSection from '@/components/ProvenanceSection';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 import DeleteDialog from '@/components/DeleteDialog';
+import passportSvg from '@/img/passport.svg';
 
 export default function RegistryItemPage() {
   const params = useParams();
@@ -282,17 +283,19 @@ export default function RegistryItemPage() {
           </Button>
           <div className="flex items-center gap-2">
             {item.isPublic && (
-              <Button asChild variant="outline" className="border-black text-black">
-                <Link href={`/passport/${item.slug || item.id}`} target="_blank">View Passport</Link>
+              <Button asChild variant="outline" className="text-black p-0 border-0">
+                <Link href={`/passport/${item.slug || item.id}`} target="_blank" className="p-0">
+                  <Image src={passportSvg} alt="Passport" width={39} height={39} className="hidden md:inline-block opacity-100 float-left" />
+              </Link> 
               </Button>
             )}
             {user && item.userId === user.uid && (
               <>
                 <Button variant="outline" className="border-black text-black" onClick={() => setEditing(v => !v)}>
-                  <Edit className="h-4 w-4 mr-2" /> {editing ? 'Cancel' : 'Edit'}
+                  <Edit className="h-4 w-4" /> {editing ? 'Cancel' : ''}
                 </Button>
                 <Button variant="outline" className="text-gray-600" onClick={() => setConfirmOpen(true)}>
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </>
             )}
@@ -302,7 +305,7 @@ export default function RegistryItemPage() {
         {/* Title + chips */}
         <div className="mb-6">
           {!editing ? (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-6 line-clamp-1 break-words">{item.title || 'Untitled'}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-loose text-black mb-20 break-words">{item.title || 'Untitled'}</h1>
           ) : (
             <input
               className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3 w-full border-b border-gray-300 focus:border-black outline-none bg-transparent"
