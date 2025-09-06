@@ -146,6 +146,17 @@ export default function RegistryItemPage() {
           .split(',')
           .map(s => s.trim())
           .filter(Boolean);
+    // Sanitize chain entries (remove completely empty rows)
+    const chain = Array.isArray(form.chain)
+      ? form.chain
+          .map(entry => ({
+            owner: (entry.owner || '').trim(),
+            acquiredAt: (entry.acquiredAt || '').trim(),
+            notes: (entry.notes || '').trim(),
+          }))
+          .filter(entry => entry.owner || entry.acquiredAt || entry.notes)
+      : undefined;
+
     await updateObject(item.id, {
       id: item.id,
       title: form.title,
@@ -170,11 +181,63 @@ export default function RegistryItemPage() {
       transferMethod: form.transferMethod,
       associatedDocuments,
       provenanceNotes: form.provenanceNotes,
-      chain: form.chain,
+      chain,
     } as any);
     // Refresh local item
     const updated = await getObject(item.id);
     setItem(updated);
+    if (updated) {
+      setForm({
+        title: updated.title || '',
+        category: updated.category || '',
+        description: updated.description || '',
+        maker: updated.maker || '',
+        year: updated.year,
+        value: updated.value,
+        condition: (updated.condition as any) || 'good',
+        tags: Array.isArray(updated.tags) ? updated.tags.join(', ') : '',
+        notes: updated.notes || '',
+        images: updated.images || [],
+        isPublic: !!updated.isPublic,
+        shareInCollaborative: !!updated.shareInCollaborative,
+        serialNumber: updated.serialNumber || '',
+        acquisitionDate: ((): string => {
+          const d: any = (updated as any).acquisitionDate;
+          try {
+            if (!d) return '';
+            if (typeof d === 'string') return d;
+            if (d?.seconds) return new Date(d.seconds * 1000).toISOString().slice(0, 10);
+            const dt = new Date(d);
+            if (!isNaN(dt.getTime())) return dt.toISOString().slice(0, 10);
+          } catch {}
+          return '';
+        })(),
+        certificateOfAuthenticity: (updated as any).certificateOfAuthenticity || '',
+        certificateUrl: (updated as any).certificateUrl || '',
+        certificateImage: (updated as any).certificateImage || '',
+        origin: updated.origin || '',
+        transferMethod: updated.transferMethod || '',
+        associatedDocuments: Array.isArray(updated.associatedDocuments) ? updated.associatedDocuments.join(', ') : '',
+        provenanceNotes: updated.provenanceNotes || '',
+        chain: Array.isArray(updated.chain)
+          ? (updated.chain as any[]).map((c) => ({
+              owner: c?.owner || '',
+              acquiredAt: ((): string => {
+                const d: any = c?.acquiredAt;
+                try {
+                  if (!d) return '';
+                  if (typeof d === 'string') return d;
+                  if (d?.seconds) return new Date(d.seconds * 1000).toISOString().slice(0, 10);
+                  const dt = new Date(d);
+                  if (!isNaN(dt.getTime())) return dt.toISOString().slice(0, 10);
+                } catch {}
+                return '';
+              })(),
+              notes: c?.notes || ''
+            }))
+          : [],
+      });
+    }
     setEditing(false);
   }
 
@@ -239,7 +302,7 @@ export default function RegistryItemPage() {
         {/* Title + chips */}
         <div className="mb-6">
           {!editing ? (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3">{item.title || 'Untitled'}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-20">{item.title || 'Untitled'}</h1>
           ) : (
             <input
               className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3 w-full border-b border-gray-300 focus:border-black outline-none bg-transparent"
@@ -310,6 +373,12 @@ export default function RegistryItemPage() {
                   chain: Array.isArray(form.chain) ? form.chain : [],
                 }}
                 objectId={item.id}
+                editable={editing}
+                onRequestSave={() => {
+                  const fake = { preventDefault() {} } as any;
+                  handleInlineSave(fake);
+                }}
+                onRequestEdit={() => setEditing(true)}
                 onChange={(provenanceData) => {
                   setForm(prev => ({
                     ...(prev as any),

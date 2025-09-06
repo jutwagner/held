@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Upload, X, Plus, Calendar, MapPin, FileText, Link2, Award, Hash, Clock, Users } from 'lucide-react';
+import { Upload, X, Plus, Calendar, MapPin, FileText, Link2, Award, Hash, Clock, Users, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadCOAImage } from '@/lib/firebase-services';
 
@@ -29,9 +29,12 @@ interface ProvenanceSectionProps {
   onChange: (data: ProvenanceData) => void;
   objectId?: string; // Optional: enable direct upload to this object's storage path
   onUploadCOA?: (file: File) => Promise<string>; // Optional custom uploader
+  editable?: boolean; // Show inputs and upload only when true
+  onRequestSave?: () => void; // Optional explicit save button
+  onRequestEdit?: () => void; // Optional: show an Edit button in header when not editing
 }
 
-const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, objectId, onUploadCOA }) => {
+const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, objectId, onUploadCOA, editable = true, onRequestSave, onRequestEdit }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -94,20 +97,26 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-gray-50 border border-gray-200 rounded-xl p-6 md:p-8 space-y-6 md:space-y-8">
+    <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl space-y-6 md:space-y-8">
       {/* Header with premium badge */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
-            <Award className="h-4 w-4 text-white" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 rounded-full flex items-center justify-center shadow-lg">
+            <span className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <img src="/held-seal.svg" alt="Held Seal" className="h-10 w-10" />
+            </span>
           </div>
           <div>
             <h2 className="text-xl font-serif font-semibold text-gray-900">Provenance Documentation</h2>
             <p className="text-sm text-gray-600 font-mono">Held+ Premium Feature</p>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200 rounded-full px-3 py-1">
-          <span className="text-xs font-semibold text-amber-800">PREMIUM</span>
+        <div>
+          {!editable && onRequestEdit && (
+            <Button variant="outline" size="sm" className="border-black text-black" onClick={onRequestEdit}>
+              <Edit className="h-4 w-4 mr-2" /> Edit
+            </Button>
+          )}
         </div>
       </div>
 
@@ -116,9 +125,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         
         {/* Left Column - Identity & Documentation */}
         <div className="space-y-4 md:space-y-6">
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-sm">
-            <h3 className="font-serif font-medium text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-              <Hash className="h-4 w-4 text-gray-500" />
+          <div className="rounded-lg shadow-sm">
+            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
               Object Identity
             </h3>
             
@@ -129,6 +137,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                   type="text"
                   value={data.serialNumber || ''}
                   onChange={(e) => updateData({ serialNumber: e.target.value })}
+                  disabled={!editable}
                   placeholder="Enter serial number or unique identifier"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                 />
@@ -142,6 +151,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     type="text"
                     value={data.origin || ''}
                     onChange={(e) => updateData({ origin: e.target.value })}
+                    disabled={!editable}
                     placeholder="Place of manufacture or origin"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
@@ -156,6 +166,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     type="date"
                     value={data.acquisitionDate || ''}
                     onChange={(e) => updateData({ acquisitionDate: e.target.value })}
+                    disabled={!editable}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
                 </div>
@@ -166,6 +177,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 <select
                   value={data.transferMethod || ''}
                   onChange={(e) => updateData({ transferMethod: e.target.value })}
+                  disabled={!editable}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                 >
                   <option value="">Select method</option>
@@ -183,8 +195,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Certificate of Authenticity */}
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-sm">
-            <h3 className="font-serif font-medium text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+          <div className="rounded-lg shadow-sm">
+            <h3 className="font-serif text-xl text-gray-900 mb-3 mt-10 md:mb-4 flex items-center gap-2">
               <Award className="h-4 w-4 text-gray-500" />
               Certificate of Authenticity
             </h3>
@@ -195,6 +207,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 <textarea
                   value={data.certificateOfAuthenticity || ''}
                   onChange={(e) => updateData({ certificateOfAuthenticity: e.target.value })}
+                  disabled={!editable}
                   placeholder="Describe the certificate or authentication details"
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
@@ -209,6 +222,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     type="url"
                     value={data.certificateUrl || ''}
                     onChange={(e) => updateData({ certificateUrl: e.target.value })}
+                    disabled={!editable}
                     placeholder="https://... or reference number"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
@@ -216,21 +230,22 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               </div>
 
               {/* Certificate Image Upload */}
-              <div>
+              <div >
                 <label className="block text-sm font-medium text-gray-700 mb-2">Certificate Image</label>
                 {data.certificateImage ? (
                   <div className="flex items-center gap-3">
                     <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border" />
-                    <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>
+                    {editable && <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>}
                   </div>
                 ) : (
                   <div 
                     className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      dragActive ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400'
+                      editable ? (dragActive ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400') : 'border-gray-200 bg-gray-50 opacity-60'
                     }`}
-                    onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-                    onDragLeave={() => setDragActive(false)}
+                    onDragOver={(e) => { if (!editable) return; e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={() => { if (!editable) return; setDragActive(false); }}
                     onDrop={(e) => {
+                      if (!editable) return;
                       e.preventDefault();
                       setDragActive(false);
                       const file = Array.from(e.dataTransfer.files || []).find(f => f.type.startsWith('image/'));
@@ -250,7 +265,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                         if (e.currentTarget) e.currentTarget.value = '';
                       }}
                     />
-                    <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                    <Button variant="outline" size="sm" disabled={uploading || !editable} onClick={() => fileInputRef.current?.click()}>
                       {uploading ? 'Uploading…' : 'Choose File'}
                     </Button>
                     <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB</p>
@@ -265,21 +280,23 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         <div className="space-y-4 md:space-y-6">
           
           {/* Chain of Ownership */}
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-sm">
+          <div className="shadow-sm">
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-serif font-medium text-gray-900 flex items-center gap-2">
-                <Users className="h-4 w-4 text-gray-500" />
+              <h3 className="font-serif text-xl text-gray-900 flex items-center gap-2">
+                <Users className="h-4 w-4 text-xl-500" />
                 Chain of Ownership
               </h3>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={addChainEntry}
-                className="text-amber-600 border-amber-200 hover:bg-amber-50"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add Owner
-              </Button>
+              {editable && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addChainEntry}
+                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Owner
+                </Button>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -287,12 +304,16 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 <div key={index} className="bg-gray-50 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-gray-500">Owner #{index + 1}</span>
-                    <button
-                      onClick={() => removeChainEntry(index)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    {editable ? (
+                      <button
+                        onClick={() => removeChainEntry(index)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <span className="text-gray-300 text-xs">&nbsp;</span>
+                    )}
                   </div>
                   
                   <div className="grid gap-3">
@@ -300,6 +321,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                       type="text"
                       value={entry.owner || ''}
                       onChange={(e) => updateChainEntry(index, { owner: e.target.value })}
+                      disabled={!editable}
                       placeholder="Owner name"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                     />
@@ -309,12 +331,14 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                         type="date"
                         value={entry.acquiredAt || ''}
                         onChange={(e) => updateChainEntry(index, { acquiredAt: e.target.value })}
+                        disabled={!editable}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                       />
                       <input
                         type="text"
                         value={entry.notes || ''}
                         onChange={(e) => updateChainEntry(index, { notes: e.target.value })}
+                        disabled={!editable}
                         placeholder="Notes"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                       />
@@ -334,8 +358,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Associated Documents */}
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-sm">
-            <h3 className="font-serif font-medium text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+          <div className="">
+            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500" />
               Associated Documents
             </h3>
@@ -346,7 +370,9 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                   type="url"
                   placeholder="Add document URL or reference"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  readOnly={!editable}
                   onKeyPress={(e) => {
+                    if (!editable) return;
                     if (e.key === 'Enter') {
                       const target = e.target as HTMLInputElement;
                       addDocument(target.value);
@@ -354,39 +380,43 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     }
                   }}
                 />
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={(e) => {
-                    const input = (e.target as HTMLElement).parentElement?.querySelector('input') as HTMLInputElement;
-                    if (input) {
-                      addDocument(input.value);
-                      input.value = '';
-                    }
-                  }}
-                >
-                  Add
-                </Button>
+                {editable && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      const input = (e.target as HTMLElement).parentElement?.querySelector('input') as HTMLInputElement;
+                      if (input) {
+                        addDocument(input.value);
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                )}
               </div>
 
               {(Array.isArray(data.associatedDocuments) ? data.associatedDocuments : []).map((doc, index) => (
                 <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-md p-2">
                   <Link2 className="h-3 w-3 text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 truncate flex-1">{doc}</span>
-                  <button
-                    onClick={() => removeDocument(index)}
-                    className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+                  {editable && (
+                    <button
+                      onClick={() => removeDocument(index)}
+                      className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Provenance Notes */}
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-sm">
-            <h3 className="font-serif font-medium text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+          <div className="">
+            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500" />
               Provenance Notes
             </h3>
@@ -394,12 +424,21 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             <textarea
               value={data.provenanceNotes || ''}
               onChange={(e) => updateData({ provenanceNotes: e.target.value })}
+              disabled={!editable}
               placeholder="Additional notes about the object's history, significance, or provenance details..."
               rows={6}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
             />
           </div>
         </div>
+
+        {editable && (
+          <div className="xl:col-span-2 flex justify-end">
+            {onRequestSave && (
+              <Button onClick={onRequestSave} className="bg-black text-white px-5 py-2">Save Provenance</Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer with save reminder */}

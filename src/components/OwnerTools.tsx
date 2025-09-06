@@ -363,37 +363,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                 </div>
               </div>
             </div>
-            {/* Provenance fields */}
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Serial Number</label>
-                <input className="w-full border px-3 py-2" value={form.serialNumber || ''} onChange={e => setForm(prev => ({...prev, serialNumber: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Acquisition Date</label>
-                <input className="w-full border px-3 py-2" type="date" value={form.acquisitionDate || ''} onChange={e => setForm(prev => ({...prev, acquisitionDate: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Certificate URL</label>
-                <input className="w-full border px-3 py-2" value={form.certificateOfAuthenticity || ''} onChange={e => setForm(prev => ({...prev, certificateOfAuthenticity: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Origin</label>
-                <input className="w-full border px-3 py-2" value={form.origin || ''} onChange={e => setForm(prev => ({...prev, origin: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Transfer Method</label>
-                <input className="w-full border px-3 py-2" value={form.transferMethod || ''} onChange={e => setForm(prev => ({...prev, transferMethod: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Associated Documents (comma separated URLs)</label>
-                <input className="w-full border px-3 py-2" value={form.associatedDocuments || ''} onChange={e => setForm(prev => ({...prev, associatedDocuments: e.target.value}))} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Provenance Notes</label>
-                <textarea className="w-full border px-3 py-2" value={form.provenanceNotes || ''} onChange={e => setForm(prev => ({...prev, provenanceNotes: e.target.value}))} />
-              </div>
-            </div>
+            
             <div className="flex justify-end gap-2 pt-2">
               {onCancelInline && <Button variant="outline" onClick={onCancelInline}>Cancel</Button>}
               {onSaveInline && <Button onClick={onSaveInline}>Save</Button>}
@@ -433,16 +403,17 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
               <span className="text-xs text-gray-600">Up‑to‑date with last anchor</span>
             ) : null}
 
-            {/* Full anchoring (Held+): allow initial or re‑anchor */}
+            {/* Full anchoring (Held+): allow initial or re‑anchor 
             {heldPlus && (!anchored || !upToDate) && (
               <Button variant="outline" onClick={() => doAnchor('full')} disabled={busy}>
                 Anchor Full
               </Button>
             )}
+            
 
             <Button variant="outline" onClick={() => fetch('/api/anchor/worker').catch(() => {})} title="Run worker">
               <RefreshCcw className="h-4 w-4" />
-            </Button>
+            </Button>*/}
           </div>
         )}
       </div>
