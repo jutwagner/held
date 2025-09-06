@@ -302,7 +302,7 @@ export default function RegistryItemPage() {
         {/* Title + chips */}
         <div className="mb-6">
           {!editing ? (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-20">{item.title || 'Untitled'}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-6 line-clamp-1 break-words">{item.title || 'Untitled'}</h1>
           ) : (
             <input
               className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3 w-full border-b border-gray-300 focus:border-black outline-none bg-transparent"
@@ -319,10 +319,10 @@ export default function RegistryItemPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           {/* Left: media + specs + provenance summary */}
           <div className="xl:col-span-2 space-y-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-gray-200 rounded-lg">
               {item.images && item.images.length > 0 ? (
                 <div className="flex items-center justify-center">
-                  <Image src={item.images[0]} alt={item.title} width={1600} height={1200} className="w-auto max-w-full h-auto max-h-[70vh] object-contain" />
+                  <Image src={item.images[0]} alt={item.title} width={1600} height={1200} className="w-auto max-w-full h-auto object-contain rounded-md" />
                 </div>
               ) : (
                 <div className="h-64 flex items-center justify-center text-gray-400">No image</div>

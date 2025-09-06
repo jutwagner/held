@@ -242,3 +242,8 @@ nav .held-container{
     font-size: 3.25rem;
     line-height: 3.5rem;
 }
+
+.registry-item-image{
+  border-radius: 1rem 1rem 0 0;
+  border: none;
+}

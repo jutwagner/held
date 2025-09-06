@@ -376,16 +376,19 @@ function ObjectCard({ object }: { object: HeldObject }) {
   return (
     <Link href={`/registry/${object.id}`}>
       <div
-        className="relative rounded-3xl bg-white/50 backdrop-blur-xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] min-h-[400px] flex flex-col justify-between p-6 md:p-8 transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden group"
+        className="relative rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] min-h-[400px] flex flex-col justify-between  transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden group"
       >
         {/* Subtle top sheen */}
         <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-b from-white/50 to-transparent" />
         {/* Premium/Public Accent */}
         {object.isPublic && (
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow z-10 tracking-wide uppercase">Public</span>
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-green-300 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow z-10 tracking-wide uppercase">Public</span>
         )}
         {/* Image */}
-        <div className="relative aspect-square rounded-2xl mb-6 overflow-hidden flex items-center justify-center border border-white/70 ring-1 ring-black/5 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
+        <div className="relative aspect-square rounded-2xl overflow-hidden flex items-center 
+        justify-center border border-white/70 ring-1 ring-black/5 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300
+        registry-item-image
+        ">
           {object.images.length > 0 ? (
             <Image
               src={object.images[0]}
@@ -401,14 +404,14 @@ function ObjectCard({ object }: { object: HeldObject }) {
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div>
+        <div className='p-5 md:p-6'>
           <h3 className="font-serif text-[22px] md:text-2xl font-semibold mb-1 line-clamp-1 text-gray-900 tracking-tight">{object.title}</h3>
           {object.maker && (
             <p className="text-[15px] text-gray-700/90 mb-3 font-light">{object.maker}</p>
