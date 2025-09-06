@@ -43,7 +43,7 @@ export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl:
           alt="Avatar"
           width={96}
           height={96}
-          className="rounded-full object-cover border-2 border-gray-300 shadow-lg transition-transform duration-200 group-hover:scale-105"
+          className="settingsAvatar rounded-full object-cover shadow-lg transition-transform duration-200 group-hover:scale-105"
           onError={(e) => {
             (e.target as HTMLImageElement).src = fallbackAvatar;
           }}

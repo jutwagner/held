@@ -92,7 +92,13 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
           <SectionNav section={section} mobile />
         </nav>
-        <main className="flex-1 p-4 md:p-8 max-w-2xl mx-auto pb-16 md:pb-8">
+
+        {/* Mobile top tabs outside main to avoid main overflow */}
+        <div className="md:hidden">
+          <SectionNav section={section} mobileTop />
+        </div>
+
+        <main className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-2xl md:mx-auto pb-16 md:pb-8">
           {!hydrated ? (
             <div className="flex items-center justify-center h-full">
               <span className="text-gray-500 text-lg">Loading…</span>
@@ -103,7 +109,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-serif font-bold mb-8" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>
+              <h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>
               {section === 'profile' && (
                 <ProfileSection
                   user={user ?? undefined}
