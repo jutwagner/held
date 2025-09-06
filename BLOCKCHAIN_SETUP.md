@@ -162,3 +162,4 @@ INFURA_PROJECT_ID=your_infura_id
 ```
 
 Remember to replace the placeholder values with your actual configuration!
+

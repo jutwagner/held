@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       // For GET requests, try to get uid from query params
       const { uid: queryUid } = req.query;
-      uid = Array.isArray(queryUid) ? queryUid[0] : queryUid;
+      uid = Array.isArray(queryUid) ? queryUid[0] : (queryUid || '');
     }
     
     console.log('[INVOICE HISTORY] Extracted uid:', uid);

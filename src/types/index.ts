@@ -78,6 +78,8 @@ export interface HeldObject {
   serialNumber?: string;
   acquisitionDate?: Date;
   certificateOfAuthenticity?: string;
+  certificateImage?: string;
+  certificateUrl?: string;
   origin?: string;
   conditionHistory?: Array<{ date: Date; condition: string; notes?: string }>;
   transferMethod?: string;

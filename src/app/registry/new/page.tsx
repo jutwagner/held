@@ -502,7 +502,7 @@ export default function NewObjectPage() {
                           <label className="text-black font-light text-sm tracking-wide">Collaborative</label>
                           <Switch
                             ariaLabel="Toggle Collaborative Sharing"
-                            checked={formData.shareInCollaborative}
+                            checked={!!formData.shareInCollaborative}
                             onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shareInCollaborative: checked }))}
                           />
                         </div>

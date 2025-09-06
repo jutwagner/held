@@ -235,7 +235,10 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                           <button
                             type="button"
                             className="absolute top-1 right-1 text-xs bg-white/90 border border-gray-300 px-1 py-0.5"
-                            onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                            onClick={() => setForm(prev => ({
+                              ...prev,
+                              images: prev.images.filter(( _img: string | File, i2: number) => i2 !== idx)
+                            }))}
                             aria-label="Remove image"
                           >
                             Remove
@@ -431,8 +434,8 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
             <Prompt ok={!!object.serialNumber}>Add Serial</Prompt>
-            <Prompt ok={!!object.certificateOfAuthenticity || (object.associatedDocuments && object.associatedDocuments.length>0)}>Attach Document</Prompt>
-            <Prompt ok={Array.isArray(object.chain) && object.chain.length>0}>Add Owner</Prompt>
+            <Prompt ok={!!object.certificateOfAuthenticity || (!!object.associatedDocuments && object.associatedDocuments.length > 0)}>Attach Document</Prompt>
+            <Prompt ok={Array.isArray(object.chain) && object.chain.length > 0}>Add Owner</Prompt>
             <Prompt ok={!!object.acquisitionDate}>Add Acquisition Date</Prompt>
           </div>
         </div>
