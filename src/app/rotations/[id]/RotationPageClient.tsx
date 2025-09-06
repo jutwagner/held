@@ -31,6 +31,7 @@ function RotationPageClient({ id }: { id: string }) {
   const [objects, setObjects] = useState<HeldObject[]>([]);
   const [allObjects, setAllObjects] = useState<HeldObject[]>([]);
   const [editing, setEditing] = useState(false);
+  const [selectionError, setSelectionError] = useState<string>('');
   const [form, setForm] = useState<{ name: string; description?: string; isPublic: boolean; objectIds: string[] }>({ name: '', description: '', isPublic: false, objectIds: [] });
   // Get current user from AuthContext
   const { user, loading: authLoading } = useAuth();
@@ -102,6 +103,22 @@ function RotationPageClient({ id }: { id: string }) {
   }, [user?.uid]);
 
   const canEdit = !!user && !!rotation && rotation.userId === user.uid && isHeldPlus(user);
+
+  const toggleObject = (objectId: string) => {
+    setForm(prev => {
+      const isSelected = prev.objectIds.includes(objectId);
+      if (isSelected) {
+        setSelectionError('');
+        return { ...prev, objectIds: prev.objectIds.filter(id => id !== objectId) };
+      }
+      if (prev.objectIds.length >= 7) {
+        setSelectionError('You can only select up to 7 objects per rotation');
+        return prev;
+      }
+      setSelectionError('');
+      return { ...prev, objectIds: [...prev.objectIds, objectId] };
+    });
+  };
 
   async function saveEdits() {
     if (!rotation || !user) return;
@@ -253,7 +270,7 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow-sm">{objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</span>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow-sm">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
             {canEdit && !editing && (
               <button className="ml-2 px-3 py-1 rounded bg-black text-white text-xs" onClick={() => setEditing(true)}>Edit</button>
             )}
@@ -266,6 +283,54 @@ function RotationPageClient({ id }: { id: string }) {
           </div>
         </div>
       </header>
+
+      {/* Editing: Select Objects to include */}
+      {editing && canEdit && (
+        <div className="held-container held-container-wide mt-4">
+          <div className="held-card p-6">
+            <div className="flex items-baseline justify-between mb-2">
+              <h2 className="text-lg font-semibold">Select Objects</h2>
+              <span className="text-xs text-gray-600">{form.objectIds.length}/7 selected</span>
+            </div>
+            {selectionError && (
+              <div className="p-2 mb-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">{selectionError}</div>
+            )}
+            {allObjects.length === 0 ? (
+              <p className="text-sm text-gray-600">You have no registry items yet. Add some in your registry.</p>
+            ) : (
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {allObjects.map(obj => {
+                  const selected = form.objectIds.includes(obj.id);
+                  return (
+                    <button
+                      key={obj.id}
+                      type="button"
+                      onClick={() => toggleObject(obj.id)}
+                      className={`w-full text-left p-3 rounded border transition-colors flex items-center gap-3 ${selected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    >
+                      <div className="w-10 h-10 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                        {obj.images?.[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={obj.images[0]} alt={obj.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">?</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{obj.title}</div>
+                        {obj.maker && <div className="text-xs text-gray-500 truncate">{obj.maker}</div>}
+                      </div>
+                      {selected && (
+                        <span className="text-xs px-2 py-1 rounded bg-gray-900 text-white">Selected</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Floating Object Nav */}
       <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2">

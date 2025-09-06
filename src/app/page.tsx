@@ -48,7 +48,7 @@ export default function HomePage() {
             )}
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6 orientational">
-            Quiet home for the things you hold
+            Quiet home for the things you hold.
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-8 mt-10 leading-loose">
             A way to catalog the things that matter to you, with no social pressure and no algorithms. Just your collection, your way.
@@ -122,7 +122,7 @@ export default function HomePage() {
       <section className="held-container py-16 md:py-24 border-t border-gray-200">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-serif font-medium mb-6">
-            All the tools. Sharing’s up to you.
+            All the tools. Sharing is up to you.
           </h2>
           <p className="text-gray-600 leading-relaxed">
             Held is designed for collectors, enthusiasts, and anyone who finds meaning in things. 
@@ -139,7 +139,7 @@ export default function HomePage() {
             <Image src="/held-logomark.svg" alt="Held Logo" width={32} height={32} className="h-8 w-auto" />
           </div>
           <div className="text-sm text-gray-500 flex items-center space-x-2 full-width mb-4 md:mb-0 align-center justify-center">
-            © 2024 Held. The quiet home for the things you hold.
+            © 2025 Held. The quiet home for the things you hold.
           </div>
         </div>
       </footer>
