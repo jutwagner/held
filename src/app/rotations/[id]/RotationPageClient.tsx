@@ -92,7 +92,7 @@ function RotationPageClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 animate-pulse">
         <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
-          <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="flex -space-x-4">
                 {[...Array(5)].map((_, idx) => (
@@ -114,7 +114,7 @@ function RotationPageClient({ id }: { id: string }) {
             <div key={idx} className="w-20 h-20 rounded-full bg-gray-200 border-2 border-blue-200 shadow" />
           ))}
         </nav>
-        <main className="held-container py-12">
+        <main className="held-container held-container-wide py-12">
           <div className="flex flex-col gap-16">
             {[...Array(2)].map((_, index) => (
               <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
@@ -168,7 +168,7 @@ function RotationPageClient({ id }: { id: string }) {
           </div>
         )}
 
-        <div className="held-container py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+        <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-4">
               {objects.slice(0, 5).map((object, idx) => (
@@ -198,23 +198,25 @@ function RotationPageClient({ id }: { id: string }) {
       </header>
 
       {/* Floating Object Nav */}
-      <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2 flex gap-2 justify-center">
-        {objects.map((object, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              const el = document.getElementById(`object-${idx}`);
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-            className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
-            title={object.title}
-          >
-            <Image src={object.images[0] || '/placeholder.png'} alt={object.title} width={80} height={80} className="w-full h-full object-cover" />
-          </button>
-        ))}
+      <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2">
+        <div className="held-container held-container-wide flex gap-2 justify-center">
+          {objects.map((object, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                const el = document.getElementById(`object-${idx}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
+              title={object.title}
+            >
+              <Image src={object.images[0] || '/placeholder.png'} alt={object.title} width={80} height={80} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
       </nav>
 
-      <main className="held-container py-12">
+      <main className="held-container held-container-wide py-12">
         {/* Deep dive into each object */}
         <div className="flex flex-col gap-16">
           {objects.map((object, index) => (
@@ -227,7 +229,6 @@ function RotationPageClient({ id }: { id: string }) {
                     width={640}
                     height={480}
                     className="w-full max-w-3xl rounded-xl object-contain"
-                    style={{ maxHeight: '480px', background: '#f8fafc' }}
                   />
                 </div>
               </div>
