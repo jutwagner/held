@@ -46,11 +46,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <footer className="w-full">
                 <div className="w-full py-8 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500">© 2025 Held</div>
-                  <img src="/held-logomark.svg" alt="Held" class="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity"></img>
+                  <img src="/held-logomark.svg" alt="Held" className="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity" />
                 
                   <div className="flex items-center gap-6 text-sm">
-                    <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
-                    <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+                  <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
+                  <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
                   </div>
                 </div>
               </footer>
