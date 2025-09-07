@@ -6,9 +6,12 @@ import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 
 import { Inter } from 'next/font/google';
+import { usePathname } from 'next/navigation';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isPassport = pathname?.startsWith('/passport');
   return (
     <html lang="en">
       <head>
@@ -38,16 +41,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navigation />
             <EmailVerificationBanner />
             {children}
-            {/* Site-wide Footer */}
-            <footer className="border-t border-gray-200">
-              <div className="held-container py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-gray-500">© 2025 Held</div>
-                <div className="flex items-center gap-6 text-sm">
-                  <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
-                  <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+            {/* Site-wide Footer (hidden on passport pages) */}
+            {!isPassport && (
+              <footer className="w-full">
+                <div className="w-full py-8 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-gray-500">© 2025 Held</div>
+                  <img src="/held-logomark.svg" alt="Held" class="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity"></img>
+                
+                  <div className="flex items-center gap-6 text-sm">
+                    <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
+                    <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+                  </div>
                 </div>
-              </div>
-            </footer>
+              </footer>
+            )}
             <MobileBottomBar />
           </div>
         </AuthProvider>
