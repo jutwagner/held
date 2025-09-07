@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -117,8 +118,8 @@ export default function SignInPage() {
           onClick={handleGoogleSignIn}
           disabled={loading}
         >
-          <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><g><path d="M44.5 20H24V28.5H35.9C34.5 32.1 31.1 34.5 27 34.5C22.3 34.5 18.5 30.7 18.5 26C18.5 21.3 22.3 17.5 27 17.5C28.7 17.5 30.3 18.1 31.6 19.1L36.2 14.5C33.7 12.6 30.5 11.5 27 11.5C19.8 11.5 13.5 17.8 13.5 25C13.5 32.2 19.8 38.5 27 38.5C34.2 38.5 40.5 32.2 40.5 25C40.5 23.7 40.3 22.4 40 21.2L44.5 20Z" fill="#4285F4"/><path d="M6.5 14.5L12.1 18.9C13.7 16.1 16.9 14.5 20.5 14.5C22.3 14.5 24 15.1 25.4 16.1L30 11.5C27.2 9.6 23.8 8.5 20.5 8.5C13.3 8.5 7 14.8 7 22C7 29.2 13.3 35.5 20.5 35.5C23.8 35.5 27.2 34.4 30 32.5L25.4 28C24 29 22.3 29.5 20.5 29.5C16.9 29.5 13.7 27.9 12.1 25.1L6.5 29.5C9.2 33.1 14.2 35.5 20.5 35.5C27.8 35.5 34.1 29.2 34.1 22C34.1 14.8 27.8 8.5 20.5 8.5C14.2 8.5 9.2 10.9 6.5 14.5Z" fill="#34A853"/></g></svg>
-          Sign in with Google
+          <Image src="/img/Google.svg" alt="Google" width={20} height={20} />
+          Sign in or up with Google
         </Button>
         <div className="mt-6 text-center text-sm text-gray-500">
           Don&apos;t have an account?{' '}
