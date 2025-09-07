@@ -260,3 +260,8 @@ nav .held-container{
 }
 
 .orientational{line-height: 1.2!important}
+
+
+.mobileNav{
+  border-radius: 20px 20px 0 0;
+}

@@ -55,6 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </footer>
             )}
+            {/* Mobile-only spacer to prevent bottom bar overlap */}
+            <div className="md:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 72px)' }} />
             <MobileBottomBar />
           </div>
         </AuthProvider>

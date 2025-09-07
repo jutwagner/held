@@ -189,8 +189,8 @@ export function MobileBottomBar() {
   const { user } = useAuth();
   return (
     <nav
-      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 flex justify-around items-center"
-      style={{ minHeight: 66, paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/50 backdrop-blur-lg shadow-md z-50 flex justify-around items-center"
+      style={{ minHeight: 70, paddingBottom: 'calc(env(safe-area-inset-bottom) + 2px)' }}
     >
       <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
         <span className="flex items-center justify-center h-8"><Image src="/img/registry.svg" alt="Registry" width={28} height={28} /></span>
