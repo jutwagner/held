@@ -323,7 +323,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   alt={postUser.displayName}
                   width={40}
                   height={40}
-                  className="rounded-full"
+                  className="rounded-full avatarCollaborative"
                 />
               ) : (
                 <User className="h-5 w-5 text-white" />
@@ -357,7 +357,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
       {/* Image */}
       {post.images && post.images.length > 0 && (
-        <div className="w-full relative overflow-hidden flex items-center justify-center" style={{ background: '#f3f4f6', minHeight: '320px' }}>
+        <div className="w-full relative overflow-hidden flex items-center justify-center" style={{ background: '#f3f4f6'}}>
           <Image
             src={post.images[0]}
             alt={post.title}
