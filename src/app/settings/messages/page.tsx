@@ -163,12 +163,12 @@ export default function MessagesPage() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
         <SectionNav section={'messages'} mobile />
       </nav>*/}
+      {/* Mobile top tabs attached under header (outside main padding) */}
+      <div className="md:hidden w-full">
+        <SectionNav section={'messages'} mobileTop />
+      </div>
       {/* Main content */}
       <div className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-6xl md:mx-auto pb-16 md:pb-8">
-        {/* Mobile top tabs */}
-        <div className="md:hidden mb-2">
-          <SectionNav section={'messages'} mobileTop />
-        </div>
         <h1 className="text-2xl font-bold mb-4">Messages</h1>
         <div className="bg-white rounded-lg border border-gray-200 h-[600px] flex">
           {/* Conversations List */}

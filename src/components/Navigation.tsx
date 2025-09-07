@@ -187,20 +187,26 @@ export default function Navigation() {
 
 export function MobileBottomBar() {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname?.startsWith(href);
   return (
     <nav
-      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/50 backdrop-blur-lg shadow-md z-50 flex justify-around items-center"
-      style={{ minHeight: 70, paddingBottom: 'calc(env(safe-area-inset-bottom) + 2px)' }}
+      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md shadow-lg z-50 flex justify-around items-center"
+      style={{ minHeight: 66, paddingBottom: 'calc(env(safe-area-inset-bottom) + 2px)' }}
     >
       <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className="flex items-center justify-center h-8"><Image src="/img/registry.svg" alt="Registry" width={28} height={28} /></span>
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/registry') ? 'bg-gray-200 rounded-full' : ''}`}>
+          <Image src="/img/registry.svg" alt="Registry" width={22} height={22} />
+        </span>
       </Link>
       <Link href="/rotations" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className="flex items-center justify-center h-8"><Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} /></span>
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/rotations') ? 'bg-gray-200 rounded-full' : ''}`}>
+          <Image src="/img/rotations.svg" alt="Rotations" width={22} height={22} />
+        </span>
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className="flex items-center justify-center h-8">
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 rounded-full' : ''}`}>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
         </span>
       </Link>
       {/*user && (
