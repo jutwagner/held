@@ -12,6 +12,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-8ZB18NNRPR"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8ZB18NNRPR');
+`}}
+        />
         {/* Prevent zoom on form fields (iOS) */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         {/* Preconnect to Firebase Storage for faster image loads */}
@@ -26,6 +38,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navigation />
             <EmailVerificationBanner />
             {children}
+            {/* Site-wide Footer */}
+            <footer className="border-t border-gray-200">
+              <div className="held-container py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-500">© 2025 Held</div>
+                <div className="flex items-center gap-6 text-sm">
+                  <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
+                  <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+                </div>
+              </div>
+            </footer>
             <MobileBottomBar />
           </div>
         </AuthProvider>

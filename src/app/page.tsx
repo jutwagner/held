@@ -132,17 +132,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="held-container py-12 border-t border-gray-200">
-        <div className="flex flex-col md:flex-row justify-center items-center flex-wrap">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0 py-16 ">
-            <Image src="/held-logomark.svg" alt="Held Logo" width={32} height={32} className="h-8 w-auto" />
-          </div>
-          <div className="text-sm text-gray-500 flex items-center space-x-2 full-width mb-4 md:mb-0 align-center justify-center">
-            © 2025 Held. The quiet home for the things you hold.
-          </div>
-        </div>
-      </footer>
+      {/* Footer is site-wide via layout */}
     </div>
   );
 }

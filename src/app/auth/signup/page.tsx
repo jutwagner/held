@@ -191,8 +191,8 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="held-container py-12 sm:py-24">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+      <div className="held-container py-12 sm:py-24 flex-1">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-serif font-medium mb-2">Join Held</h1>
@@ -410,6 +410,7 @@ export default function SignUpPage() {
           </div>
         </div>
       </div>
+      {/* Footer is site-wide via layout */}
     </div>
   );
 }
