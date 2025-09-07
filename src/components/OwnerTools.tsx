@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { HeldObject } from '@/types';
 import { Button } from '@/components/ui/button';
 import { getPolygonExplorerURL, anchorPassport, generatePassportURI, generateCoreDigest, generateFullDigest } from '@/lib/blockchain-services';
@@ -60,6 +60,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
 
   const anchored = !!object.anchoring?.isAnchored;
   const pending = !!object.anchoring?.txHash && !anchored;
+  const lastCheckedTxRef = useRef<string | null>(null);
 
   // Compute whether current object matches last anchored digest
   let upToDate = false;
@@ -91,6 +92,39 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
       setBusy(false);
     }
   }
+
+  // If there's a pending tx, nudge the worker and do a lightweight one-time check
+  useEffect(() => {
+    const tx = object.anchoring?.txHash;
+    if (!tx || anchored) return;
+    if (lastCheckedTxRef.current === tx) return;
+    lastCheckedTxRef.current = tx;
+    // Best-effort trigger of background worker
+    fetch('/api/anchor/worker').catch(() => {});
+    // One-time receipt check to flip UI quickly when confirmed
+    (async () => {
+      try {
+        const res = await fetch(`/api/tx-status?hash=${tx}`);
+        const data = await res.json().catch(() => ({} as any));
+        if (res.ok && data.confirmed && data.status === 1) {
+          try {
+            await updateObjectAnchoring(object.id, {
+              isAnchored: true,
+              txHash: tx,
+              digest: object.anchoring?.digest,
+              version: (object.anchoring?.version || 1),
+              anchoredAt: new Date(),
+              uri: object.anchoring?.uri,
+              blockNumber: data.blockNumber,
+            } as any);
+          } catch (e) {
+            // Non-fatal: Firestore rules may block client update; worker will still flip later
+            console.warn('Client flip of anchoring failed; worker should update shortly.', e);
+          }
+        }
+      } catch {}
+    })();
+  }, [object.anchoring?.txHash, anchored, object.id]);
 
   return (
     <aside className="p-4 md:p-6">

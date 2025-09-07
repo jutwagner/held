@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { HeldObject } from '@/types';
-import { getObject, deleteObject, updateObject, uploadCOAImage } from '@/lib/firebase-services';
+import { getObject, deleteObject, updateObject, uploadCOAImage, subscribeObject } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import OwnerTools from '@/components/OwnerTools';
 import ProvenanceSection from '@/components/ProvenanceSection';
@@ -123,6 +123,17 @@ export default function RegistryItemPage() {
       }
     })();
     return () => { active = false; };
+  }, [objectId]);
+
+  // Realtime: keep item in sync so anchoring status flips from Pending -> Anchored
+  useEffect(() => {
+    if (!objectId) return;
+    const unsub = subscribeObject(objectId, (obj) => {
+      if (obj) {
+        setItem(obj);
+      }
+    });
+    return () => { try { unsub(); } catch {} };
   }, [objectId]);
 
   async function handleDelete() {

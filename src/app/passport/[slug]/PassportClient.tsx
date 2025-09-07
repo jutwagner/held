@@ -237,28 +237,28 @@ export default function PassportClient() {
               
               <div className="space-y-6">
                 {object.maker && (
-                  <div className="grid grid-cols-3 gap-8">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-xs text-gray-500 uppercase tracking-widest">Maker</div>
                     <div className="col-span-2 text-base text-black font-light">{object.maker}</div>
                   </div>
                 )}
                 
                 {object.year && (
-                  <div className="grid grid-cols-3 gap-8">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-xs text-gray-500 uppercase tracking-widest">Year</div>
                     <div className="col-span-2 text-base text-black font-light">{object.year}</div>
                   </div>
                 )}
                 
                 {object.condition && (
-                  <div className="grid grid-cols-3 gap-8">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-xs text-gray-500 uppercase tracking-widest">Condition</div>
                     <div className="col-span-2 text-base text-black font-light capitalize">{object.condition}</div>
                   </div>
                 )}
                 
                 {object.value && (
-                  <div className="grid grid-cols-3 gap-8">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-xs text-gray-500 uppercase tracking-widest">Value</div>
                     <div className="col-span-2 text-base text-black font-light">{formatCurrency(object.value)}</div>
                   </div>
@@ -266,7 +266,7 @@ export default function PassportClient() {
               </div>
             </div>
 
-            {/* Tags */}
+            {/* Tags 
             {object.tags && object.tags.length > 0 && (
               <div className="mb-10 sm:mb-16">
                 <h3 className="text-sm font-light text-black mb-3 sm:mb-4 tracking-wide uppercase">Tags</h3>
@@ -281,7 +281,7 @@ export default function PassportClient() {
                   ))}
                 </div>
               </div>
-            )}
+            )}*/}
 
             {/* Notes */}
             {object.notes && (
@@ -307,7 +307,7 @@ export default function PassportClient() {
             {/* Enhanced Provenance */}
             {hasProvenance && (
               <div className="mb-10 sm:mb-16">
-                <h2 className="text-lg sm:text-xl font-light text-black mb-6 sm:mb-8 tracking-wide border-b border-black pb-2">Provenance</h2>
+                <h2 className="text-lg sm:text-xl font-light text-black mb-6 sm:mb-8 tracking-wide  pb-2">Provenance</h2>
                 
                 <div className="space-y-8">
                   {object.serialNumber && (

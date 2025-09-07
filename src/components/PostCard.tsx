@@ -374,12 +374,15 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Content */}
       <div className="p-4">
         <h2 className="text-lg font-medium mb-2">{post.title}</h2>
-        {post.maker && <p className="text-sm text-gray-600 mb-1">by {post.maker}</p>}
-        {post.year && <p className="text-sm text-gray-600 mb-1">{post.year}</p>}
-        <p className="text-sm text-gray-600 mb-2 capitalize">{post.condition}</p>
+        {/* {post.maker && <p className="text-sm text-gray-600 mb-1">by {post.maker}</p>}
+        {post.year && <p className="text-sm text-gray-600 mb-1">{post.year}</p>} */}
+        {/* <p className="text-sm text-gray-600 mb-2 capitalize">{post.condition}</p> */}
+        {post.description && (
+          <p className="text-sm text-gray-700 mb-3 whitespace-pre-line">{post.description}</p>
+        )}
         {post.notes && <p className="text-sm text-gray-700 mb-3">{post.notes}</p>}
         
-        {/* Tags */}
+        {/* Tags 
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {post.tags.map((tag, index) => (
@@ -391,17 +394,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </span>
             ))}
           </div>
-        )}
+        )}*/}
 
         {/* Post Date */}
-        <div className="flex items-center text-xs text-gray-500 mb-3">
+        {/* <div className="flex items-center text-xs text-gray-500 mb-3">
           <Calendar className="h-3 w-3 mr-1" />
           {new Date(post.createdAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
           })}
-        </div>
+        </div> */}
 
         {/* Social Actions */}
         <div className="flex items-center justify-between border-t border-gray-100 pt-3">
