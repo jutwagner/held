@@ -36,8 +36,8 @@ export default function Navigation() {
     }
   }, []);
 
-  // Hide navigation on passport pages
-  if (pathname?.startsWith('/passport/')) {
+  // Hide top navigation on specific pages (passport and "new" flows)
+  if (pathname?.startsWith('/passport/') || pathname === '/rotations/new' || pathname === '/registry/new') {
     return null;
   }
 

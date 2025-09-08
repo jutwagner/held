@@ -11,7 +11,7 @@ import Switch from '@/components/ui/switch';
 import { createObject, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
-import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check, Music2, Image as ImageIcon, Palette, Package, Lamp, Cpu, Guitar, Clock3, Book, Shapes, Tag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
@@ -187,72 +187,57 @@ export default function NewObjectPage() {
     
           </div>
           
-          <div className="mb-20">
-            <h1 className="text-6xl md:text-7xl font-light text-black mb-6 tracking-tighter leading-none">
-              Acquisition
+          <div className="mb-10">
+            <h1 className="text-4xl md:text-5xl font-light text-black mb-2 tracking-tighter leading-none">
+              Add New
             </h1>
-            <p className="text-base text-gray-600 max-w-xl font-light leading-relaxed">
-              Systematic documentation for permanent collection records.
-            </p>
+            
           </div>
         </div>
 
         {/* Progress Indicator */}
-        <div className="max-w-4xl mx-auto mb-20">
-          <div className="grid grid-cols-4 gap-8">
-            {steps.map((step) => {
-              const isActive = currentStep === step.id;
-              const isCompleted = completedSteps.has(step.id);
-              const isProvenanceStep = step.id === 4;
-              const isUserPremium = isHeldPlus(user);
-              const isProvenanceDisabled = isProvenanceStep && !isUserPremium;
-              
-              return (
-                <div key={step.id} className="text-center relative">
-                  {isProvenanceDisabled && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                  )}
-                  <div className={`text-xs font-medium tracking-widest uppercase mb-2 transition-colors ${
-                    isCompleted 
-                      ? 'text-black' 
-                      : isActive 
-                      ? 'text-black'
-                      : isProvenanceDisabled
-                      ? 'text-gray-300'
-                      : 'text-gray-300'
-                  }`}>
-                    {String(step.id).padStart(2, '0')}
-                  </div>
-                  <div className={`h-0.5 mb-3 transition-colors ${
-                    isCompleted 
-                      ? 'bg-black' 
-                      : isActive 
-                      ? 'bg-black'
-                      : isProvenanceDisabled
-                      ? 'bg-gray-200'
-                      : 'bg-gray-200'
-                  }`} />
-                  <div className={`text-xs font-medium tracking-wide uppercase transition-colors ${
-                    isCompleted 
-                      ? 'text-black' 
-                      : isActive 
-                      ? 'text-black'
-                      : isProvenanceDisabled
-                      ? 'text-gray-400'
-                      : 'text-gray-400'
-                  }`}>
-                    {step.title}
-                    {isProvenanceDisabled && (
-                      <div className="text-xs text-amber-600 mt-1 normal-case tracking-normal">
-                        Held+ Only
+        <div className="max-w-4xl mx-auto mb-12 md:mb-5">
+          <div className="-mx-2 px-2">
+            <div className="w-full">
+              {/* Row 1: circles + connectors spanning full width */}
+              <div className="flex items-center w-full">
+                {steps.map((step, idx) => {
+                  const isActive = currentStep === step.id;
+                  const isCompleted = completedSteps.has(step.id) || step.id < currentStep;
+                  return (
+                    <>
+                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full transition-colors ${
+                        isCompleted ? 'bg-black text-white' : isActive ? 'bg-white ring-2 ring-black text-black' : 'bg-white border-2 border-gray-300 text-gray-400'
+                      }`}>
+                        {isCompleted ? <Check className="h-4 w-4" /> : <span className="text-xs">{step.id}</span>}
                       </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      {idx < steps.length - 1 && (
+                        <div key={`conn-${step.id}`} className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black' : 'bg-gray-200'}`} />
+                      )}
+                    </>
+                  );
+                })}
+              </div>
+              {/* Row 2: labels centered under each circle */}
+              <div className="flex justify-between mt-2">
+                {steps.map((step) => {
+                  const isActive = currentStep === step.id;
+                  const isCompleted = completedSteps.has(step.id) || step.id < currentStep;
+                  const isProvenanceStep = step.id === 4;
+                  const isUserPremium = isHeldPlus(user);
+                  const isProvenanceDisabled = isProvenanceStep && !isUserPremium;
+                  return (
+                    <div key={`lbl-${step.id}`} className="flex flex-col items-center" style={{ width: '2.25rem' /* matches w-9 */ }}>
+                      <div className="text-[10px] md:text-xs tracking-widest uppercase text-gray-400">Step {step.id}</div>
+                      <div className={`text-xs md:text-sm font-medium text-center ${isActive || isCompleted ? 'text-black' : 'text-gray-500'}`}>{step.title}</div>
+                      {isProvenanceDisabled && (
+                        <div className="mt-1 text-[10px] text-amber-600 rounded-full px-2 py-0.5 bg-amber-50">Held+ Only</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -261,19 +246,14 @@ export default function NewObjectPage() {
           <div className="bg-white border border-gray-200">
             <form onSubmit={handleSubmit}>
               {/* Step Content */}
-              <div className="p-16">
+              <div className="p-5">
                 {/* Step 1: Identification */}
                 {currentStep === 1 && (
                   <div className="space-y-12">
-                    <div className="border-b border-gray-100 pb-8">
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">01</div>
-                      <h2 className="text-4xl font-light text-black tracking-tight">Identification</h2>
-                    </div>
-
                     <div className="space-y-12">
                       <div>
                         <label htmlFor="title" className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
-                          Object Title
+                          Name
                         </label>
                         <Input
                           id="title"
@@ -287,21 +267,43 @@ export default function NewObjectPage() {
 
                       <div>
                         <label className="block text-xs font-medium text-black mb-6 uppercase tracking-widest">
-                          Classification
+                          Category
                         </label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                          {[
+                            { name: 'Audio', Icon: Music2 },
+                            { name: 'Photography', Icon: ImageIcon },
+                            { name: 'Art', Icon: Palette },
+                            { name: 'Industrial Design', Icon: Package },
+                            { name: 'Furniture', Icon: Shapes },
+                            { name: 'Lighting', Icon: Lamp },
+                            { name: 'Tech', Icon: Cpu },
+                            { name: 'Instruments', Icon: Guitar },
+                            { name: 'Timepieces', Icon: Clock3 },
+                            { name: 'Fashion', Icon: Tag },
+                            { name: 'Books', Icon: Book },
+                            { name: 'Miscellaneous', Icon: Shapes },
+                          ].map(({ name, Icon }) => (
                             <button
-                              key={cat}
+                              key={name}
                               type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
-                              className={`py-4 px-6 border-2 text-left transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
-                                formData.category === cat
-                                  ? 'border-black bg-black text-white shadow-lg'
-                                  : 'border-gray-200 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                              onClick={() => setFormData(prev => ({ ...prev, category: name }))}
+                              className={`group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 ${
+                                formData.category === name
+                                  ? 'bg-gray-900 border-gray-900 text-white shadow-lg'
+                                  : 'bg-white border-gray-200 text-gray-900 hover:border-gray-400 hover:bg-gray-50'
                               }`}
                             >
-                              <div className="text-sm font-medium tracking-wide">{cat}</div>
+                              <span className={`flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 ${
+                                formData.category === name ? 'bg-white/10' : 'bg-gray-100'
+                              }`}>
+                                <Icon className={`${formData.category === name ? 'text-white' : 'text-gray-600'} w-5 h-5 sm:w-6 sm:h-6`} />
+                              </span>
+                              <span className={`text-xs sm:text-sm font-medium text-center leading-snug ${
+                                formData.category === name ? 'text-white' : 'text-gray-800'
+                              }`}>
+                                {name}
+                              </span>
                             </button>
                           ))}
                         </div>
