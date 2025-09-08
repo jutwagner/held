@@ -3,7 +3,6 @@ import type { Theme } from '@/types';
 
 const themes: { key: Theme; label: string }[] = [
   { key: 'light', label: 'Light' },
-  { key: 'dim', label: 'Dim' },
   { key: 'dark', label: 'Dark' },
 ];
 

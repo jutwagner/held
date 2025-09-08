@@ -132,7 +132,7 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
             </svg>
             <span className="font-medium">{rotation.objectIds?.length || 0} objects</span>
           </div>
-          {/* <div className="text-xs text-gray-400">
+          <div className="text-xs text-gray-400">
             {(() => {
               if (rotation.createdAt instanceof Date) {
                 return rotation.createdAt.toLocaleDateString();
@@ -142,7 +142,7 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
               }
               return 'Recently created';
             })()}
-          </div> */}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <a 

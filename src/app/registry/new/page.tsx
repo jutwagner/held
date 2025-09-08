@@ -11,7 +11,7 @@ import Switch from '@/components/ui/switch';
 import { createObject, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
-import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check, Music2, Image as ImageIcon, Palette, Package, Lamp, Cpu, Guitar, Clock3, Book, Shapes, Tag } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check, Music2, Image as ImageIcon, Palette, Package, Lamp, Cpu, Guitar, Clock3, Book, Shapes, Tag, Archive } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
@@ -44,28 +44,28 @@ export default function NewObjectPage() {
   const steps = [
     { 
       id: 1, 
-      title: "Identification", 
+      title: "", 
       subtitle: "Basic information",
       icon: Heart,
       color: "bg-black"
     },
     { 
       id: 2, 
-      title: "Documentation", 
+      title: "", 
       subtitle: "Visual record",
       icon: Camera,
       color: "bg-black"
     },
     { 
       id: 3, 
-      title: "Specifications", 
+      title: "", 
       subtitle: "Technical details",
       icon: Sparkles,
       color: "bg-black"
     },
     { 
       id: 4, 
-      title: "Provenance", 
+      title: "", 
       subtitle: "History & ownership",
       icon: Zap,
       color: "bg-black"
@@ -174,9 +174,9 @@ export default function NewObjectPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="held-container py-8">
+      <div className="held-container held-container-wide py-8">
         {/* Header */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-none mx-auto">
           <div className="flex items-center justify-between mb-16">
             <Button variant="ghost" asChild className="p-2 h-auto text-black hover:bg-gray-100 rounded-lg">
               <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
@@ -196,7 +196,7 @@ export default function NewObjectPage() {
         </div>
 
         {/* Progress Indicator */}
-        <div className="max-w-4xl mx-auto mb-12 md:mb-5">
+        <div className="max-w-xl mx-auto mb-12 md:mb-5">
           <div className="-mx-2 px-2">
             <div className="w-full">
               {/* Row 1: circles + connectors spanning full width */}
@@ -206,7 +206,7 @@ export default function NewObjectPage() {
                   const isCompleted = completedSteps.has(step.id) || step.id < currentStep;
                   return (
                     <>
-                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full transition-colors ${
+                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-4 h-4 md:w-4 md:h-4 rounded-full transition-colors ${
                         isCompleted ? 'bg-black text-white' : isActive ? 'bg-white ring-2 ring-black text-black' : 'bg-white border-2 border-gray-300 text-gray-400'
                       }`}>
                         {isCompleted ? <Check className="h-4 w-4" /> : <span className="text-xs">{step.id}</span>}
@@ -228,7 +228,6 @@ export default function NewObjectPage() {
                   const isProvenanceDisabled = isProvenanceStep && !isUserPremium;
                   return (
                     <div key={`lbl-${step.id}`} className="flex flex-col items-center" style={{ width: '2.25rem' /* matches w-9 */ }}>
-                      <div className="text-[10px] md:text-xs tracking-widest uppercase text-gray-400">Step {step.id}</div>
                       <div className={`text-xs md:text-sm font-medium text-center ${isActive || isCompleted ? 'text-black' : 'text-gray-500'}`}>{step.title}</div>
                       {isProvenanceDisabled && (
                         <div className="mt-1 text-[10px] text-amber-600 rounded-full px-2 py-0.5 bg-amber-50">Held+ Only</div>
@@ -242,11 +241,11 @@ export default function NewObjectPage() {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white border border-gray-200">
+        <div className="max-w-none mx-auto">
+          <div className="">
             <form onSubmit={handleSubmit}>
               {/* Step Content */}
-              <div className="p-5">
+              <div className="">
                 {/* Step 1: Identification */}
                 {currentStep === 1 && (
                   <div className="space-y-12">
@@ -269,20 +268,23 @@ export default function NewObjectPage() {
                         <label className="block text-xs font-medium text-black mb-6 uppercase tracking-widest">
                           Category
                         </label>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
                           {[
-                            { name: 'Audio', Icon: Music2 },
-                            { name: 'Photography', Icon: ImageIcon },
                             { name: 'Art', Icon: Palette },
-                            { name: 'Industrial Design', Icon: Package },
-                            { name: 'Furniture', Icon: Shapes },
-                            { name: 'Lighting', Icon: Lamp },
-                            { name: 'Tech', Icon: Cpu },
-                            { name: 'Instruments', Icon: Guitar },
-                            { name: 'Timepieces', Icon: Clock3 },
-                            { name: 'Fashion', Icon: Tag },
                             { name: 'Books', Icon: Book },
+                            { name: 'Electronics', Icon: Cpu },
+                            { name: 'Fashion', Icon: Tag },
+                            { name: 'Furniture', Icon: Shapes },
+                            { name: 'HiFi', Icon: Music2 },
+                            { name: 'Industrial Design', Icon: Package },
+                            { name: 'Instruments', Icon: Guitar },
+                            { name: 'Lighting', Icon: Lamp },
                             { name: 'Miscellaneous', Icon: Shapes },
+                            { name: 'Music', Icon: Music2 },
+                            { name: 'Photography', Icon: ImageIcon },
+                            { name: 'Tech', Icon: Cpu },
+                            { name: 'Timepieces', Icon: Clock3 },
+                            { name: 'Vintage', Icon: Archive },
                           ].map(({ name, Icon }) => (
                             <button
                               key={name}
@@ -491,7 +493,7 @@ export default function NewObjectPage() {
                       </div>
 
                       <div className="space-y-6 pt-8 border-t border-gray-100">
-                        <div className="flex items-center justify-between border border-gray-200 px-3 py-3">
+                        <div className="flex items-center justify-between px-3 py-3">
                           <label className="text-black font-light text-sm tracking-wide">Private</label>
                           <Switch
                             ariaLabel="Toggle Private"
@@ -500,7 +502,7 @@ export default function NewObjectPage() {
                           />
                         </div>
 
-                        <div className="flex items-center justify-between border border-gray-200 px-3 py-3">
+                        <div className="flex items-center justify-between px-3 py-3">
                           <label className="text-black font-light text-sm tracking-wide">Collaborative</label>
                           <Switch
                             ariaLabel="Toggle Collaborative Sharing"
@@ -598,7 +600,7 @@ export default function NewObjectPage() {
               </div>
 
               {/* Navigation */}
-              <div className="bg-white border-t border-gray-100 px-16 py-12 flex justify-between items-center">
+              <div className="py-12 flex justify-between items-center">
                 {currentStep === 1 ? (
                   <div></div>
                 ) : (

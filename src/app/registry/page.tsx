@@ -153,7 +153,7 @@ export default function RegistryPage() {
           ) : (
             <>
               {/* Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+              <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2">Registry</h1>
                   <p className="text-gray-600/90">
@@ -161,12 +161,25 @@ export default function RegistryPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                  <Button variant={view === 'grid' ? 'default' : 'outline'} onClick={() => setView('grid')} title="Grid view"><Columns className="h-4 w-4" /></Button>
-                  <Button variant={view === 'table' ? 'default' : 'outline'} onClick={() => setView('table')} title="Table view"><List className="h-4 w-4" /></Button>
+                  <Button
+                    variant={view === 'grid' ? 'default' : 'outline'}
+                    onClick={() => setView('grid')}
+                    title="Grid view"
+                    className={view === 'grid' ? 'bg-[#999] text-white hover:bg-[#c2c2c2] border-transparent' : ''}
+                  >
+                    <Columns className="h-4 w-3" />
+                  </Button>
+                  <Button 
+                  variant={view === 'table' ? 'default' : 'outline'} 
+                  onClick={() => setView('table')} 
+                  title="Table view"
+                  className={view === 'table' ? 'bg-[#999] text-white hover:bg-[#c2c2c2] border-transparent' : ''}
+                  >
+                    <List className="h-4 w-3" />
+                  </Button>
                   <Button asChild className="shadow-lg">
                     <Link href="/registry/new">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Item
+                      <Plus className="h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -188,7 +201,6 @@ export default function RegistryPage() {
                   onClick={() => setShowPublicOnly(!showPublicOnly)}
                   className="flex items-center h-12"
                 >
-                  {showPublicOnly ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
                   {showPublicOnly ? 'Public Only' : 'All Objects'}
                 </Button>
                 </div>
@@ -376,7 +388,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
   return (
     <Link href={`/registry/${object.id}`}>
       <div
-        className="relative rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] min-h-[400px] flex flex-col justify-between  transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden group"
+        className="relative rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] h-[540px] md:h-[560px] flex flex-col transition-transform duration-300 hover:scale-[1.02] cursor-pointer group"
       >
         {/* Subtle top sheen */}
         <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-b from-white/50 to-transparent" />
@@ -411,10 +423,12 @@ function ObjectCard({ object }: { object: HeldObject }) {
         </div>
 
         {/* Content */}
-        <div className='p-5 md:p-6'>
+        <div className='p-5 md:p-6 flex-1 flex flex-col'>
           <h3 className="font-serif text-[22px] md:text-2xl font-semibold mb-1 line-clamp-1 text-gray-900 tracking-tight">{object.title}</h3>
-          {object.maker && (
+          {object.maker ? (
             <p className="text-[15px] text-gray-700/90 mb-3 font-light">{object.maker}</p>
+          ) : (
+            <div className="h-5 mb-3" />
           )}
 
           {/* Compact chain display */}
@@ -438,17 +452,17 @@ function ObjectCard({ object }: { object: HeldObject }) {
 
         {/* Meta row */}
         <div className="flex items-center justify-between text-sm mt-4">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-gray-800">
+          <div className="flex items-center gap-2 border-none ">
+            <span className="px-2.5 ring-1 ring-black/5 font-mono text-[12px] text-gray-800">
               {object.year && !isNaN(object.year) ? `${object.year}` : 'Year N/A'}
             </span>
             {typeof object.value !== 'undefined' && (
-              <span className="px-2.5 py-1 rounded-full bg-white/70 border border-white/60 ring-1 ring-black/5 font-mono text-[12px] text-emerald-700">
+              <span className="px-2.5  ring-1 ring-black/5 border-none font-mono text-[12px] text-emerald-700">
                 {isNaN(object.value) ? 'Value N/A' : formatCurrency(object.value)}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 border-none ext-gray-500">
             {object.isPublic ? (
               <span></span>
             ) : (
@@ -456,6 +470,33 @@ function ObjectCard({ object }: { object: HeldObject }) {
             )}
           </div>
         </div>
+
+
+          {/* Tags 
+          <div className="mt-auto">
+            {Array.isArray(object.tags) && object.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4 max-h-12 overflow-hidden">
+                {object.tags.slice(0, 6).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+                {object.tags.length > 6 && (
+                  <span className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono">
+                    +{object.tags.length - 6}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+*/}
+
+
+
 
         {/* Provenance completeness */}
         <div className="mt-4">
@@ -471,24 +512,9 @@ function ObjectCard({ object }: { object: HeldObject }) {
           </div>
         </div>
 
-          {/* Tags */}
-          {Array.isArray(object.tags) && object.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {object.tags.slice(0, 4).map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono"
-                >
-                  #{tag}
-                </span>
-              ))}
-              {object.tags.length > 4 && (
-                <span className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono">
-                  +{object.tags.length - 4}
-                </span>
-              )}
-            </div>
-          )}
+
+
+
         </div>
       </div>
     </Link>

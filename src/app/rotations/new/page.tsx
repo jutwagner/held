@@ -146,7 +146,7 @@ const handleAddNewItem = async (e: React.FormEvent) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="held-container py-8">
+      <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
           <Button variant="ghost" asChild className="mr-4">
