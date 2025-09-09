@@ -90,18 +90,18 @@ export default function Navigation() {
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogTitle><VisuallyHidden>Add to Held</VisuallyHidden></DialogTitle>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {/* Add Object Option */}
                           <div className="flex flex-col items-center gap-2">
                             <div className="w-full flex flex-col items-center mb-2">
-                              <div className="bg-gray-100 rounded-xl p-4 flex flex-col items-center w-full shadow-sm border border-gray-200">
+                              <div className="p-4 pt-0 flex flex-col items-center w-full ">
                                 
                                 <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="h-8 w-8 text-gray-600" />
                                 <div className="text-xs text-gray-500 text-center mt-1">Add a collectible, piece of gear, or item to your registry.</div>
                               </div>
                             </div>
                             <DialogClose asChild>
-                              <Link href="/registry/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
+                              <Link href="/registry/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
                                 Add to Registry
                               </Link>
                             </DialogClose>
@@ -109,7 +109,7 @@ export default function Navigation() {
                           {/* Add Rotation Option */}
                           <div className="flex flex-col items-center gap-2">
                             <div className="w-full flex flex-col items-center mb-2">
-                              <div className="bg-gray-100 rounded-xl p-4 flex flex-col items-center w-full shadow-sm border border-gray-200">
+                              <div className="p-4 pt-0 flex flex-col items-center w-full">
                                 
                                 
                                               <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="h-8 w-8 text-gray-600" />
@@ -118,7 +118,7 @@ export default function Navigation() {
                             </div>
                             <DialogClose asChild>
 
-                              <Link href="/rotations/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
+                              <Link href="/rotations/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
                                 Add Rotation
                               </Link>
                             </DialogClose>

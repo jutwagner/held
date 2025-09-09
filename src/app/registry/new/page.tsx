@@ -25,6 +25,7 @@ export default function NewObjectPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(new Set<number>());
   const titleRef = useRef<HTMLInputElement | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',
@@ -368,9 +369,16 @@ export default function NewObjectPage() {
                             if (images.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...images] }));
                           }}
                         >
-                          <div className="mb-6 flex items-center justify-center">
-                            <div className="w-14 h-14 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shadow-inner">
-                              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 5v14M5 12h14"/></svg>
+                          <div className="mb-2 flex items-center justify-center">
+                            <div className="w-14 h-14  text-gray-500 flex items-center justify-center">
+                              <svg className="w-7 h-7 opacity-20"  id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 44.8 44.8">
+                                <path d="M25.9,14.7L17.7.6C10.1,2.2,4,7.6,1.4,14.7h24.5Z"/>
+                                <path d="M30.8,21.6l8.2-14.2C34.9,2.9,29,0,22.4,0s-2.6,0-3.8.3l12.2,21.3Z"/>
+                                <path d="M43.7,29.3c.7-2.2,1.1-4.5,1.1-6.9,0-5.4-1.9-10.4-5.2-14.3l-12.2,21.2h16.3Z"/>
+                                <path d="M13.9,23.3l-8.2,14.1c4.1,4.5,10,7.4,16.6,7.4s2.6,0,3.8-.3l-12.2-21.2Z"/>
+                                <path d="M17.4,15.5H1.1c-.7,2.2-1.1,4.5-1.1,6.9,0,5.4,1.9,10.4,5.2,14.3l12.2-21.2Z"/>
+                                <path d="M18.9,30.2l8.2,14.1c7.6-1.6,13.7-7,16.3-14.1h-24.5Z"/>
+                              </svg>
                             </div>
                           </div>
                           <h3 className="text-xl sm:text-2xl font-light tracking-tight text-black">Add photos</h3>
@@ -387,12 +395,12 @@ export default function NewObjectPage() {
                             <Button
                               type="button"
                               onClick={() => document.getElementById('image-upload')?.click()}
-                              className="bg-black text-white hover:bg-gray-800 rounded-md px-6 shadow"
+                              className="bg-black text-white hover:bg-gray-800 rounded-md px-6 shadow mb-5"
                             >
                               Select images
                             </Button>
-                            <span className="text-xs text-gray-500">JPG, PNG, HEIC • up to 10MB each</span>
                           </div>
+                            <span className="text-xs text-gray-500 mt-10">JPG, PNG, HEIC • up to 10MB each</span>
                           {dragActive && (
                             <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-black/30"></div>
                           )}
