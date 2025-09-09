@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { HeldObject, UserDoc } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart, MessageCircle, Send, User, Calendar } from 'lucide-react';
+import { Heart, MessageCircle, Send, User, Calendar, Tag as TagIcon } from 'lucide-react';
 import { getUser, toggleLike, getLikesCount, hasUserLiked, addComment, getComments, subscribeToComments } from '@/lib/firebase-services';
 import Link from 'next/link';
 import DMModal from './DMModal';
@@ -29,6 +29,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     createdAt: Date;
   }>>([]);
   const [isDMOpen, setIsDMOpen] = useState(false);
+  const isOwner = !!firebaseUser && firebaseUser.uid === post.userId;
 
   // Fetch post user data and social data
   useEffect(() => {
@@ -430,6 +431,25 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               <span className="text-sm">{commentsCount}</span>
             </button>
           </div>
+          {post.openToSale && (
+            <div className="flex items-center">
+              {isOwner ? (
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </span>
+              ) : (
+                <button
+                  onClick={handleDM}
+                  disabled={!firebaseUser}
+                  className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border ${!firebaseUser ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400 border-gray-200' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}
+                  title={!firebaseUser ? 'Sign in to message' : 'Message seller'}
+                  aria-label="Message seller about this item"
+                >
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Sign-in Prompt for Unauthenticated Users */}

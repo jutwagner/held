@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { HeldObject } from '@/types';
 import { Button } from '@/components/ui/button';
 import { getPolygonExplorerURL, anchorPassport, generatePassportURI, generateCoreDigest, generateFullDigest } from '@/lib/blockchain-services';
+import { subscribeObjects, updateObject } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import { updateObjectAnchoring } from '@/lib/firebase-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
@@ -56,6 +57,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
   const [busy, setBusy] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [forSaleCount, setForSaleCount] = useState(0);
   const prov = useMemo(() => getProvenanceScore(object), [object]);
 
   const anchored = !!object.anchoring?.isAnchored;
@@ -145,6 +147,9 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           <span className={`px-2.5 py-1 rounded-full border ${anchored ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : (pending ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-700')}`}>
             {anchored ? 'Anchored' : (pending ? 'Pending' : 'Not Anchored')}
           </span>
+          {(object as any).openToSale && (
+            <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700">Open to sale</span>
+          )}
         </div>
       </div>
 
@@ -454,6 +459,39 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
             </Button>*/}
           </div>
         )}
+      </div>
+
+      {/* For Sale toggle with Held+ gating */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm text-gray-600">Marketplace</div>
+          {(object as any).openToSale && <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Open to sale</span>}
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-gray-800">Allow messages for offers</label>
+          <Button
+            variant={(object as any).openToSale ? 'default' : 'outline'}
+            onClick={async () => {
+              if (!(object as any).openToSale) {
+                const limit = isHeldPlus(user) ? Infinity : 3;
+                if (forSaleCount >= limit) {
+                  alert('You have reached your for-sale limit. Upgrade to Held+ for unlimited.');
+                  return;
+                }
+              }
+              try {
+                await updateObject(object.id, { id: object.id, ...(object as any), openToSale: !(object as any).openToSale } as any);
+              } catch (e) {
+                console.error('Failed to update openToSale', e);
+              }
+            }}
+          >
+            {(object as any).openToSale ? 'Enabled' : 'Enable'}
+          </Button>
+          {!isHeldPlus(user) && (
+            <span className="text-xs text-gray-500">You can mark {3 - forSaleCount > 0 ? `${3 - forSaleCount} more` : '0'} items for sale.</span>
+          )}
+        </div>
       </div>
 
       {/* Provenance Meter (Held+) */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Switch from '@/components/ui/switch';
-import { createObject, updateObjectAnchoring } from '@/lib/firebase-services';
+import { createObject, updateObjectAnchoring, subscribeObjects } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
 import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check, Music2, Image as ImageIcon, Palette, Package, Lamp, Cpu, Guitar, Clock3, Book, Shapes, Tag, Archive } from 'lucide-react';
@@ -37,7 +37,9 @@ export default function NewObjectPage() {
     images: [],
     isPublic: false,
     shareInCollaborative: false,
+    openToSale: false,
   });
+  const [forSaleCount, setForSaleCount] = useState(0);
 
   const [newTag, setNewTag] = useState('');
 
@@ -171,6 +173,16 @@ export default function NewObjectPage() {
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
   } 
+  
+  // Count current user's for-sale items to hint limits
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = subscribeObjects(user.uid, (list) => {
+      const count = list.filter(o => (o as any).openToSale === true).length;
+      setForSaleCount(count);
+    });
+    return () => { try { unsub(); } catch {} };
+  }, [user?.uid]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -259,7 +271,7 @@ export default function NewObjectPage() {
                           value={formData.title}
                           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                           required
-                          placeholder="Eames Lounge Chair and Ottoman"
+                          placeholder="What's the thing?"
                           className="text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
                         />
                       </div>
@@ -317,17 +329,12 @@ export default function NewObjectPage() {
                 {/* Step 2: Documentation */}
                 {currentStep === 2 && (
                   <div className="space-y-12">
-                    <div className="border-b border-gray-100 pb-8">
+                    <div className="border-b border-gray-100 pb-2">
                       <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">02</div>
-                      <h2 className="text-4xl font-light text-black tracking-tight">Documentation</h2>
+                      <h2 className="text-4xl font-light text-black tracking-tight">Visual</h2>
                     </div>
-
-                    <div className="space-y-12">
+                    <div className="space-y-2">
                       <div>
-                        <label className="block text-xs font-medium text-black mb-6 uppercase tracking-widest">
-                          Visual Record
-                        </label>
-                        
                         {/* Image Upload Area */}
                         <div className="border border-gray-200 p-20 text-center hover:border-black transition-colors rounded-lg">
                           <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-8">
@@ -509,6 +516,36 @@ export default function NewObjectPage() {
                             checked={!!formData.shareInCollaborative}
                             onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shareInCollaborative: checked }))}
                           />
+                        </div>
+
+                        <div className="flex items-center justify-between px-3 py-3">
+                          <label className="text-black font-light text-sm tracking-wide">Open to sale</label>
+                          <div className="flex items-center gap-3">
+                            {!isHeldPlus(user) && (
+                              <span className="text-xs text-gray-500">{Math.max(0, 3 - forSaleCount)} remaining on free plan</span>
+                            )}
+                            <Switch
+                              ariaLabel="Toggle Open to sale"
+                              checked={!!formData.openToSale}
+                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, openToSale: checked }))}
+                              disabled={!isHeldPlus(user) && forSaleCount >= 3 && !formData.openToSale}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between px-3 py-3">
+                          <label className="text-black font-light text-sm tracking-wide">Open to sale</label>
+                          <div className="flex items-center gap-3">
+                            {!isHeldPlus(user) && (
+                              <span className="text-xs text-gray-500">{Math.max(0, 3 - forSaleCount)} remaining on free plan</span>
+                            )}
+                            <Switch
+                              ariaLabel="Toggle Open to sale"
+                              checked={!!formData.openToSale}
+                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, openToSale: checked }))}
+                              disabled={!isHeldPlus(user) && forSaleCount >= 3 && !formData.openToSale}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>

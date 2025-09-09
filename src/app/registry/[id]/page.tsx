@@ -42,6 +42,7 @@ export default function RegistryItemPage() {
     images: Array<string | File>;
     isPublic: boolean;
     shareInCollaborative: boolean;
+    openToSale?: boolean;
     // Provenance
     serialNumber?: string;
     acquisitionDate?: string;
@@ -97,6 +98,7 @@ export default function RegistryItemPage() {
             transferMethod: obj.transferMethod || '',
             associatedDocuments: Array.isArray(obj.associatedDocuments) ? obj.associatedDocuments.join(', ') : '',
             provenanceNotes: obj.provenanceNotes || '',
+            openToSale: (obj as any).openToSale || false,
             chain: Array.isArray(obj.chain)
               ? (obj.chain as any[]).map((c) => ({
                   owner: c?.owner || '',
@@ -183,6 +185,7 @@ export default function RegistryItemPage() {
       images: form.images,
       isPublic: form.isPublic,
       shareInCollaborative: form.shareInCollaborative,
+      openToSale: form.openToSale,
       // provenance
       serialNumber: form.serialNumber,
       acquisitionDate: form.acquisitionDate,

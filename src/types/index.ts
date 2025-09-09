@@ -95,6 +95,8 @@ export interface HeldObject {
     anchoredAt?: Date;
     uri?: string;
   };
+  // Marketplace
+  openToSale?: boolean;
 }
 
 export interface Rotation {
@@ -141,6 +143,8 @@ export interface CreateObjectData {
   provenanceNotes?: string;
   // Blockchain anchoring fields
   anchorOnChain?: boolean;
+  // Marketplace
+  openToSale?: boolean;
 }
 
 export interface UpdateObjectData {
@@ -171,6 +175,8 @@ export interface UpdateObjectData {
   provenanceNotes?: string;
   // Blockchain anchoring fields
   anchorOnChain?: boolean;
+  // Marketplace
+  openToSale?: boolean;
 }
 
 export interface CreateRotationData {
