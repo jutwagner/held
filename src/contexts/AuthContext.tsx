@@ -49,12 +49,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
     // Google Sign-In - use redirect for mobile compatibility
   const signInWithGoogle = async (): Promise<void> => {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // Prefer redirect for iOS Safari to avoid popup/COOP issues
+    const ua = typeof window !== 'undefined' ? window.navigator.userAgent || '' : '';
+    const isIOSSafari = /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
-      
-      // For mobile apps, only use popup (no redirect to Safari)
+      if (isIOSSafari) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
         const userData = await getUser(result.user.uid);
@@ -67,21 +74,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Google sign-in error:', error);
-      // Check if it's a popup blocked error
-      if (typeof error === 'object' && error !== null && 'code' in error) {
-        const code = (error as { code: string }).code;
-        if (code === 'auth/popup-blocked') {
-          throw new Error('Popup was blocked. Please allow popups for this app.');
-        } else if (code === 'auth/popup-closed-by-user') {
-          throw new Error('Sign-in was cancelled.');
-        } else {
-          throw new Error('Google sign-in failed. This feature requires proper Firebase iOS configuration.');
-        }
-      } else {
-        throw new Error('Google sign-in failed. This feature requires proper Firebase iOS configuration.');
+      const message = String(error?.message || '');
+      const code = String(error?.code || '');
+      // Fallback to redirect on common popup/network/redirect mismatches
+      const shouldRedirect =
+        code === 'auth/popup-blocked' ||
+        code === 'auth/cancelled-popup-request' ||
+        message.includes('redirect_uri_mismatch') ||
+        message.includes('Access blocked: This app’s request is invalid');
+      if (shouldRedirect) {
+        await signInWithRedirect(auth, provider);
+        return;
       }
+      if (code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled.');
+      }
+      throw new Error('Google sign-in failed. Please try again.');
     }
   };
 
