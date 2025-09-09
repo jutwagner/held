@@ -531,22 +531,7 @@ export default function NewObjectPage() {
                               disabled={!isHeldPlus(user) && forSaleCount >= 3 && !formData.openToSale}
                             />
                           </div>
-                        </div>
-
-                        <div className="flex items-center justify-between px-3 py-3">
-                          <label className="text-black font-light text-sm tracking-wide">Open to sale</label>
-                          <div className="flex items-center gap-3">
-                            {!isHeldPlus(user) && (
-                              <span className="text-xs text-gray-500">{Math.max(0, 3 - forSaleCount)} remaining on free plan</span>
-                            )}
-                            <Switch
-                              ariaLabel="Toggle Open to sale"
-                              checked={!!formData.openToSale}
-                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, openToSale: checked }))}
-                              disabled={!isHeldPlus(user) && forSaleCount >= 3 && !formData.openToSale}
-                            />
-                          </div>
-                        </div>
+                        </div>                          
                       </div>
                     </div>
                   </div>

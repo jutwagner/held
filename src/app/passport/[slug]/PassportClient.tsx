@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
 import { getObjectBySlug } from '@/lib/firebase-services';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { ArrowLeft, Share2, Calendar, DollarSign, Tag, Award, X, ExternalLink, Shield, Crown, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Share2, Calendar, DollarSign, Tag, Award, X, ExternalLink, Shield, Crown, Sparkles, CheckCircle, Send } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import passportSvg from '@/img/passport.svg';
@@ -118,12 +118,29 @@ export default function PassportClient() {
               {user ? '← Back to Registry' : '← Back to Held'}
             </Link>
             
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="bg-black text-white px-6 py-2 font-light tracking-wide text-sm hover:bg-gray-800 transition-colors rounded-lg"
-            >
-              Share
-            </button>
+            <div className="flex items-center gap-2">
+              {object.openToSale && (
+                user && user.uid !== object.userId ? (
+                  <Link href={`/settings/messages`} className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
+                    <Send className="h-4 w-4" /> Message
+                  </Link>
+                ) : !user ? (
+                  <Link href={`/auth/signin?message=${encodeURIComponent('Sign in to message this seller')}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
+                    <Send className="h-4 w-4" /> Message
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200">
+                    <Send className="h-4 w-4" /> Open to sale
+                  </span>
+                )
+              )}
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="bg-black text-white px-6 py-2 font-light tracking-wide text-sm hover:bg-gray-800 transition-colors rounded-lg"
+              >
+                Share
+              </button>
+            </div>
           </div>
         </div>
       </header>
