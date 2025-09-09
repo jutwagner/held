@@ -108,9 +108,9 @@ export default function PassportClient() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="w-full bg-white border-b border-gray-200">
-        <div className="w-full px-4 sm:px-8 py-4">
-          <div className="flex items-center justify-between">
+      <header className="w-full bg-white border-b border-gray-200 overflow-visible">
+        <div className="w-full px-5 sm:px-10 py-6">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <Link
               href={user ? "/registry" : "/"}
               className="flex items-center gap-3 text-black hover:text-gray-600 transition-colors font-light tracking-wide text-base"
@@ -118,25 +118,25 @@ export default function PassportClient() {
               {user ? '← Back to Registry' : '← Back to Held'}
             </Link>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
               {object.openToSale && (
                 user && user.uid !== object.userId ? (
-                  <Link href={`/settings/messages`} className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
+                  <Link href={`/settings/messages`} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 shadow-sm">
                     <Send className="h-4 w-4" /> Message
                   </Link>
                 ) : !user ? (
-                  <Link href={`/auth/signin?message=${encodeURIComponent('Sign in to message this seller')}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
+                  <Link href={`/auth/signin?message=${encodeURIComponent('Sign in to message this seller')}`} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 shadow-sm">
                     <Send className="h-4 w-4" /> Message
                   </Link>
                 ) : (
-                  <span className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-full bg-green-50 text-green-700 border border-green-200">
+                  <span className="inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded-full bg-green-50 text-green-700 border border-green-200 shadow-sm">
                     <Send className="h-4 w-4" /> Open to sale
                   </span>
                 )
               )}
               <button
                 onClick={() => setShowShareModal(true)}
-                className="bg-black text-white px-6 py-2 font-light tracking-wide text-sm hover:bg-gray-800 transition-colors rounded-lg"
+                className="bg-black text-white px-6 py-2.5 font-light tracking-wide text-sm hover:bg-gray-800 transition-colors rounded-lg shadow-sm"
               >
                 Share
               </button>

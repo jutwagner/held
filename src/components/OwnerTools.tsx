@@ -144,12 +144,14 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           <span className="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-800">
             {object.isPublic ? 'Public' : 'Private'}
           </span>
+          
+          {/*
           <span className={`px-2.5 py-1 rounded-full border ${anchored ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : (pending ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-700')}`}>
             {anchored ? 'Anchored' : (pending ? 'Pending' : 'Not Anchored')}
           </span>
-          {(object as any).openToSale && (
+          {/*(object as any).openToSale && (
             <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700">Open to sale</span>
-          )}
+          )*/}
         </div>
       </div>
 
@@ -420,7 +422,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm text-gray-600">Anchoring Status</div>
           {anchored ? (
-            <span className="inline-flex items-center gap-1 text-emerald-700 text-sm"><CheckCircle className="h-4 w-4" /> Anchored</span>
+            <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 inline-flex items-center gap-1 text-emerald-700 text-sm"><CheckCircle className="h-4 w-4" /> Anchored</span>
           ) : pending ? (
             <span className="inline-flex items-center gap-1 text-amber-700 text-sm"><Clock className="h-4 w-4" /> Pending</span>
           ) : (
@@ -470,7 +472,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
         <div className="flex items-center gap-3">
           <label className="text-sm text-gray-800">Allow messages for offers</label>
           <Button
-            variant={(object as any).openToSale ? 'default' : 'outline'}
+            variant={(object as any).openToSale ? 'outline' : 'default'}
             onClick={async () => {
               if (!(object as any).openToSale) {
                 const limit = isHeldPlus(user) ? Infinity : 3;

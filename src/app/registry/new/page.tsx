@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
@@ -24,6 +24,7 @@ export default function NewObjectPage() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(new Set<number>());
+  const titleRef = useRef<HTMLInputElement | null>(null);
 
   const [formData, setFormData] = useState<CreateObjectData>({
     title: '',
@@ -174,6 +175,14 @@ export default function NewObjectPage() {
     }));
   } 
   
+  // Smooth auto-focus on the name field
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try { titleRef.current?.focus(); } catch {}
+    }, 100);
+    return () => clearTimeout(t);
+  }, []);
+  
   // Count current user's for-sale items to hint limits
   useEffect(() => {
     if (!user?.uid) return;
@@ -203,28 +212,30 @@ export default function NewObjectPage() {
             <h1 className="text-4xl md:text-5xl font-light text-black mb-2 tracking-tighter leading-none">
               Add New
             </h1>
-            
           </div>
+
+
+          
         </div>
 
         {/* Progress Indicator */}
-        <div className="max-w-xl mx-auto mb-12 md:mb-5">
+        <div className="max-w-sm mx-auto mb-12 md:mb-5">
           <div className="-mx-2 px-2">
-            <div className="w-full">
+            <div className="w-md">
               {/* Row 1: circles + connectors spanning full width */}
-              <div className="flex items-center w-full">
+              <div className="flex items-center w-full mb-12 ">
                 {steps.map((step, idx) => {
                   const isActive = currentStep === step.id;
                   const isCompleted = completedSteps.has(step.id) || step.id < currentStep;
                   return (
                     <>
-                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-4 h-4 md:w-4 md:h-4 rounded-full transition-colors ${
+                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-6 h-6 md:w-6 md:h-6 rounded-full transition-colors ${
                         isCompleted ? 'bg-black text-white' : isActive ? 'bg-white ring-2 ring-black text-black' : 'bg-white border-2 border-gray-300 text-gray-400'
                       }`}>
-                        {isCompleted ? <Check className="h-4 w-4" /> : <span className="text-xs">{step.id}</span>}
+                        {isCompleted ? <Check className="h-6 w-6" /> : <span className="text-sm">{step.id}</span>}
                       </div>
                       {idx < steps.length - 1 && (
-                        <div key={`conn-${step.id}`} className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black' : 'bg-gray-200'}`} />
+                        <div key={`conn-${step.id}`} className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black' : 'text-sm bg-gray-200'}`} />
                       )}
                     </>
                   );
@@ -262,18 +273,21 @@ export default function NewObjectPage() {
                 {currentStep === 1 && (
                   <div className="space-y-12">
                     <div className="space-y-12">
-                      <div>
-                        <label htmlFor="title" className="block text-xs font-medium text-black mb-4 uppercase tracking-widest">
+                      <div className="transition-shadow">
+                        <label htmlFor="title" className="block text-xs font-medium text-black mb-3 uppercase tracking-widest">
                           Name
                         </label>
-                        <Input
-                          id="title"
-                          value={formData.title}
-                          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                          required
-                          placeholder="What's the thing?"
-                          className="text-xl py-6 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400"
-                        />
+                        <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
+                          <Input
+                            id="title"
+                            ref={titleRef as any}
+                            value={formData.title}
+                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                            required
+                            placeholder="What's the thing?"
+                            className="text-3xl sm:text-4xl md:text-5xl leading-tight py-4 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 transition-all duration-200"
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -329,17 +343,38 @@ export default function NewObjectPage() {
                 {/* Step 2: Documentation */}
                 {currentStep === 2 && (
                   <div className="space-y-12">
-                    <div className="border-b border-gray-100 pb-2">
+                    <div className="border-b border-gray-100 pb-4">
                       <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-2">02</div>
-                      <h2 className="text-4xl font-light text-black tracking-tight">Visual</h2>
+                      <h2 className="text-4xl font-light text-black tracking-tight">Photos</h2>
+                      <p className="text-sm text-gray-500 mt-2">Add clear photos. The first will be used as the cover.</p>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <div>
                         {/* Image Upload Area */}
-                        <div className="border border-gray-200 p-20 text-center hover:border-black transition-colors rounded-lg">
-                          <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-8">
-                            Image Upload
+                        <div
+                          className={`relative rounded-2xl border-2 border-dashed ${dragActive ? 'border-black bg-gray-50' : 'border-gray-300 bg-gradient-to-b from-white to-gray-50'} px-8 sm:px-12 py-14 text-center transition-all duration-200 shadow-sm hover:shadow-lg min-h-[220px]`}
+                          onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                          onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+                          onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setDragActive(false);
+                            const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+                            if (files.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+                          }}
+                          onPaste={(e) => {
+                            const items = Array.from(e.clipboardData?.items || []);
+                            const images = items.map(i => i.type?.startsWith('image/') ? i.getAsFile() : null).filter(Boolean) as File[];
+                            if (images.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...images] }));
+                          }}
+                        >
+                          <div className="mb-6 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shadow-inner">
+                              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 5v14M5 12h14"/></svg>
+                            </div>
                           </div>
+                          <h3 className="text-xl sm:text-2xl font-light tracking-tight text-black">Add photos</h3>
+                          <p className="text-sm text-gray-500 mt-1">Drag & drop, paste from clipboard, or select files</p>
                           <input
                             type="file"
                             multiple
@@ -348,35 +383,57 @@ export default function NewObjectPage() {
                             id="image-upload"
                             onChange={handleImageUpload}
                           />
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => document.getElementById('image-upload')?.click()} 
-                            className="border-black text-black hover:bg-black hover:text-white rounded-sm font-light tracking-wide"
-                          >
-                            Select Files
-                          </Button>
+                          <div className="mt-6 flex items-center justify-center gap-3">
+                            <Button
+                              type="button"
+                              onClick={() => document.getElementById('image-upload')?.click()}
+                              className="bg-black text-white hover:bg-gray-800 rounded-md px-6 shadow"
+                            >
+                              Select images
+                            </Button>
+                            <span className="text-xs text-gray-500">JPG, PNG, HEIC • up to 10MB each</span>
+                          </div>
+                          {dragActive && (
+                            <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-black/30"></div>
+                          )}
                         </div>
 
                         {/* Image Preview */}
                         {formData.images.length > 0 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
                             {formData.images.map((image, index) => (
-                              <div key={index} className="relative group border border-gray-200">
+                              <div key={index} className="relative group rounded-xl overflow-hidden ring-1 ring-black/5 border border-gray-200 shadow-sm hover:shadow-md transition-all">
                                 <Image
                                   src={URL.createObjectURL(image)}
                                   alt={`Image ${index + 1}`}
                                   width={400}
                                   height={300}
-                                  className="w-full h-64 object-cover"
+                                  className="w-full h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => removeImage(index)}
-                                  className="absolute top-4 right-4 bg-black text-white w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute top-3 right-3 bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
                                 >
                                   <X className="h-4 w-4" />
                                 </button>
+                                {index === 0 ? (
+                                  <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white/90 border border-gray-200 px-2 py-1 rounded">Cover</span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData(prev => {
+                                        const imgs = [...prev.images];
+                                        const [picked] = imgs.splice(index, 1);
+                                        return { ...prev, images: [picked, ...imgs] };
+                                      });
+                                    }}
+                                    className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white/90 border border-gray-200 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    Make cover
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -501,11 +558,11 @@ export default function NewObjectPage() {
 
                       <div className="space-y-6 pt-8 border-t border-gray-100">
                         <div className="flex items-center justify-between px-3 py-3">
-                          <label className="text-black font-light text-sm tracking-wide">Private</label>
+                          <label className="text-black font-light text-sm tracking-wide">Public</label>
                           <Switch
-                            ariaLabel="Toggle Private"
-                            checked={!formData.isPublic}
-                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: !checked }))}
+                            ariaLabel="Toggle Public"
+                            checked={!!formData.isPublic}
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
                           />
                         </div>
 
