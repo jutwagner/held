@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import SectionNav from './SectionNav';
 import type { SectionKey } from './SectionNav';
-import SaveBar from './SaveBar';
 import ProfileSection from './ProfileSection';
 import AppearanceSection from './AppearanceSection';
 import AccountSection from './AccountSection';
@@ -40,6 +39,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const [typeMetaMono, setTypeMetaMono] = useState(false);
   const [isPublicProfile, setIsPublicProfile] = useState(user?.isPublicProfile ?? false);
   const [dirty, setDirty] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -74,6 +74,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
       const updatedUser = await getUser(user.uid!);
       if (updatedUser) setUser(updatedUser);
       setDirty(false);
+      setEditing(false);
       setToast({ message: 'Settings saved!', type: 'success' });
     } catch (err) {
       setToast({ message: 'Failed to save settings. Please try again.', type: 'error' });
@@ -109,7 +110,34 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>
+              <div className="flex items-center justify-end mb-4 gap-2">
+                {!editing ? (
+                  <button
+                    className="px-4 py-2 bg-black text-white rounded-md shadow hover:bg-gray-800 text-sm"
+                    onClick={() => setEditing(true)}
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+                      onClick={() => { setEditing(false); setDirty(false); /* values preserved unless reloaded */ }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-black text-white rounded-md shadow hover:bg-gray-800 text-sm"
+                      onClick={handleSave}
+                      disabled={!dirty}
+                    >
+                      Save
+                    </button>
+                  </>
+                )}
+              </div>
+              {/*<h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>*/}
+              
               {section === 'profile' && (
                 <ProfileSection
                   user={user ?? undefined}
@@ -135,8 +163,9 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
                     if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
                     markDirty();
                   }}
+                  editing={editing}
                 />
-              )}
+             )}
               {section === 'account' && <AccountSection user={user ?? undefined} />}
               {section === 'data' && <DataSection user={user ?? undefined} />}
               {section === 'messages' && <MessagesSection />}
@@ -146,16 +175,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
             </>
           )}
         </main>
-        <SaveBar onSave={handleSave} />
-        <div className="hidden md:block sticky bottom-0 left-0 right-0 bg-white border-t p-4 z-20">
-          <button
-            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-semibold text-base shadow-md active:scale-95 transition font-mono"
-            onClick={handleSave}
-            disabled={!dirty}
-          >
-            Done / Save
-          </button>
-        </div>
+        {/* SaveBar removed; explicit Edit/Save controls are used */}
       </div>
     </div>
   );

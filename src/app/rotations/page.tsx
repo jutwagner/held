@@ -65,13 +65,14 @@ export default function RotationsPage() {
   const maxFreeRotations = 3;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <MobileBottomBar />
-      <div className="held-container held-container-wide py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-serif font-medium mb-2">Rotations</h1>
-            <p className="text-gray-600">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <MobileBottomBar />
+        <div className="held-container held-container-wide py-10">
+        
+              <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2">Rotations</h1>
+                  <p className="text-gray-600/90">
               {rotationsWithObjects.length} rotation{rotationsWithObjects.length !== 1 ? 's' : ''} in your collection
             </p>
           </div>

@@ -208,8 +208,11 @@ export default function TheCollaborativePage() {
   return (
     <>
       <div className="held-container py-8">
-        <h1 className="text-3xl font-serif font-medium mb-2">theCollaborative</h1>
-        <p className="text-gray-600">A feed of shared Registry Rotations.</p>
+
+                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2">theCollaborative</h1>
+                  <p className="text-gray-600/90">shared Registry Rotations</p>
+
+
       </div>
       <main className="min-h-screen bg-gray-100">
         <div className="held-container py-8">

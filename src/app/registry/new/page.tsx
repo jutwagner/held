@@ -286,7 +286,7 @@ export default function NewObjectPage() {
                             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                             required
                             placeholder="What's the thing?"
-                            className="text-3xl sm:text-4xl md:text-5xl leading-tight py-4 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 transition-all duration-200"
+                            className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 rounded-none bg-transparent placeholder-gray-400 transition-all duration-200"
                           />
                         </div>
                       </div>

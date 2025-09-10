@@ -25,6 +25,7 @@ export default function ProfileSection({
   isPublicProfile,
   setIsPublicProfile,
   onAppearanceChange,
+  editing = true,
 }: {
   user?: UserDoc;
   setUser?: (user: UserDoc) => void;
@@ -43,6 +44,7 @@ export default function ProfileSection({
   isPublicProfile: boolean;
   setIsPublicProfile: (val: boolean) => void;
   onAppearanceChange: (changes: Partial<{ theme: Theme; typeTitleSerif: boolean; typeMetaMono: boolean; density: Density }>) => void;
+  editing?: boolean;
 }) {
   const handlePublicProfileChange = (checked: boolean) => {
     setIsPublicProfile(checked);
@@ -54,7 +56,9 @@ export default function ProfileSection({
         <div>
           {/* Avatar at top */}
           <div className="flex flex-col items-center mb-6">
-            <AvatarUploader avatarUrl={avatarUrl} setAvatarUrl={setAvatarUrl} />
+            <div className={editing ? '' : 'pointer-events-none opacity-90'}>
+              <AvatarUploader avatarUrl={avatarUrl} setAvatarUrl={setAvatarUrl} />
+            </div>
           </div>
           <div>
             <label htmlFor="displayName" className="block text-sm font-medium mb-1">Display Name</label>
@@ -63,6 +67,7 @@ export default function ProfileSection({
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
               maxLength={40}
+              disabled={!editing}
             />
           </div>
           <HandleField handle={handle} setHandle={setHandle} />
@@ -73,6 +78,7 @@ export default function ProfileSection({
               value={bio}
               onChange={e => setBio(e.target.value)}
               maxLength={120}
+              disabled={!editing}
             />
           </div>
           <div className="flex items-center gap-4 mt-2">
@@ -83,6 +89,7 @@ export default function ProfileSection({
                 type="button"
                 aria-pressed={isPublicProfile}
                 onClick={() => {
+                  if (!editing) return;
                   console.log('[DEBUG] Switch toggled. New value:', !isPublicProfile);
                   handlePublicProfileChange(!isPublicProfile);
                 }}
