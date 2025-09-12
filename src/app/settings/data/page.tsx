@@ -8,8 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function DataSettings() {
   const { user } = useAuth();
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      <aside className="hidden md:block w-64 border-r bg-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row">
+      <aside className="hidden md:block w-64 border-r bg-white dark:bg-gray-800 dark:border-gray-700">
         <SectionNav section="data" />
       </aside>
       {/* Mobile bottom nav - persistent */}

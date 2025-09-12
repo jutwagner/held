@@ -132,17 +132,17 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
   };
 
   if (!hydrated) {
-    return <div className="text-gray-400 text-sm">Loading premium…</div>;
+    return <div className="text-gray-400 dark:text-gray-500 text-sm">Loading premium…</div>;
   }
 
   return (
     <section aria-labelledby="heldplus-header" className="mb-8">
-      <div className="bg-gray-100 rounded-xl p-6 shadow mb-4">
+      <div className="bg-gray-100 dark:bg-gray-600 rounded-xl p-6 shadow mb-4">
         {/* DEBUG: Show premium status values */}
-        <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-900">
+        <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-900 dark:text-yellow-400">
           <strong>DEBUG:</strong> premium.active: {String(localUser?.premium?.active)} | premium.cancelRequested: {String(localUser?.premium?.cancelRequested)} | premium.plan: {String(localUser?.premium?.plan)}
         </div>
-        <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2">
+        <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
           Held+
           {hydrated && (
             forceActive ? (
@@ -163,38 +163,38 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
 
 
 
-  <div className="font-semibold mb-1">Plan: {localUser?.premium?.plan}</div>
-  <div className="text-sm text-gray-600 mb-1">Since: {formatDate(localUser?.premium?.since ?? undefined)}</div>
-  <div className="text-sm text-gray-600 mb-3">Renews: {formatDate(localUser?.premium?.renewsAt ?? undefined)}</div>
+  <div className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Plan: {localUser?.premium?.plan}</div>
+  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Since: {formatDate(localUser?.premium?.since ?? undefined)}</div>
+  <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">Renews: {formatDate(localUser?.premium?.renewsAt ?? undefined)}</div>
         
 
-      <div className="text-base text-gray-700 mb-4 font-medium">
+      <div className="text-base text-gray-700 dark:text-gray-300 mb-4 font-medium">
         Experience Held at its highest level. Unlock advanced tools, refined design, and exclusive features crafted for those who expect more.
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Unlimited Rotations</div>
-          <div className="text-xs text-gray-500">Expand without boundaries.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Unlimited Rotations</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Expand without boundaries.</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Multiple Passport Images</div>
-          <div className="text-xs text-gray-500">Express your identity with clarity.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Multiple Passport Images</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Express your identity with clarity.</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Vanity URLs</div>
-          <div className="text-xs text-gray-500">Your presence, distinctly yours.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Vanity URLs</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Your presence, distinctly yours.</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Saved Filters & Advanced Search</div>
-          <div className="text-xs text-gray-500">Precision at your fingertips.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Saved Filters & Advanced Search</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Precision at your fingertips.</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Exports & Encrypted Backups</div>
-          <div className="text-xs text-gray-500">Security and control, always.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Exports & Encrypted Backups</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Security and control, always.</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 mb-1">Themes & Layouts</div>
-          <div className="text-xs text-gray-500">A workspace that reflects you.</div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Themes & Layouts</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">A workspace that reflects you.</div>
         </div>
       </div>
 
@@ -202,14 +202,14 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
           <>
             <div className="flex gap-2 mt-2">
               <button
-                className="px-4 py-2 bg-gray-900 text-white rounded"
+                className="px-4 py-2 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 rounded"
                 onClick={() => setShowUpdatePaymentDialog(true)}
               >
                 Update Payment Method
               </button>
               {/*}
               <button
-                className="px-4 py-2 bg-gray-900 text-white rounded"
+                className="px-4 py-2 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 rounded"
                 onClick={async () => {
                   try {
                     const res = await fetch('/api/stripe-portal', {
@@ -234,7 +234,7 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
 
               {(forceActive || !localUser?.premium?.cancelRequested) ? (
                 <button
-                  className="px-4 py-2 bg-red-600 text-white rounded"
+                  className="px-4 py-2 bg-red-600 dark:bg-red-700 text-white dark:text-gray-100 rounded"
                   onClick={() => setShowCancelDialog(true)}
                   disabled={cancelLoading || cancelSuccess}
                 >
@@ -242,7 +242,7 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
                 </button>
               ) : (
                 <button
-                  className="px-4 py-2 bg-green-600 text-white rounded"
+                  className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white dark:text-gray-100 rounded"
                   onClick={() => setShowCardForm(true)}
                   disabled={cancelLoading || cancelSuccess}
                 >
@@ -268,7 +268,7 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
                   )}
                   {updateError && <div className="text-red-600 text-sm mt-2">{updateError}</div>}
                   <button
-                    className="mt-4 px-4 py-2 bg-gray-200 rounded"
+                    className="mt-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded"
                     onClick={() => setShowUpdatePaymentDialog(false)}
                     disabled={updateLoading}
                   >
@@ -287,14 +287,14 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
                   <div className="mb-4 text-gray-700">Your premium features will remain until the end of your billing period. Are you sure you want to cancel?</div>
                   <div className="flex gap-2 justify-end">
                     <button
-                      className="px-4 py-2 bg-gray-200 rounded"
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded"
                       onClick={() => setShowCancelDialog(false)}
                       disabled={cancelLoading}
                     >
                       Keep Held+
                     </button>
                     <button
-                      className="px-4 py-2 bg-red-600 text-white rounded"
+                      className="px-4 py-2 bg-red-600 dark:bg-red-700 text-white dark:text-gray-100 rounded"
                       onClick={handleCancel}
                       disabled={cancelLoading}
                     >
@@ -338,11 +338,11 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
       {user && !isActive && isExpired && (
         <div className="bg-red-50 border border-red-200 rounded p-4 mb-4 text-red-700 font-semibold text-center">
           Your Held+ subscription has expired. Please renew to continue enjoying premium features.
-          <div className="text-sm text-gray-600 mt-2">Expired: {formatDate(user?.premium?.renewsAt ?? undefined)}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-2">Expired: {formatDate(user?.premium?.renewsAt ?? undefined)}</div>
         </div>
       )}
       {!user && (
-        <div className="text-gray-400 text-sm">Loading premium…</div>
+        <div className="text-gray-400 dark:text-gray-500 text-sm">Loading premium…</div>
       )}
     </section>
   );

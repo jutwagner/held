@@ -1,0 +1,124 @@
+"use client";
+import React, { useState, useRef } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import type { SectionKey } from './SectionNav';
+import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+
+interface SettingsTopNavProps {
+  section: SectionKey;
+}
+
+export default function SettingsTopNav({ section }: SettingsTopNavProps) {
+  const { user } = useAuth();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const sections = [
+    { key: 'profile', label: 'Profile' },
+    { key: 'messages', label: 'Messages' },
+    { key: 'premium', label: 'Held+' },
+    // { key: 'account', label: 'Account' },
+    // { key: 'data', label: 'Data' },
+    // { key: 'notifications', label: 'Notifications' },
+    { key: 'danger', label: 'Danger' },
+  ];
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    
+    const scrollAmount = 150;
+    const newPosition = direction === 'left' 
+      ? Math.max(0, scrollPosition - scrollAmount)
+      : scrollPosition + scrollAmount;
+    
+    scrollContainerRef.current.scrollTo({
+      left: newPosition,
+      behavior: 'smooth'
+    });
+    setScrollPosition(newPosition);
+  };
+
+  const canScrollLeft = scrollPosition > 0;
+  const canScrollRight = scrollContainerRef.current 
+    ? scrollPosition < (scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth)
+    : false;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="py-4">
+        <div className="flex items-center justify-center relative">
+          {/* Back button - left aligned but inline with menu */}
+          <Link 
+            href={`/user/${user?.handle || ''}`}
+            className="absolute left-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Link>
+
+          {/* Sign Out button - right aligned */}
+          <button
+            onClick={handleSignOut}
+            className="absolute right-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+          
+          {/* Centered Horizontal Carousel Navigation */}
+          <div className="relative max-w-4xl mx-auto px-16">
+            <div 
+              ref={scrollContainerRef}
+              className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
+            >
+              {sections.map((s) => (
+                <Link
+                  key={s.key}
+                  href={`/settings/${s.key === 'profile' ? '' : s.key}`}
+                className={`flex-shrink-0 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                  section === s.key 
+                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+                >
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+            
+            {/* Scroll Buttons */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+            
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

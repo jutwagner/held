@@ -257,14 +257,14 @@ export default function RegistryItemPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading…</div>;
+    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center text-gray-900 dark:text-gray-100">Loading…</div>;
   }
 
   if (error || !item) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Not found'}</p>
+          <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Not found'}</p>
           <Button asChild>
             <Link href="/registry">Back to Registry</Link>
           </Button>
@@ -274,14 +274,14 @@ export default function RegistryItemPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900">
       {editing && (
         <div className="sticky top-0 z-50 w-full">
-          <div className="bg-black text-white px-6 sm:px-8 py-3 flex items-center justify-between">
+          <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between">
             <div className="text-sm font-medium tracking-wide uppercase">Editing</div>
             <div className="flex items-center gap-2">
-              <Button onClick={() => setEditing(false)} className="bg-black border border-white-70 text-white">Cancel</Button>
-              <Button onClick={() => { const fake = { preventDefault() {} } as any; handleInlineSave(fake); }} className="bg-white text-black hover:bg-gray-300">Save</Button>
+              <Button onClick={() => setEditing(false)} className="bg-black dark:bg-gray-800 border border-white/70 text-white">Cancel</Button>
+              <Button onClick={() => { const fake = { preventDefault() {} } as any; handleInlineSave(fake); }} className="bg-white dark:bg-gray-100 dark:bg-gray-600 text-black dark:text-gray-900 hover:bg-gray-300 dark:hover:bg-gray-200 dark:bg-gray-700">Save</Button>
             </div>
           </div>
         </div>
@@ -290,14 +290,14 @@ export default function RegistryItemPage() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" asChild className="p-0 h-auto text-black hover:bg-transparent">
+          <Button variant="ghost" asChild className="p-0 h-auto text-black dark:text-gray-100 hover:bg-transparent">
             <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
               <ArrowLeft className="h-4 w-4" /> Registry
             </Link>
           </Button>
           <div className="flex items-center gap-2">
             {item.isPublic && (
-              <Button asChild variant="outline" className="text-black p-0 border-0">
+              <Button asChild variant="outline" className="text-black dark:text-gray-100 p-0 border-0">
                 <Link href={`/passport/${item.slug || item.id}`} target="_blank" className="p-0">
                   <Image src={passportSvg} alt="Passport" width={39} height={39} className="hidden md:inline-block opacity-100 float-left" />
               </Link> 
@@ -305,11 +305,11 @@ export default function RegistryItemPage() {
             )}
             {user && item.userId === user.uid && (
               <>
-                <Button variant="outline" className="border-black text-black" onClick={() => setEditing(v => !v)}>
-                  <Edit className="h-4 w-4" /> {editing ? 'Cancel' : ''}
+                <Button variant="outline" className="border-black dark:border-gray-300 text-black dark:text-gray-100" onClick={() => setEditing(v => !v)}>
+                  <Edit className="h-4 w-4 text-current" /> {editing ? 'Cancel' : ''}
                 </Button>
-                <Button variant="outline" className="text-gray-600" onClick={() => setConfirmOpen(true)}>
-                  <Trash2 className="h-4 w-4" />
+                <Button variant="outline" className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-300" onClick={() => setConfirmOpen(true)}>
+                  <Trash2 className="h-4 w-4 text-current" />
                 </Button>
               </>
             )}
@@ -319,10 +319,10 @@ export default function RegistryItemPage() {
         {/* Title + chips */}
         <div className="mb-6">
           {!editing ? (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-loose text-black mb-20 break-words">{item.title || 'Untitled'}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-loose text-black dark:text-gray-100 mb-20 break-words">{item.title || 'Untitled'}</h1>
           ) : (
             <input
-              className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black mb-3 w-full border-b border-gray-300 focus:border-black outline-none bg-transparent"
+              className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black dark:text-gray-100 mb-3 w-full border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent"
               value={form?.title || ''}
               onChange={e => setForm(prev => ({...prev!, title: e.target.value}))}
               placeholder="Untitled"
@@ -336,13 +336,13 @@ export default function RegistryItemPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           {/* Left: media + specs + provenance summary */}
           <div className="xl:col-span-2 space-y-8">
-            <div className="bg-white border border-gray-200 rounded-lg">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 dark:border-gray-700 rounded-lg">
               {item.images && item.images.length > 0 ? (
                 <div className="flex items-center justify-center">
                   <Image src={item.images[0]} alt={item.title} width={1600} height={1200} className="w-auto max-w-full h-auto object-contain rounded-md" />
                 </div>
               ) : (
-                <div className="h-64 flex items-center justify-center text-gray-400">No image</div>
+                <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">No image</div>
               )}
             </div>
 

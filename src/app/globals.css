@@ -26,6 +26,28 @@
   --radius: 0.5rem;
 }
 
+.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -104,17 +126,24 @@
   }
   
   .held-button-primary {
-    @apply held-button bg-gray-900 text-white hover:bg-gray-800;
+    @apply held-button bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200;
   }
   
   .held-button-secondary {
-    @apply held-button bg-gray-100 text-gray-900 hover:bg-gray-200;
+    @apply held-button bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700;
   }
   
   .held-button-ghost {
-    @apply held-button hover:bg-gray-100 hover:text-gray-900;
+    @apply held-button hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100;
   }
 }
+
+
+
+.align-center{
+  margin: 0 auto;;
+}
+
 
 
 .blur{
@@ -279,4 +308,35 @@ nav .held-container{
 
 .border-none {
   border: none;
+}
+
+/* Hide scrollbar for horizontal carousels */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
+
+/* SVG inversion for dark mode - invert all SVGs by default */
+.dark svg {
+  filter: invert(1);
+}
+
+/* Invert img tags with SVG files (like logos) */
+.dark img[src$=".svg"] {
+  filter: invert(1);
+}
+
+/* Keep certain SVGs from inverting (like colored icons) */
+.dark svg.no-invert,
+.dark img.no-invert {
+  filter: none;
+}
+
+/* Don't invert SVGs that are already white or colored */
+.dark svg[fill="white"],
+.dark svg[stroke="white"] {
+  filter: none;
 }

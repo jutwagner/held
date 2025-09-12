@@ -81,13 +81,23 @@ export const getUserByHandle = async (handle: string): Promise<UserDoc | null> =
   // Decode and strip '@' from handle
   let cleanHandle = decodeURIComponent(handle);
   if (cleanHandle.startsWith('@')) cleanHandle = cleanHandle.slice(1);
+  
+  console.log('[getUserByHandle] Looking for handle:', cleanHandle);
+  
   const usersRef = collection(db, 'users');
   const q = query(usersRef, where('handle', '==', cleanHandle));
   const querySnapshot = await getDocs(q);
+  
+  console.log('[getUserByHandle] Query results:', querySnapshot.docs.length, 'documents');
+  
   if (!querySnapshot.empty) {
     const docSnap = querySnapshot.docs[0];
-    return { uid: docSnap.id, ...docSnap.data() } as UserDoc;
+    const userData = { uid: docSnap.id, ...docSnap.data() } as UserDoc;
+    console.log('[getUserByHandle] Found user:', userData.displayName, userData.handle);
+    return userData;
   }
+  
+  console.log('[getUserByHandle] No user found for handle:', cleanHandle);
   return null;
 };
 
@@ -866,6 +876,34 @@ export const getUserDisplayName = async (userId: string): Promise<string> => {
     });
     return 'User';
   }
+};
+
+// Get all objects for a specific user
+export const getUserObjects = async (userId: string): Promise<HeldObject[]> => {
+  const objectsRef = collection(db, 'objects');
+  const q = query(objectsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt?.toDate() || new Date(),
+    updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+  })) as HeldObject[];
+};
+
+// Get all rotations for a specific user
+export const getUserRotations = async (userId: string): Promise<Rotation[]> => {
+  const rotationsRef = collection(db, 'rotations');
+  const q = query(rotationsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt?.toDate() || new Date(),
+    updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+  })) as Rotation[];
 };
 
 export const findExistingConversation = async (participants: string[]): Promise<string | null> => {

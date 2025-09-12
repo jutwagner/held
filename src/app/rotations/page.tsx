@@ -50,10 +50,10 @@ export default function RotationsPage() {
 
   if (!hydrated || loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <div className="held-container held-container-wide py-24">
           <div className="text-center">
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-300">Loading...</p>
           </div>
         </div>
       </div>
@@ -65,14 +65,14 @@ export default function RotationsPage() {
   const maxFreeRotations = 3;
 
   return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <MobileBottomBar />
         <div className="held-container held-container-wide py-10">
         
               <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2">Rotations</h1>
-                  <p className="text-gray-600/90">
+                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">Rotations</h1>
+                  <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500/90 dark:text-gray-300/90">
               {rotationsWithObjects.length} rotation{rotationsWithObjects.length !== 1 ? 's' : ''} in your collection
             </p>
           </div>
@@ -88,15 +88,15 @@ export default function RotationsPage() {
         {loadingRotations ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-6 min-h-[390px] flex flex-col justify-between animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-2/3 mb-2" />
-                <div className="h-4 bg-gray-100 rounded w-1/2 mb-4" />
-                <div className="h-4 bg-gray-100 rounded w-1/3" />
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 min-h-[390px] flex flex-col justify-between animate-pulse">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
+                <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded w-1/2 mb-4" />
+                <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded w-1/3" />
                 <div className="flex gap-2 mt-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
                 </div>
               </div>
             ))}
@@ -104,11 +104,11 @@ export default function RotationsPage() {
         ) : rotationsWithObjects.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="h-8 w-8 text-gray-400" />
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="h-8 w-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No rotations found</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">No rotations found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Start building your collection by adding your first rotation.
               </p>
               <Button asChild>
@@ -166,7 +166,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
       <div className="group relative bg-white rounded-2xl shadow-lg transition-all duration-300 cursor-not-allowed overflow-hidden min-h-[460px]" style={{ position: 'relative', pointerEvents: 'none', opacity: 1 }}>
         {/* Cover Image */}
         {rotation.coverImage && (
-          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
             <Image
               src={rotation.coverImage}
               alt="Rotation Cover"
@@ -180,20 +180,20 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         
         {/* Decorative background for cards without cover images */}
         {!rotation.coverImage && (
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 -z-10" />
         )}
         
         {/* Decorative icon for cards without cover images */}
         {!rotation.coverImage && (
-          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
+          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 dark:bg-gray-800/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-60" />
           </div>
         )}
         
         {/* Absolute CTA overlay, card is visible but not clickable */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.95)' }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-white/95 dark:bg-gray-900/95" style={{ pointerEvents: 'auto' }}>
           <div className="flex flex-col items-center">
-            <span className="text-gray-700 text-base font-semibold mb-2">Held+</span> 
+            <span className="text-gray-700 dark:text-gray-300 text-base font-semibold mb-2">Held+</span> 
             <Link
               href="/settings/premium"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-all text-sm"
@@ -209,14 +209,14 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           <div className="flex items-center justify-between mb-4 blur">
             <h3 className="font-semibold text-xl text-gray-900 blur">{rotation.name}</h3>
             <div className="flex items-center space-x-2 blur">
-              {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600 blur" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+              {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600 blur" /> : <EyeOff className="h-4 w-4 text-gray-400 dark:text-gray-500" />}
             </div>
           </div>
           {rotation.description && (
-            <p className="text-gray-600 text-sm mb-6 line-clamp-2 blur leading-relaxed">{rotation.description}</p>
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm mb-6 line-clamp-2 blur leading-relaxed">{rotation.description}</p>
           )}
           <div className="mb-6 blur">
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
               <div className="flex -space-x-3 justify-center">
                 {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
                   <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
@@ -224,21 +224,21 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
                       <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">?</span>
+                        <span className="text-gray-400 dark:text-gray-500 text-sm">?</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {rotation.objects.length > 5 && (
-                  <div className="blur w-14 h-14 bg-gray-200 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
-                    <span className="text-gray-600 text-sm font-medium">+{rotation.objects.length - 5}</span>
+                  <div className="blur w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
+                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
               </div>
-              <p className="text-sm text-gray-600 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-sm text-gray-500 blur">
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 blur">
             <div className="flex items-center space-x-2 blur">
               <Calendar className="h-4 w-4" />
               <span>{formatDate(
@@ -258,10 +258,10 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
 
   return (
     <Link href={`/rotations/${rotation.id}`}>
-      <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-gray-200 min-h-[460px]">
+      <div className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 dark:border-gray-700 dark:border-gray-700 hover:border-gray-200 dark:border-gray-600 dark:hover:border-gray-600 min-h-[460px]">
         {/* Cover Image */}
         {rotation.coverImage && (
-          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+          <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
             <Image
               src={rotation.coverImage}
               alt="Rotation Cover"
@@ -281,12 +281,12 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         
         {/* Decorative background for cards without cover images */}
         {!rotation.coverImage && (
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 -z-10" />
         )}
         
         {/* Decorative icon for cards without cover images */}
         {!rotation.coverImage && (
-          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
+          <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 dark:bg-gray-800/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-60" />
           </div>
         )}
@@ -299,7 +299,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
             <div className="flex items-center space-x-2">
               {!rotation.coverImage && (
                 <div className="flex items-center space-x-1">
-                  {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
+                  {rotation.isPublic ? <Eye className="h-4 w-4 text-green-600" /> : <EyeOff className="h-4 w-4 text-gray-400 dark:text-gray-500" />}
                 </div>
               )}
               {/* Show delete button for own or public rotations */}
@@ -315,11 +315,11 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
                   </button>
                   {confirmOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
-                        <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
-                        <p className="mb-4">Are you sure you want to delete <span className="font-bold">{rotation.name}</span>? This cannot be undone.</p>
+                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm w-full">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Confirm Delete</h3>
+                        <p className="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to delete <span className="font-bold">{rotation.name}</span>? This cannot be undone.</p>
                         <div className="flex justify-end gap-2">
-                          <button className="px-4 py-2 rounded bg-gray-200" onClick={e => { e.preventDefault(); setConfirmOpen(false); }}>Cancel</button>
+                          <button className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100" onClick={e => { e.preventDefault(); setConfirmOpen(false); }}>Cancel</button>
                           <button className="px-2 py-1 rounded bg-red-600 text-white" onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete'}</button>
                         </div>
                       </div>
@@ -332,12 +332,12 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           
           {/* Description */}
           {rotation.description && (
-            <p className="text-gray-600 text-sm mb-6 line-clamp-2 leading-relaxed">{rotation.description}</p>
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{rotation.description}</p>
           )}
           
           {/* Objects Preview - Enhanced with better visual weight */}
           <div className="mb-6">
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
               <div className="flex -space-x-3 justify-center">
                 {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
                   <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
@@ -345,23 +345,23 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
                       <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">?</span>
+                        <span className="text-gray-400 dark:text-gray-500 text-sm">?</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {rotation.objects.length > 5 && (
-                  <div className="w-14 h-14 bg-gray-200 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
-                    <span className="text-gray-600 text-sm font-medium">+{rotation.objects.length - 5}</span>
+                  <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
+                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
               </div>
-              <p className="text-sm text-gray-600 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
           
           {/* Footer */}
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
               <span>{formatDate(

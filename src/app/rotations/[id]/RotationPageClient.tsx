@@ -134,47 +134,47 @@ function RotationPageClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 animate-pulse">
-        <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 animate-pulse">
+        <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm">
           <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="flex -space-x-4">
                 {[...Array(5)].map((_, idx) => (
-                  <div key={idx} className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow" />
+                  <div key={idx} className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 border-2 border-white dark:border-gray-800 shadow" />
                 ))}
               </div>
               <div>
-                <div className="h-8 w-48 bg-gray-200 rounded mb-2" />
-                <div className="h-4 w-64 bg-gray-100 rounded" />
+                <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
+                <div className="h-4 w-64 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded" />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono">&nbsp;</span>
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono">&nbsp;</span>
             </div>
           </div>
         </header>
-        <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2 flex gap-2 justify-center">
+        <nav className="sticky top-25 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800 py-2 flex gap-2 justify-center">
           {[...Array(5)].map((_, idx) => (
-            <div key={idx} className="w-20 h-20 rounded-full bg-gray-200 border-2 border-blue-200 shadow" />
+            <div key={idx} className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-800 shadow" />
           ))}
         </nav>
         <main className="held-container held-container-wide py-12">
           <div className="flex flex-col gap-16">
             {[...Array(2)].map((_, index) => (
-              <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b pb-16 scroll-mt-32">
+              <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b border-gray-200 dark:border-gray-700 pb-16 scroll-mt-32">
                 <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
-                  <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
-                    <div className="w-full max-w-3xl h-64 bg-gray-200 rounded-xl" />
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
+                    <div className="w-full max-w-3xl h-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded-xl" />
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-center items-start w-full">
-                  <div className="h-8 w-64 bg-gray-200 rounded mb-2" />
-                  <div className="h-4 w-32 bg-gray-100 rounded mb-1" />
-                  <div className="h-4 w-24 bg-gray-100 rounded mb-2" />
-                  <div className="h-4 w-80 bg-gray-100 rounded mt-2" />
+                  <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-4 w-32 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-1" />
+                  <div className="h-4 w-24 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-2" />
+                  <div className="h-4 w-80 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mt-2" />
                   <div className="flex flex-wrap gap-2 mt-3">
                     {[...Array(4)].map((_, i) => (
-                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-mono shadow">&nbsp;</span>
+                      <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono shadow">&nbsp;</span>
                     ))}
                   </div>
                 </div>
@@ -195,16 +195,16 @@ function RotationPageClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Sticky Group Header */}
-      <header className="top-0 z-30 bg-white/90 backdrop-blur shadow-sm relative overflow-hidden">
+      <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm relative overflow-hidden">
         {editing && (
           <div className="sticky top-0 z-40">
-            <div className="bg-black text-white px-6 sm:px-8 py-3 flex items-center justify-between">
+            <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between">
               <div className="text-sm font-medium tracking-wide uppercase">Editing Rotation</div>
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1 rounded bg-white text-black text-xs" onClick={() => setEditing(false)}>Cancel</button>
-                <button className="px-3 py-1 rounded bg-white text-black text-xs" onClick={saveEdits}>Save</button>
+                <button className="px-3 py-1 rounded bg-white dark:bg-gray-100 dark:bg-gray-600 text-black dark:text-gray-900 dark:text-gray-100 text-xs" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="px-3 py-1 rounded bg-white dark:bg-gray-100 dark:bg-gray-600 text-black dark:text-gray-900 dark:text-gray-100 text-xs" onClick={saveEdits}>Save</button>
               </div>
             </div>
           </div>
@@ -219,7 +219,7 @@ function RotationPageClient({ id }: { id: string }) {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm" />
           </div>
         )}
 
@@ -237,31 +237,31 @@ function RotationPageClient({ id }: { id: string }) {
                 />
               ))}
               {objects.length > 5 && (
-                <span className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xs font-mono text-gray-600 border-2 border-white shadow">+{objects.length - 5}</span>
+                <span className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 flex items-center justify-center text-xs font-mono text-gray-600 dark:text-gray-400 dark:text-gray-300 border-2 border-white dark:border-gray-800 shadow">+{objects.length - 5}</span>
               )}
             </div>
             {/* Always show title/description with enhanced styling */}
             <div className="max-w-full">
               {!editing ? (
                 <>
-                  <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 mb-1 drop-shadow-sm truncate">{rotation.name || 'Unnamed Rotation'}</h1>
-                  <p className="text-gray-600 text-base font-mono drop-shadow-sm truncate">{rotation.description || 'No description available'}</p>
+                  <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-1 drop-shadow-sm truncate">{rotation.name || 'Unnamed Rotation'}</h1>
+                  <p className="text-gray-600 dark:text-gray-400 dark:text-gray-300 text-base font-mono drop-shadow-sm truncate">{rotation.description || 'No description available'}</p>
                 </>
               ) : (
                 <div className="flex flex-col gap-2">
                   <input
-                    className="border-0 border-b border-gray-300 focus:border-black outline-none bg-transparent text-3xl font-serif tracking-tight w-full"
+                    className="border-0 border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent text-3xl font-serif tracking-tight w-full text-gray-900 dark:text-gray-100 dark:text-gray-100"
                     value={form.name}
                     onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
                     maxLength={80}
                   />
                   <textarea
-                    className="border-0 border-b border-gray-200 focus:border-black outline-none bg-transparent w-full text-base text-gray-700"
+                    className="border-0 border-b border-gray-200 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent w-full text-base text-gray-700 dark:text-gray-300 dark:text-gray-300"
                     value={form.description || ''}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     rows={2}
                   />
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-300">
                     <span>Private</span>
                     <Switch checked={!form.isPublic} onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: !checked }))} />
                   </div>
@@ -270,14 +270,14 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-mono shadow-sm">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
+            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono shadow-sm">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
             {canEdit && !editing && (
-              <button className="ml-2 px-3 py-1 rounded bg-black text-white text-xs" onClick={() => setEditing(true)}>Edit</button>
+              <button className="ml-2 px-3 py-1 rounded bg-black dark:bg-gray-800 text-white dark:text-gray-100 text-xs" onClick={() => setEditing(true)}>Edit</button>
             )}
             {canEdit && editing && (
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1 rounded bg-white border text-xs" onClick={() => setEditing(false)}>Cancel</button>
-                <button className="px-3 py-1 rounded bg-black text-white text-xs" onClick={saveEdits}>Save</button>
+                <button className="px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 dark:text-gray-100 text-xs" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="px-3 py-1 rounded bg-black dark:bg-gray-700 text-white dark:text-gray-100 text-xs" onClick={saveEdits}>Save</button>
               </div>
             )}
           </div>
@@ -289,14 +289,14 @@ function RotationPageClient({ id }: { id: string }) {
         <div className="held-container held-container-wide mt-4">
           <div className="held-card p-6">
             <div className="flex items-baseline justify-between mb-2">
-              <h2 className="text-lg font-semibold">Select Objects</h2>
-              <span className="text-xs text-gray-600">{form.objectIds.length}/7 selected</span>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">Select Objects</h2>
+              <span className="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400">{form.objectIds.length}/7 selected</span>
             </div>
             {selectionError && (
-              <div className="p-2 mb-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">{selectionError}</div>
+              <div className="p-2 mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">{selectionError}</div>
             )}
             {allObjects.length === 0 ? (
-              <p className="text-sm text-gray-600">You have no registry items yet. Add some in your registry.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">You have no registry items yet. Add some in your registry.</p>
             ) : (
               <div className="space-y-2 max-h-72 overflow-y-auto">
                 {allObjects.map(obj => {
@@ -308,7 +308,7 @@ function RotationPageClient({ id }: { id: string }) {
                       onClick={() => toggleObject(obj.id)}
                       className={`w-full text-left p-3 rounded border transition-colors flex items-center gap-3 ${selected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <div className="w-10 h-10 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
                         {obj.images?.[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={obj.images[0]} alt={obj.title} className="w-full h-full object-cover" />
@@ -368,17 +368,17 @@ function RotationPageClient({ id }: { id: string }) {
                 </div>
               </div>
               <div className="flex-1 flex flex-col justify-center items-start w-full">
-                <h3 className="text-3xl font-serif font-semibold mb-2 text-gray-900 tracking-tight">{object.title}</h3>
-                <p className="text-lg text-gray-600 mb-1 font-mono">{object.maker || <span className="italic text-gray-400">Unknown Maker</span>}</p>
+                <h3 className="text-3xl font-serif font-semibold mb-2 text-gray-900 dark:text-gray-100 tracking-tight">{object.title}</h3>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-1 font-mono">{object.maker || <span className="italic text-gray-400">Unknown Maker</span>}</p>
                 <p className="text-base text-gray-500 mb-2 font-mono">{object.year || <span className="italic text-gray-400">Year Unknown</span>}</p>
-                {object.notes && <p className="text-base text-gray-700 mt-2 whitespace-pre-line font-sans leading-relaxed">{object.notes}</p>}
+                {object.notes && <p className="text-base text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line font-sans leading-relaxed">{object.notes}</p>}
                 {Array.isArray(object.tags) && object.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {object.tags.slice(0, 6).map((tag, i) => (
                       <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-mono shadow">{tag}</span>
                     ))}
                     {object.tags.length > 6 && (
-                      <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-mono">+{object.tags.length - 6} more</span>
+                      <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-mono">+{object.tags.length - 6} more</span>
                     )}
                   </div>
                 )}

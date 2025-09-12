@@ -20,7 +20,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
       <section className="held-container py-8 md:py-22">
         <div className="text-center max-w-3xl mx-auto">
@@ -47,10 +47,10 @@ export default function HomePage() {
               />
             )}
           </div>
-          <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6 orientational">
+          <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6 orientational text-gray-900 dark:text-gray-100">
             Quiet home for the things you hold.
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-8 mt-10 leading-loose">
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 mt-10 leading-loose">
             A way to catalog the things that matter to you, with no social pressure and no algorithms. Just your collection, your way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -87,8 +87,8 @@ export default function HomePage() {
             <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
               <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
-            <h3 className="text-xl font-serif font-medium mb-4">Registry</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <h3 className="text-xl font-serif font-medium mb-4 text-gray-900 dark:text-gray-100">Registry</h3>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               Your private, structured database for physical objects. Track makers, years, values, 
               and conditions with beautiful organization.
             </p>
@@ -99,8 +99,8 @@ export default function HomePage() {
             <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
               <Image src="/img/passport.svg" alt="Passport" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
-            <h3 className="text-xl font-serif font-medium mb-4">Passport</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <h3 className="text-xl font-serif font-medium mb-4 text-gray-900 dark:text-gray-100">Passport</h3>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             Shareable identity pages for any object. Clean permalinks with metadata optimized for discovery, for those who want their favorite things to be seen, not just stored.</p>
           </div>
 
@@ -109,8 +109,8 @@ export default function HomePage() {
             <div className="w-26 h-26 flex items-center justify-center mx-auto mb-6">
               <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="h-8 w-8 text-gray-600" />
             </div>
-            <h3 className="text-xl font-serif font-medium mb-4">Rotations</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <h3 className="text-xl font-serif font-medium mb-4 text-gray-900 dark:text-gray-100">Rotations</h3>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               Time-specific snapshots of your collection. Share seasonal setups, 
               themed collections, or current favorites.
             </p>
@@ -119,12 +119,12 @@ export default function HomePage() {
       </section>
 
       {/* Brand Statement */}
-      <section className="held-container py-16 md:py-24 border-t border-gray-200">
+      <section className="held-container py-16 md:py-24 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-serif font-medium mb-6">
+          <h2 className="text-2xl md:text-3xl font-serif font-medium mb-6 text-gray-900 dark:text-gray-100">
             All the tools. Sharing is up to you.
           </h2>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             Held is designed for collectors, enthusiasts, and anyone who finds meaning in things. 
             Whether you&apos;re documenting family heirlooms, tracking your 
             design collection, or simply want a beautiful way to remember what you own.

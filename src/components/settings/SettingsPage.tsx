@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import SectionNav from './SectionNav';
+import SettingsTopNav from './SettingsTopNav';
 import type { SectionKey } from './SectionNav';
 import ProfileSection from './ProfileSection';
 import AppearanceSection from './AppearanceSection';
@@ -39,7 +39,7 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   const [typeMetaMono, setTypeMetaMono] = useState(false);
   const [isPublicProfile, setIsPublicProfile] = useState(user?.isPublicProfile ?? false);
   const [dirty, setDirty] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -57,9 +57,21 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
 
   const markDirty = () => setDirty(true);
 
+  // Auto-save when dirty changes
+  useEffect(() => {
+    if (dirty) {
+      const timeoutId = setTimeout(() => {
+        handleSave();
+      }, 1000); // Auto-save after 1 second of no changes
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [dirty, displayName, handle, bio, avatarUrl, theme, typeTitleSerif, typeMetaMono, density, isPublicProfile]);
+
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || saving) return;
     try {
+      setSaving(true);
       await updateUser(user.uid!, {
         displayName,
         handle,
@@ -74,10 +86,11 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
       const updatedUser = await getUser(user.uid!);
       if (updatedUser) setUser(updatedUser);
       setDirty(false);
-      setEditing(false);
       setToast({ message: 'Settings saved!', type: 'success' });
     } catch (err) {
       setToast({ message: 'Failed to save settings. Please try again.', type: 'error' });
+    } finally {
+      setSaving(false);
     }
     setTimeout(() => setToast(null), 3000);
   };
@@ -85,57 +98,29 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
   return (
     <div>
       {toast && <Toast message={toast.message} type={toast.type} />}
-      <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-        <aside className="hidden md:block w-64 border-r bg-white">
-          <SectionNav section={section} />
-        </aside>
-        {/* Mobile bottom nav - persistent 
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
-          <SectionNav section={section} mobile />
-        </nav>
-*/}
-        {/* Mobile top tabs outside main to avoid main overflow */}
-        <div className="md:hidden">
-          <SectionNav section={section} mobileTop />
-        </div>
-
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <SettingsTopNav section={section} />
+        {saving && (
+          <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 text-blue-600 text-sm">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                Saving...
+              </div>
+            </div>
+          </div>
+        )}
         <main className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-2xl md:mx-auto pb-16 md:pb-8">
           {!hydrated ? (
             <div className="flex items-center justify-center h-full">
-              <span className="text-gray-500 text-lg">Loading…</span>
+              <span className="text-gray-500 dark:text-gray-400 text-lg">Loading…</span>
             </div>
           ) : loading && !user ? (
             <div className="flex items-center justify-center h-full">
-              <span className="text-gray-500 text-lg">Loading user…</span>
+              <span className="text-gray-500 dark:text-gray-400 text-lg">Loading user…</span>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-end mb-4 gap-2">
-                {!editing ? (
-                  <button
-                    className="px-4 py-2 bg-black text-white rounded-md shadow hover:bg-gray-800 text-sm"
-                    onClick={() => setEditing(true)}
-                  >
-                    Edit
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50"
-                      onClick={() => { setEditing(false); setDirty(false); /* values preserved unless reloaded */ }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-black text-white rounded-md shadow hover:bg-gray-800 text-sm"
-                      onClick={handleSave}
-                      disabled={!dirty}
-                    >
-                      Save
-                    </button>
-                  </>
-                )}
-              </div>
               {/*<h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>*/}
               
               {section === 'profile' && (
@@ -163,13 +148,12 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
                     if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
                     markDirty();
                   }}
-                  editing={editing}
                 />
              )}
               {section === 'account' && <AccountSection user={user ?? undefined} />}
-              {section === 'data' && <DataSection user={user ?? undefined} />}
+              {/*section === 'data' && <DataSection user={user ?? undefined} />*/}
               {section === 'messages' && <MessagesSection />}
-              {section === 'notifications' && <NotificationsSection user={user ?? undefined} />}
+              {/*section === 'notifications' && <NotificationsSection user={user ?? undefined} />*/}
               {section === 'premium' && <PremiumSection user={user ?? undefined} />}
               {section === 'danger' && <DangerZoneSection user={user ?? undefined} />}
             </>
@@ -180,3 +164,4 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
     </div>
   );
 }
+

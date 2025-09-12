@@ -1,11 +1,14 @@
 import React from 'react';
+import Link from 'next/link';
 import AvatarUploader from './AvatarUploader';
 import HandleField from './HandleField';
 import AppearanceSection from './AppearanceSection';
 import AccountSection from './AccountSection';
 import NotificationsSection from './NotificationsSection';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { UserDoc, Theme, Density } from '@/types';
+import { Eye } from 'lucide-react';
 
 export default function ProfileSection({
   user,
@@ -61,7 +64,7 @@ export default function ProfileSection({
             </div>
           </div>
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium mb-1">Display Name</label>
+            <label htmlFor="displayName" className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Display Name</label>
             <Input
               id="displayName"
               value={displayName}
@@ -72,7 +75,7 @@ export default function ProfileSection({
           </div>
           <HandleField handle={handle} setHandle={setHandle} />
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium mb-1">Short Bio</label>
+            <label htmlFor="bio" className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Short Bio</label>
             <Input
               id="bio"
               value={bio}
@@ -100,6 +103,16 @@ export default function ProfileSection({
                 />
               </button>
             </label>
+          </div>
+          
+          {/* View Profile Link */}
+          <div className="mt-4">
+            <Link href={`/user/${handle}`}>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                View Profile
+              </Button>
+            </Link>
           </div>
           {/* Consolidated sections below profile info */}
           <AppearanceSection

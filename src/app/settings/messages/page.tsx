@@ -6,7 +6,7 @@ import { getUserConversations, getMessages, sendMessage, getUserDisplayName } fr
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Send } from 'lucide-react';
-import SectionNav from '@/components/settings/SectionNav';
+import SettingsLayout from '@/components/settings/SettingsLayout';
 
 interface Conversation {
   id: string;
@@ -154,32 +154,18 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      {/* Desktop side nav */}
-      <aside className="hidden md:block w-64 border-r bg-white">
-        <SectionNav section={'messages'} />
-      </aside>
-      {/* Mobile bottom nav
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-30 border-t">
-        <SectionNav section={'messages'} mobile />
-      </nav>*/}
-      {/* Mobile top tabs attached under header (outside main padding) */}
-      <div className="md:hidden w-full">
-        <SectionNav section={'messages'} mobileTop />
-      </div>
-      {/* Main content */}
-      <div className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-6xl md:mx-auto pb-16 md:pb-8">
-        <h1 className="text-2xl font-bold mb-4">Messages</h1>
-        <div className="bg-white rounded-lg border border-gray-200 h-[600px] flex">
+    <SettingsLayout section="messages">
+        <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Messages</h1>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-[600px] flex">
           {/* Conversations List */}
-          <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r border-gray-200`}>
-            <div className="p-4 border-b border-gray-200">
-              <h1 className="text-xl font-semibold">Messages</h1>
+          <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700`}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Messages</h1>
             </div>
           
           <div className="overflow-y-auto h-full">
             {conversations.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 No conversations yet.
               </div>
             ) : (
@@ -187,22 +173,22 @@ export default function MessagesPage() {
                 <div
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
+                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                    selectedConversation?.id === conversation.id ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
                   }`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-sm">
+                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
                       {conversation.participants.filter(p => p !== user.uid).map(participantId => 
                         participantNames[participantId] || participantId
                       ).join(', ') || 'Unknown'}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {formatDate(conversation.lastMessageTime)}
                     </div>
                   </div>
                   
-                  <div className="text-gray-600 text-sm truncate mb-1">
+                  <div className="text-gray-600 dark:text-gray-300 text-sm truncate mb-1">
                     {conversation.lastMessage || 'No messages yet'}
                   </div>
                   
@@ -218,11 +204,11 @@ export default function MessagesPage() {
         </div>
 
         {/* Messages View */}
-        <div className={`${selectedConversation ? 'block' : 'hidden md:block'} w-full md:w-2/3 flex flex-col`}>
+        <div className={`${selectedConversation ? 'block' : 'hidden md:block'} w-full md:w-2/3 flex flex-col bg-white dark:bg-gray-800`}>
           {selectedConversation ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-gray-200 flex items-center">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -231,7 +217,7 @@ export default function MessagesPage() {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <h2 className="font-semibold">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">
                   {selectedConversation.participants.filter(p => p !== user.uid).map(participantId => 
                     participantNames[participantId] || participantId
                   ).join(', ') || 'Unknown'}
@@ -241,9 +227,9 @@ export default function MessagesPage() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messagesLoading ? (
-                  <div className="text-center text-gray-500">Loading messages...</div>
+                  <div className="text-center text-gray-500 dark:text-gray-400">Loading messages...</div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center text-gray-500">No messages yet. Start the conversation!</div>
+                  <div className="text-center text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</div>
                 ) : (
                   (() => {
                     // Group consecutive messages from the same sender
@@ -323,7 +309,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-gray-200">
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex space-x-2">
                   <Input
                     value={newMessage}
@@ -346,13 +332,13 @@ export default function MessagesPage() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8">
               <div className="text-center max-w-sm">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversation selected</h3>
-                <p className="text-gray-500 text-sm">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No conversation selected</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Choose a conversation from the sidebar to start messaging, or start a new conversation.
                 </p>
               </div>
@@ -360,7 +346,6 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
-    </div>
-    </div>
+    </SettingsLayout>
   );
 }

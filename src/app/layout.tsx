@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
+import ThemeBody from "@/components/ThemeBody";
 
 import { Inter } from 'next/font/google';
 import { usePathname } from 'next/navigation';
@@ -37,10 +38,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={inter.className + " font-sans antialiased"}>
         <AuthProvider>
-          <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-            <Navigation />
-            <EmailVerificationBanner />
-            {children}
+          <ThemeBody>
+            <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+              <Navigation />
+              <EmailVerificationBanner />
+              {children}
             {/* Site-wide Footer (hidden on passport pages) */}
             {!isPassport && (
               <footer className="w-full">
@@ -55,10 +57,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </footer>
             )}
-            {/* Mobile-only spacer to prevent bottom bar overlap */}
-            <div className="md:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 72px)' }} />
-            <MobileBottomBar />
-          </div>
+              {/* Mobile-only spacer to prevent bottom bar overlap */}
+              <div className="md:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 72px)' }} />
+              <MobileBottomBar />
+            </div>
+          </ThemeBody>
         </AuthProvider>
       </body>
     </html>

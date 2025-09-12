@@ -130,18 +130,18 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
 
   return (
     <aside className="p-4 md:p-6">
-      <h3 className="text-lg font-light text-black mb-4">Owner Tools</h3>
+      <h3 className="text-lg font-light text-black dark:text-gray-100 mb-4">Owner Tools</h3>
 
       {/* Details summary chips */}
       <div className="mb-6">
-        <div className="text-sm text-gray-600 mb-2">Details</div>
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Details</div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {object.maker && (
-            <span className="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-800">
+            <span className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">
               {object.maker}
             </span>
           )}
-          <span className="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-800">
+          <span className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">
             {object.isPublic ? 'Public' : 'Private'}
           </span>
           
@@ -158,14 +158,14 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
       {/* Specifications (read-only, right rail) */}
       {!editing && (
         <div className="mb-6">
-          <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-4">Specifications</div>
-          <div className="space-y-4 text-black">
+          <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-4">Specifications</div>
+          <div className="space-y-4 text-black dark:text-gray-100">
             {(Array.isArray((object as any).tags) && (object as any).tags.length > 0) && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Tags</div>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Tags</div>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {((object as any).tags as string[]).map((t, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 inline-flex items-center gap-2 text-xs">
+                    <span key={i} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-600 inline-flex items-center gap-2 text-xs">
                       {t}
                     </span>
                   ))}
@@ -174,40 +174,40 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
             )}
             {(object.maker || object.year) && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Maker</div>
-                <p className="text-sm text-gray-800">
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Maker</div>
+                <p className="text-sm text-gray-800 dark:text-gray-200">
                   {object.maker || '—'}{object.year ? `, ${object.year}` : ''}
                 </p>
               </div>
             )}
             {object.description && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Description</div>
-                <p className="leading-relaxed text-sm text-gray-800">{object.description}</p>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Description</div>
+                <p className="leading-relaxed text-sm text-gray-800 dark:text-gray-200">{object.description}</p>
               </div>
             )}
             {object.category && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Category</div>
-                <p className="text-sm">{object.category}</p>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Category</div>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{object.category}</p>
               </div>
             )}
             {object.condition && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Condition</div>
-                <p className="capitalize text-sm">{object.condition}</p>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Condition</div>
+                <p className="capitalize text-sm text-gray-800 dark:text-gray-200">{object.condition}</p>
               </div>
             )}
             {typeof object.value !== 'undefined' && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Estimated Value (Private)</div>
-                <p className="text-sm">{isNaN(object.value as any) ? '—' : formatCurrency(object.value as number)}</p>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Estimated Value (Private)</div>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{isNaN(object.value as any) ? '—' : formatCurrency(object.value as number)}</p>
               </div>
             )}
             {object.notes && (
               <div>
-                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">Private Notes</div>
-                <p className="text-sm text-gray-800">{object.notes}</p>
+                <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Private Notes</div>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{object.notes}</p>
               </div>
             )}
           </div>
@@ -234,8 +234,8 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                     if (files.length) setForm(prev => ({ ...prev, images: [...(prev.images || []), ...files] }));
                   }}
                 >
-                  <div className="text-xs text-gray-600 mb-2">Drop images here or click to upload</div>
-                  <label className="inline-block px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Drop images here or click to upload</div>
+                  <label className="inline-block px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100">
                     Add Images
                     <input
                       type="file"
@@ -255,7 +255,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
               ) : (
                 <div className="space-y-2">
                   <div
-                    className={`border border-dashed p-2 text-center text-xs transition-colors ${dragActive ? 'border-black bg-gray-50' : 'border-gray-200'}`}
+                    className={`border border-dashed p-2 text-center text-xs transition-colors ${dragActive ? 'border-black dark:border-gray-300 bg-gray-50 dark:bg-gray-700' : 'border-gray-200 dark:border-gray-600'} text-gray-900 dark:text-gray-100`}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
                     onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
                     onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); }}
@@ -271,11 +271,11 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                     {form.images.map((img: string | File, idx: number) => {
                       const src = typeof img === 'string' ? img : URL.createObjectURL(img);
                       return (
-                        <div key={idx} className="relative border border-gray-200 bg-white">
+                        <div key={idx} className="relative border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
                           <img src={src} alt="Preview" className="w-full h-24 object-cover" />
                           <button
                             type="button"
-                            className="absolute top-1 right-1 text-xs bg-white/90 border border-gray-300 px-1 py-0.5"
+                            className="absolute top-1 right-1 text-xs bg-white/90 dark:bg-gray-800/90 border border-gray-300 dark:border-gray-600 px-1 py-0.5 text-gray-900 dark:text-gray-100"
                             onClick={() => setForm(prev => ({
                               ...prev,
                               images: prev.images.filter(( _img: string | File, i2: number) => i2 !== idx)
@@ -289,7 +289,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
                     })}
                   </div>
                   <div>
-                    <label className="inline-block px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer">
+                    <label className="inline-block px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100">
                       Add More
                       <input
                         type="file"

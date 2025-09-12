@@ -4,35 +4,35 @@ import Link from 'next/link';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       <div className="held-container held-container-wide py-16 md:py-24">
         <div className="mx-auto max-w-5xl space-y-12">
           <header>
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold tracking-tight mb-3">Terms of Service</h1>
-            <p className="text-sm text-gray-500">Last updated: 2025-09-06</p>
+            <h1 className="text-4xl md:text-5xl font-serif font-semibold tracking-tight mb-3 text-gray-900 dark:text-gray-100 dark:text-gray-100">Terms of Service</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Last updated: 2025-09-06</p>
           </header>
 
-          <section className="space-y-10 text-gray-800">
-            <p className="text-gray-700 leading-loose text-lg">
+          <section className="space-y-10 text-gray-800 dark:text-gray-200">
+            <p className="text-gray-700 dark:text-gray-300 leading-loose text-lg">
               By using Held, you agree to these terms. We aim to provide a stable service for privately managing
               your collection with optional sharing.
             </p>
 
-            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900">Use of the Service</h2>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
+            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100">Use of the Service</h2>
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
               <li>You are responsible for the content you upload.</li>
               <li>Do not upload unlawful or infringing material.</li>
               <li>We may update features and these terms from time to time.</li>
             </ul>
 
-            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900">Accounts</h2>
-            <p className="text-gray-700 leading-loose">
+            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100">Accounts</h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-loose">
               Keep your account secure. You can delete your account and data by contacting support or using in‑app tools
               if available.
             </p>
 
-            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900">Liability</h2>
-            <p className="text-gray-700 leading-loose">
+            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100">Liability</h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-loose">
               Held is provided “as is” without warranties. To the maximum extent permitted by law, our liability is
               limited to amounts you’ve paid for the service, if any.
             </p>
@@ -142,7 +142,7 @@ export default function TermsPage() {
 
 
           <div className="pt-2">
-            <Link href="/" className="text-sm text-gray-600 hover:underline">Back to Home</Link>
+            <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:underline">Back to Home</Link>
           </div>
         </div>
       </div>

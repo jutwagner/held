@@ -16,78 +16,53 @@ export default function Navigation() {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isDynamicIsland, setIsDynamicIsland] = useState(false);
-  const [signoutMode, setSignoutMode] = useState(false);
 
-  // Auto-revert the morph after 8s
-  useEffect(() => {
-    if (!signoutMode) return;
-    const t = setTimeout(() => setSignoutMode(false), 8000);
-    return () => clearTimeout(t);
-  }, [signoutMode]);
-
-  // If we navigate away from settings, revert to Add state
-  useEffect(() => {
-    if (pathname !== '/settings' && signoutMode) {
-      setSignoutMode(false);
-    }
-  }, [pathname, signoutMode]);
-
-  // Decide what to show in the primary action slot (Add/Sign Out/Sign In)
+  // Decide what to show in the primary action slot (Add/Sign In)
   const primaryButton = loading ? (
     <div className="bg-gray-200 rounded-lg w-full h-full animate-pulse" />
   ) : user ? (
-    signoutMode ? (
-      <Button
-        size="sm"
-        onClick={async () => { await logout(); setSignoutMode(false); router.push('/'); }}
-        className="bg-gray-900 text-white font-semibold px-4 py-2 rounded-lg shadow transition-all duration-300"
-      >
-        Sign Out
-      </Button>
-    ) : (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black-700 transition-all">
-            <span className="flex items-center gap-2">Add</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          <DialogTitle><VisuallyHidden>Add to Held</VisuallyHidden></DialogTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Add Object Option */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-full flex flex-col items-center mb-2">
-                <div className="p-4 pt-0 flex flex-col items-center w-full ">
-                  <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="h-8 w-8 text-gray-600" />
-                  <div className="text-xs text-gray-500 text-center mt-1">Add a collectible, piece of gear, or item to your registry.</div>
-                </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black-700 transition-all">
+          <span className="flex items-center gap-2">Add</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogTitle><VisuallyHidden>Add to Held</VisuallyHidden></DialogTitle>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Add Object Option */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-full flex flex-col items-center mb-2">
+              <div className="p-4 pt-0 flex flex-col items-center w-full ">
+                <Image src="/img/registry.svg" alt="Registry" width={28} height={28} className="h-8 w-8 text-gray-600" />
+                <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">Add a collectible, piece of gear, or item to your registry.</div>
               </div>
-              <DialogClose asChild>
-                <Link href="/registry/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
-                  Add to Registry
-                </Link>
-              </DialogClose>
             </div>
-            {/* Add Rotation Option */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-full flex flex-col items-center mb-2">
-                <div className="p-4 pt-0 flex flex-col items-center w-full">
-                  <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="h-8 w-8 text-gray-600" />
-                  <div className="text-xs text-gray-500 text-center mt-1">Create a new rotation to organize and share a set of objects.</div>
-                </div>
-              </div>
-              <DialogClose asChild>
-                <Link href="/rotations/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
-                  Add Rotation
-                </Link>
-              </DialogClose>
-            </div>
+            <DialogClose asChild>
+              <Link href="/registry/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
+                Add to Registry
+              </Link>
+            </DialogClose>
           </div>
-        </DialogContent>
-      </Dialog>
-    )
+          {/* Add Rotation Option */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-full flex flex-col items-center mb-2">
+              <div className="p-4 pt-0 flex flex-col items-center w-full">
+                <Image src="/img/rotations.svg" alt="Rotations" width={28} height={28} className="h-8 w-8 text-gray-600" />
+                <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">Create a new rotation to organize and share a set of objects.</div>
+              </div>
+            </div>
+            <DialogClose asChild>
+              <Link href="/rotations/new" className="flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-md shadow hover:bg-gray-800 transition-all duration-200 text-lg font-semibold w-full">
+                Add Rotation
+              </Link>
+            </DialogClose>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   ) : (
-    <Link href="/auth/signin" className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
+    <Link href="/auth/signin" className="bg-blue-600 dark:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 dark:hover:bg-blue-600 transition-all">
       Sign In
     </Link>
   );
@@ -120,7 +95,7 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className={`border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky z-40${isDynamicIsland ? ' sticky-header-safe safe-area-top' : ''}`}
+        className={`border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky z-40${isDynamicIsland ? ' sticky-header-safe safe-area-top' : ''}`}
         style={!isDynamicIsland ? { position: 'sticky', top: 0 } : undefined}
       >
         <div className="held-container">
@@ -131,9 +106,9 @@ export default function Navigation() {
             </Link>
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/registry" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Registry</Link>
-              <Link href="/rotations" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Rotations</Link>
-              <Link href="/theCollaborative" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">theCollaborative</Link>
+              <Link href="/registry" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Registry</Link>
+              <Link href="/rotations" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Rotations</Link>
+              <Link href="/theCollaborative" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">theCollaborative</Link>
               {/*user && (
                 <Link href="/settings/messages" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-500">
@@ -155,25 +130,15 @@ export default function Navigation() {
                 <div style={{ width: 120, height: 36, display: 'flex', alignItems: 'right', justifyContent: 'right' }}>
                   {primaryButton}
                 </div>
-                {user && pathname === '/settings' && (
-                  <Button
-                    size="sm"
-                    onClick={async () => { await logout(); router.push('/'); }}
-                    className="hidden md:inline-flex bg-gray-100 text-gray-800 border border-gray-300 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-200"
-                    title="Sign out"
-                  >
-                    Sign Out
-                  </Button>
-                )}
                 {/* Avatar placeholder for CLS */}
                 <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {loading ? (
                     <div className="bg-gray-200 rounded-full w-full h-full animate-pulse" />
                   ) : user ? (
                     <button
-                      onClick={() => { setSignoutMode(true); router.push('/settings'); }}
+                      onClick={() => { router.push(`/user/${user.handle}`); }}
                       className="rounded-full shadow-sm w-10 h-10 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 relative transition-all duration-300"
-                      title="Open settings"
+                      title="View profile"
                     >
                       {user.avatarUrl ? (
                         <Image src={user.avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover rounded-full" />
@@ -206,34 +171,34 @@ export function MobileBottomBar() {
   const isActive = (href: string) => pathname?.startsWith(href);
   return (
     <nav
-      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md shadow-lg z-50 flex justify-around items-center"
+      className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md shadow-lg z-50 flex justify-around items-center"
       style={{ minHeight: 66, paddingBottom: 'calc(env(safe-area-inset-bottom) + 2px)' }}
     >
-      <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/registry') ? 'bg-gray-200 rounded-full' : ''}`}>
+      <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/registry') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
           <Image src="/img/registry.svg" alt="Registry" width={22} height={22} />
         </span>
       </Link>
-      <Link href="/rotations" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/rotations') ? 'bg-gray-200 rounded-full' : ''}`}>
+      <Link href="/rotations" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/rotations') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
           <Image src="/img/rotations.svg" alt="Rotations" width={22} height={22} />
         </span>
       </Link>
-      <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 rounded-full' : ''}`}>
+      <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+        <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
         </span>
       </Link>
-      {/*user && (
-        <Link href="/settings" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 h-full">
-          <span className="flex items-center justify-center h-8">
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
-              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="2"/>
+      {user && (
+        <Link href="/settings" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+          <span className={`flex items-center justify-center h-10 w-10 ${isActive('/settings') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" strokeWidth="2"/>
             </svg>
           </span>
         </Link>
-      )*/}
+      )}
     </nav>
   );
 }

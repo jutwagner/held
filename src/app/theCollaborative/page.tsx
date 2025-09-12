@@ -53,9 +53,9 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
   }, [rotation.objectIds]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
       {/* Header with object images */}
-      <div className="relative h-64 bg-gray-50 flex items-center justify-center overflow-hidden">
+      <div className="relative h-64 bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
         {/* Cover image background */}
         {rotation.coverImage && (
           <Image
@@ -209,17 +209,17 @@ export default function TheCollaborativePage() {
     <>
       <div className="held-container py-8">
 
-                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2">theCollaborative</h1>
-                  <p className="text-gray-600/90">shared Registry Rotations</p>
+                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">theCollaborative</h1>
+                  <p className="text-gray-600/90 dark:text-gray-300/90">shared Registry Rotations</p>
 
 
       </div>
-      <main className="min-h-screen bg-gray-100">
+      <main className="min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className="held-container py-8">
           {loading ? (
-            <p className="text-center text-gray-500">Loading…</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">Loading…</p>
           ) : rotations.length === 0 && posts.length === 0 ? (
-            <p className="text-center text-gray-500">No shared content available.</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">No shared content available.</p>
           ) : (
             <div className="space-y-6">
               {rotations.map((rotation) => (

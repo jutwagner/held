@@ -145,17 +145,17 @@ const handleAddNewItem = async (e: React.FormEvent) => {
   const selectedObjectsList = objects.filter(obj => selectedObjects.includes(obj.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
-          <Button variant="ghost" asChild className="mr-4">
+          <Button variant="ghost" asChild className="mr-4 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
             <Link href="/rotations">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Rotations
             </Link>
           </Button>
-          <h1 className="text-3xl font-serif font-medium">Create New Rotation</h1>
+          <h1 className="text-3xl font-serif font-medium text-gray-900 dark:text-gray-100">Create New Rotation</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -163,8 +163,8 @@ const handleAddNewItem = async (e: React.FormEvent) => {
           <div>
             <div className="held-card p-8">
               {reachedLimit && (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
-                  <p className="text-sm text-yellow-700 font-semibold">
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md mb-4">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 font-semibold">
                     This is cool. Get Held+
                   </p>
                 </div>
@@ -172,20 +172,20 @@ const handleAddNewItem = async (e: React.FormEvent) => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Rotation Name</label>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rotation Name</label>
                   <Input
                     id="name"
                     type="text"
                     value={formData.name}
                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Give your rotation a name..."
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-lg font-serif"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-lg font-serif bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
 
                 {/* Sexy Cover Image Upload */}
-                <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer group"
+                <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer group"
                   onClick={() => document.getElementById('coverImageInput')?.click()}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => {
@@ -205,24 +205,24 @@ const handleAddNewItem = async (e: React.FormEvent) => {
                   {coverImageFile ? (
                     <div className="w-full flex flex-col items-center">
                       <img src={URL.createObjectURL(coverImageFile)} alt="Cover Preview" className="w-full h-40 object-cover rounded-lg border mb-2" />
-                      <button type="button" className="text-xs text-red-500 underline" onClick={e => { e.stopPropagation(); setCoverImageFile(null); }}>Remove</button>
+                      <button type="button" className="text-xs text-red-500 dark:text-red-400 underline" onClick={e => { e.stopPropagation(); setCoverImageFile(null); }}>Remove</button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-32 w-full">
-                      <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16.5 3.5a3.5 3.5 0 11-7 0m7 0A3.5 3.5 0 009 3.5m7.5 0V7m-7.5 0V3.5m0 0A3.5 3.5 0 003.5 7m0 0V3.5m0 0A3.5 3.5 0 007 3.5" /></svg>
-                      <span className="text-gray-500 text-sm">Drag & drop or click to upload a cover image</span>
+                      <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16.5 3.5a3.5 3.5 0 11-7 0m7 0A3.5 3.5 0 009 3.5m7.5 0V7m-7.5 0V3.5m0 0A3.5 3.5 0 003.5 7m0 0V3.5m0 0A3.5 3.5 0 007 3.5" /></svg>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">Drag & drop or click to upload a cover image</span>
                     </div>
                   )}
                 </div>
                 {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-600">{error}</p>
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                   </div>
                 )}
 
                 {/* Description */}
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description
                   </label>
                   <Textarea
@@ -241,9 +241,9 @@ const handleAddNewItem = async (e: React.FormEvent) => {
                     id="isPublic"
                     checked={formData.isPublic}
                     onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
-                    className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-gray-900 dark:text-gray-100 focus:ring-gray-500 dark:focus:ring-gray-400 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
                   />
-                  <label htmlFor="isPublic" className="text-sm text-gray-700">
+                  <label htmlFor="isPublic" className="text-sm text-gray-700 dark:text-gray-300">
                     Make this rotation public (creates a shareable page)
                   </label>
                 </div>
@@ -251,14 +251,14 @@ const handleAddNewItem = async (e: React.FormEvent) => {
                 {/* Selected Objects Summary */}
                 {selectedObjects.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Selected Objects ({selectedObjects.length}/7)
                     </label>
                     <div className="space-y-2">
                       {selectedObjectsList.map((obj) => (
-                        <div key={obj.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={obj.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-200 rounded overflow-hidden">
+                            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
                               {obj.images.length > 0 ? (
                                 <img
                                   src={obj.images[0]}
@@ -267,16 +267,16 @@ const handleAddNewItem = async (e: React.FormEvent) => {
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-gray-400 text-xs">?</span>
+                                  <span className="text-gray-400 dark:text-gray-500 text-xs">?</span>
                                 </div>
                               )}
                             </div>
-                            <span className="text-sm font-medium">{obj.title}</span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{obj.title}</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => toggleObject(obj.id)}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                           >
                             <X className="h-4 w-4" />
                           </button>
