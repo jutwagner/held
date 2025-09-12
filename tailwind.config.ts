@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['metropolis', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif'],
         serif: ['Radley', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },

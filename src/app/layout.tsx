@@ -6,9 +6,7 @@ import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import ThemeBody from "@/components/ThemeBody";
 
-import { Inter } from 'next/font/google';
 import { usePathname } from 'next/navigation';
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -36,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={inter.className + " font-sans antialiased"}>
+      <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeBody>
             <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">

@@ -259,109 +259,136 @@ export default function ProfilePage() {
         <div className="mb-8">
           <HorizontalCarousel>
             {objects.slice(0, 8).map((object) => (
-              <Card key={object.id} className="w-64 flex-shrink-0">
-                <CardContent className="p-4">
-                  <Link href={`/registry/${object.slug}`}>
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 overflow-hidden">
-                      {object.images.length > 0 ? (
-                        <Image
-                          src={object.images[0]}
-                          alt={object.title}
-                          width={200}
-                          height={200}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-gray-400 text-sm">No image</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+              <Link key={object.id} href={`/registry/${object.slug}`} className="w-64 flex-shrink-0">
+                <div className="relative rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_24px_64px_rgba(0,0,0,0.4)] h-[400px] flex flex-col transition-transform duration-300 hover:scale-[1.02] cursor-pointer group">
+                  {/* Subtle top sheen */}
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-b from-white/50 dark:from-gray-800/50 to-transparent" />
+                  
+                  {/* Premium/Public Accent */}
+                  {object.isPublic && (
+                    <span className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-green-300 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow z-10 tracking-wide uppercase">Public</span>
+                  )}
+                  
+                  {/* Image */}
+                  <div className="relative aspect-square rounded-2xl overflow-hidden flex items-center justify-center border border-white/70 dark:border-gray-700/70 ring-1 ring-black/5 dark:ring-white/5 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 m-4">
+                    {object.images.length > 0 ? (
+                      <Image
+                        src={object.images[0]}
+                        alt={object.title}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="px-4 pb-4 flex-1 flex flex-col">
+                    <h3 className="font-serif text-lg font-semibold mb-1 line-clamp-1 text-gray-900 dark:text-gray-100 tracking-tight">
                       {object.title}
                     </h3>
-                    {object.maker && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {object.maker ? (
+                      <p className="text-sm text-gray-700/90 dark:text-gray-300/90 mb-3 font-light">
                         {object.maker}
                       </p>
+                    ) : (
+                      <div className="h-5 mb-3" />
                     )}
-                    <div className="flex gap-1 mt-2">
-                      {object.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
+                    
+                    {/* Tags */}
+                    {object.tags && object.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {object.tags.slice(0, 2).map((tag) => (
+                          <span key={tag} className="px-2 py-1 rounded-full bg-white/70 dark:bg-gray-700/70 border border-white/60 dark:border-gray-600/60 ring-1 ring-black/5 dark:ring-white/5 text-xs text-gray-800 dark:text-gray-200">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
             ))}
           </HorizontalCarousel>
         </div>
       )}
 
-      <div className="held-container-wide">
-        {/* Rotations Carousel */}
-        {rotations.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Rotations ({rotations.length})
-              </h2>
-              {rotations.length > 4 && (
-                <Link href="/rotations" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                  View all
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Rotations Carousel - Bleeds to edge */}
       {rotations.length > 0 && (
         <div className="mb-8">
+          <div className="flex items-center justify-between mb-4" style={{ paddingLeft: 'calc((100vw - 80rem) / 2)' }}>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Rotations ({rotations.length})
+            </h2>
+            {rotations.length > 4 && (
+              <Link href="/rotations" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                View all
+              </Link>
+            )}
+          </div>
           <HorizontalCarousel>
             {rotations.slice(0, 6).map((rotation) => (
-              <Card key={rotation.id} className="w-72 flex-shrink-0">
-                <CardContent className="p-4">
-                  <Link href={`/rotations/${rotation.slug}`}>
-                    <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 overflow-hidden">
-                      {rotation.coverImage ? (
-                        <Image
-                          src={rotation.coverImage}
-                          alt={rotation.name}
-                          width={280}
-                          height={160}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-gray-400 text-sm">No cover image</span>
-                        </div>
-                      )}
+              <Link key={rotation.id} href={`/rotations/${rotation.slug}`} className="w-72 flex-shrink-0">
+                <div className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 min-h-[400px]">
+                  {/* Cover Image */}
+                  {rotation.coverImage ? (
+                    <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
+                      <Image
+                        src={rotation.coverImage}
+                        alt="Rotation Cover"
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     </div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {rotation.name}
-                    </h3>
+                  ) : (
+                    <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600">
+                      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 -z-10" />
+                    </div>
+                  )}
+                  
+                  {/* Decorative icon for cards without cover images */}
+                  {!rotation.coverImage && (
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 dark:bg-gray-800/90 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm z-10">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-60" />
+                    </div>
+                  )}
+                  
+                  {/* Card Content */}
+                  <div className={`p-6 ${!rotation.coverImage ? 'pt-8' : ''}`}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="font-semibold text-xl text-gray-900 dark:text-gray-100 leading-tight line-clamp-2">
+                        {rotation.name}
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        {rotation.isPublic ? (
+                          <Globe className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Lock className="h-4 w-4 text-gray-400" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Description */}
                     {rotation.description && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
                         {rotation.description}
                       </p>
                     )}
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                    
+                    {/* Object count */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {rotation.objectIds?.length || 0} objects
                       </span>
-                      {rotation.isPublic ? (
-                        <Globe className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <Lock className="h-3 w-3 text-gray-400" />
-                      )}
                     </div>
-                  </Link>
-                </CardContent>
-              </Card>
+                  </div>
+                </div>
+              </Link>
             ))}
           </HorizontalCarousel>
         </div>
@@ -433,8 +460,8 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
     <div className="relative">
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 pl-4 pr-4"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingLeft: ' 10rem'  }}
+        className="flex gap-4 overflow-x-auto scrollbar-hide py-6 pl-4 pr-4"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingLeft: 'calc((100vw - 80rem) / 2)' }}
         onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
       >
         {children}
