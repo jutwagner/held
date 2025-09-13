@@ -58,13 +58,18 @@ export default function NewObjectPage() {
     setSelectedBrand(brand);
     setSelectedItem(item);
     
-    // Update form data
-    setFormData(prev => ({
-      ...prev,
-      category: category,
-      maker: brand,
-      title: item
-    }));
+    // Update form data - if title is empty, use "Brand, Item" format
+    setFormData(prev => {
+      const currentTitle = prev.title.trim();
+      const newTitle = currentTitle || (brand && item ? `${brand}, ${item}` : item || brand);
+      
+      return {
+        ...prev,
+        category: category,
+        maker: brand,
+        title: newTitle
+      };
+    });
   }, []);
 
   // Handle category box selection
@@ -127,7 +132,7 @@ export default function NewObjectPage() {
       case 1:
         return formData.images.length > 0; // Photos are required for step 1
       case 2:
-        return formData.title.trim() && formData.category && formData.maker; // Basic info required for step 2
+        return formData.category && formData.maker; // Category and maker required, title is optional
       case 3:
         return true; // Details are optional
       case 4:
@@ -141,7 +146,7 @@ export default function NewObjectPage() {
     e.preventDefault();
     if (!user || typeof user.uid !== 'string') return;
 
-    if (!formData.title.trim() || !formData.category || !formData.maker) {
+    if (!formData.category || !formData.maker) {
       return;
     }
 
@@ -269,10 +274,10 @@ export default function NewObjectPage() {
                       <div className={`relative z-10 flex items-center justify-center w-6 h-6 md:w-6 md:h-6 rounded-full transition-colors ${
                         isCompleted ? 'bg-black dark:bg-gray-100 text-white dark:text-gray-900' : isActive ? 'bg-white dark:bg-gray-800 ring-2 ring-black dark:ring-gray-300 text-black dark:text-gray-100 dark:text-gray-100' : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500'
                       }`}>
-                        {isCompleted ? <Check className="h-6 w-6" /> : <span className="text-sm">{step.id}</span>}
+                        {isCompleted ? <Check className="h-4 w-4" /> : <span className="text-sm">{step.id}</span>}
                       </div>
                       {idx < steps.length - 1 && (
-                        <div className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black dark:bg-gray-100' : 'text-sm bg-gray-200 dark:bg-gray-700'}`} />
+                        <div className={`flex-1 h-0.5 mx-2 md:mx-2 ${step.id < currentStep ? 'bg-black dark:bg-gray-100' : 'text-sm bg-gray-200 dark:bg-gray-700'}`} />
                       )}
                     </React.Fragment>
                   );
@@ -456,7 +461,7 @@ export default function NewObjectPage() {
                     <div className="space-y-12">
                       <div className="transition-shadow">
                         <label htmlFor="title" className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-3 uppercase tracking-widest">
-                          Name
+                          Name <span className="text-gray-400 dark:text-gray-500 font-normal">(optional)</span>
                         </label>
                         <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
                           <Input
@@ -464,90 +469,82 @@ export default function NewObjectPage() {
                             ref={titleRef as any}
                             value={formData.title}
                             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                            required
-                            placeholder="What's the thing?"
+                            placeholder="Leave empty to auto-generate from brand and item"
                             className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
                           />
                         </div>
                       </div>
 
-                      {/* Category Selection Boxes */}
-                      <div>
-                        <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-6 uppercase tracking-widest">
-                          Category
-                        </label>
-                        <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                          {[
-                            { name: 'Art', Icon: Palette },
-                            { name: 'Books', Icon: Book },
-                            { name: 'Electronics', Icon: Cpu },
-                            { name: 'Fashion', Icon: Tag },
-                            { name: 'Furniture', Icon: Shapes },
-                            { name: 'HiFi', Icon: Music2 },
-                            { name: 'Industrial Design', Icon: Package },
-                            { name: 'Instruments', Icon: Guitar },
-                            { name: 'Lighting', Icon: Lamp },
-                            { name: 'Miscellaneous', Icon: Shapes },
-                            { name: 'Music', Icon: Music2 },
-                            { name: 'Photography', Icon: ImageIcon },
-                            { name: 'Tech', Icon: Cpu },
-                            { name: 'Timepieces', Icon: Clock3 },
-                            { name: 'Vintage', Icon: Archive },
-                          ].map(({ name, Icon }) => (
-                            <button
-                              key={name}
-                              type="button"
-                              onClick={() => handleCategorySelect(name)}
-                              className={`group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 ${
-                                formData.category === name
-                                  ? 'bg-gray-900 border-gray-900 text-white shadow-lg'
-                                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              <span className={`flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 ${
-                                formData.category === name ? 'bg-white dark:bg-gray-800/10' : 'bg-gray-100 dark:bg-gray-700'
-                              }`}>
-                                <Icon className={`${formData.category === name ? 'text-white' : 'text-gray-600 dark:text-gray-300'} w-5 h-5 sm:w-6 sm:h-6`} />
-                              </span>
-                              <span className={`text-xs sm:text-sm font-medium text-center leading-snug ${
-                                formData.category === name ? 'text-white' : 'text-gray-800 dark:text-gray-200'
-                              }`}>
-                                {name}
-                              </span>
-                            </button>
-                          ))}
+                      {/* Category Selection or Cascading Select */}
+                      {!showCascadingSelect ? (
+                        <div>
+                          <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-6 uppercase tracking-widest">
+                            Category
+                          </label>
+                          <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                            {[
+                              { name: 'Art', Icon: Palette },
+                              { name: 'Books', Icon: Book },
+                              { name: 'Electronics', Icon: Cpu },
+                              { name: 'Fashion', Icon: Tag },
+                              { name: 'Furniture', Icon: Shapes },
+                              { name: 'HiFi', Icon: Music2 },
+                              { name: 'Industrial Design', Icon: Package },
+                              { name: 'Instruments', Icon: Guitar },
+                              { name: 'Lighting', Icon: Lamp },
+                              { name: 'Miscellaneous', Icon: Shapes },
+                              { name: 'Music', Icon: Music2 },
+                              { name: 'Photography', Icon: ImageIcon },
+                              { name: 'Tech', Icon: Cpu },
+                              { name: 'Timepieces', Icon: Clock3 },
+                              { name: 'Everyday Carry', Icon: Archive },
+                            ].map(({ name, Icon }) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => handleCategorySelect(name)}
+                                className="group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+                              >
+                                <span className="flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 bg-gray-100 dark:bg-gray-700">
+                                  <Icon className="text-gray-600 dark:text-gray-300 w-5 h-5 sm:w-6 sm:h-6" />
+                                </span>
+                                <span className="text-xs sm:text-sm font-medium text-center leading-snug text-gray-800 dark:text-gray-200">
+                                  {name}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-
-                      {/* Show Cascading Select after category is selected */}
-                      {showCascadingSelect && formData.category && (
-                        <div className="mt-8">
-                          <div className="mb-4">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                              Select Brand and Item for {formData.category}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Choose from existing options or add your own
-                            </p>
+                      ) : (
+                        <div>
+                          <div className="mb-4 flex items-center justify-between">
+                            <div>
+                              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+                                {formData.category}
+                              </h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Select brand and item, or add your own
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowCascadingSelect(false);
+                                setFormData(prev => ({ ...prev, category: '', maker: '', title: '' }));
+                                setSelectedCategory('');
+                                setSelectedBrand('');
+                                setSelectedItem('');
+                              }}
+                              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                            >
+                              Change category
+                            </button>
                           </div>
                           <CascadingSelect 
                             onSelectionChange={handleCascadingSelectChange}
                             className="transition-shadow"
                             preSelectedCategory={formData.category}
                           />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowCascadingSelect(false);
-                              setFormData(prev => ({ ...prev, category: '', maker: '', title: '' }));
-                              setSelectedCategory('');
-                              setSelectedBrand('');
-                              setSelectedItem('');
-                            }}
-                            className="mt-4 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                          >
-                            ← Back to category selection
-                          </button>
                         </div>
                       )}
                     </div>
