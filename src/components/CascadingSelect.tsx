@@ -133,14 +133,26 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
   };
 
   const handleBrandChange = (brand: string) => {
-    setSelectedBrand(brand);
+    if (brand === '__add_new__') {
+      setShowAddBrand(true);
+      setSelectedBrand('');
+    } else {
+      setSelectedBrand(brand);
+      setShowAddBrand(false);
+    }
     setShowAddItem(false);
     // Notify parent after state update
     setTimeout(() => notifyParent(), 0);
   };
 
   const handleItemChange = (item: string) => {
-    setSelectedItem(item);
+    if (item === '__add_new__') {
+      setShowAddItem(true);
+      setSelectedItem('');
+    } else {
+      setSelectedItem(item);
+      setShowAddItem(false);
+    }
     // Notify parent after state update
     setTimeout(() => notifyParent(), 0);
   };
@@ -304,7 +316,8 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
               onChange={(e) => handleBrandChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent appearance-none pr-10"
             >
-              <option value="">Select a brand...</option>
+              <option value="">Select a maker...</option>
+              <option value="__add_new__">+ Add new maker</option>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand}
@@ -314,17 +327,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
           </div>
           
-          {/* Add Brand Button */}
-          {!selectedBrand && (
-            <button
-              type="button"
-              onClick={() => setShowAddBrand(!showAddBrand)}
-              className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            >
-              <Plus className="h-4 w-4" />
-              Add new brand
-            </button>
-          )}
           
           {/* Add Brand Input */}
           {showAddBrand && (
@@ -363,6 +365,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent appearance-none pr-10"
             >
               <option value="">Select an item...</option>
+              <option value="__add_new__">+ Add new item</option>
               {items.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -372,17 +375,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
           </div>
           
-          {/* Add Item Button */}
-          {!selectedItem && (
-            <button
-              type="button"
-              onClick={() => setShowAddItem(!showAddItem)}
-              className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            >
-              <Plus className="h-4 w-4" />
-              Add new item
-            </button>
-          )}
           
           {/* Add Item Input */}
           {showAddItem && (

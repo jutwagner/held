@@ -106,7 +106,7 @@ export default function PassportClient() {
   const hasProvenance = isPremiumUser && (object.serialNumber || object.acquisitionDate || object.certificateOfAuthenticity || object.chain?.length);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white light-mode-only">
       {/* Header */}
       <header className="w-full bg-white border-b border-gray-200 overflow-visible">
         <div className="w-full px-5 sm:px-10 py-6">

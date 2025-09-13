@@ -412,6 +412,11 @@ nav .held-container{
   filter: invert(1);
 }
 
+/* Invert webp images in dark mode */
+.dark img[src$=".webp"] {
+  filter: invert(1);
+}
+
 /* Keep certain SVGs from inverting (like colored icons) */
 .dark svg.no-invert,
 .dark img.no-invert {
@@ -422,4 +427,15 @@ nav .held-container{
 .dark svg[fill="white"],
 .dark svg[stroke="white"] {
   filter: none;
+}
+
+/* Light mode only - prevent dark mode from affecting these elements */
+.light-mode-only,
+.light-mode-only * {
+  color-scheme: light;
+}
+
+.light-mode-only svg,
+.light-mode-only img[src$=".svg"] {
+  filter: none !important;
 }

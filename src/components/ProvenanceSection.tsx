@@ -97,23 +97,23 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl space-y-6 md:space-y-8">
+    <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl space-y-6 md:space-y-8">
       {/* Header with premium badge */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 dark:from-gray-600 dark:to-gray-800 rounded-full flex items-center justify-center shadow-lg">
+            <span className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center">
               <img src="/held-seal.svg" alt="Held Seal" className="h-10 w-10" />
             </span>
           </div>
           <div>
-            <h2 className="text-xl font-serif font-semibold text-gray-900">Provenance Documentation</h2>
-            <p className="text-sm text-gray-600 font-mono">Held+ Premium Feature</p>
+            <h2 className="text-xl font-serif font-semibold text-gray-900 dark:text-gray-100">Provenance Documentation</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">Held+ Premium Feature</p>
           </div>
         </div>
         <div>
           {!editable && onRequestEdit && (
-            <Button variant="outline" size="sm" className="border-black text-black" onClick={onRequestEdit}>
+            <Button variant="outline" size="sm" className="border-black dark:border-gray-300 text-black dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700" onClick={onRequestEdit}>
               <Edit className="h-4 w-4 mr-2" /> Edit
             </Button>
           )}
@@ -126,59 +126,59 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         {/* Left Column - Identity & Documentation */}
         <div className="space-y-4 md:space-y-6">
           <div className="rounded-lg shadow-sm">
-            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+            <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               Object Identity
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Serial Number</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Serial Number</label>
                 <input
                   type="text"
                   value={data.serialNumber || ''}
                   onChange={(e) => updateData({ serialNumber: e.target.value })}
                   disabled={!editable}
                   placeholder="Enter serial number or unique identifier"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Origin</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Origin</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     value={data.origin || ''}
                     onChange={(e) => updateData({ origin: e.target.value })}
                     disabled={!editable}
                     placeholder="Place of manufacture or origin"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Acquisition Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Acquisition Date</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="date"
                     value={data.acquisitionDate || ''}
                     onChange={(e) => updateData({ acquisitionDate: e.target.value })}
                     disabled={!editable}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Transfer Method</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transfer Method</label>
                 <select
                   value={data.transferMethod || ''}
                   onChange={(e) => updateData({ transferMethod: e.target.value })}
                   disabled={!editable}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                 >
                   <option value="">Select method</option>
                   <option value="purchase">Purchase</option>
@@ -196,51 +196,51 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
 
           {/* Certificate of Authenticity */}
           <div className="rounded-lg shadow-sm">
-            <h3 className="font-serif text-xl text-gray-900 mb-3 mt-10 md:mb-4 flex items-center gap-2">
-              <Award className="h-4 w-4 text-gray-500" />
+            <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 mt-10 md:mb-4 flex items-center gap-2">
+              <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Certificate of Authenticity
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Certificate Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Description</label>
                 <textarea
                   value={data.certificateOfAuthenticity || ''}
                   onChange={(e) => updateData({ certificateOfAuthenticity: e.target.value })}
                   disabled={!editable}
                   placeholder="Describe the certificate or authentication details"
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Certificate URL or Reference</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate URL or Reference</label>
                 <div className="relative">
-                  <Link2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Link2 className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="url"
                     value={data.certificateUrl || ''}
                     onChange={(e) => updateData({ certificateUrl: e.target.value })}
                     disabled={!editable}
                     placeholder="https://... or reference number"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
                 </div>
               </div>
 
               {/* Certificate Image Upload */}
               <div >
-                <label className="block text-sm font-medium text-gray-700 mb-2">Certificate Image</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Image</label>
                 {data.certificateImage ? (
                   <div className="flex items-center gap-3">
-                    <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border" />
+                    <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border border-gray-300 dark:border-gray-600 rounded" />
                     {editable && <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>}
                   </div>
                 ) : (
                   <div 
                     className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      editable ? (dragActive ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400') : 'border-gray-200 bg-gray-50 opacity-60'
+                      editable ? (dragActive ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500') : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60'
                     }`}
                     onDragOver={(e) => { if (!editable) return; e.preventDefault(); setDragActive(true); }}
                     onDragLeave={() => { if (!editable) return; setDragActive(false); }}
@@ -252,8 +252,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                       performUpload(file);
                     }}
                   >
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">Drop certificate image here, or</p>
+                    <Upload className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Drop certificate image here, or</p>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -268,7 +268,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     <Button variant="outline" size="sm" disabled={uploading || !editable} onClick={() => fileInputRef.current?.click()}>
                       {uploading ? 'Uploading…' : 'Choose File'}
                     </Button>
-                    <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">PNG, JPG up to 10MB</p>
                   </div>
                 )}
               </div>
@@ -282,8 +282,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           {/* Chain of Ownership */}
           <div className="shadow-sm">
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-serif text-xl text-gray-900 flex items-center gap-2">
-                <Users className="h-4 w-4 text-xl-500" />
+              <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 Chain of Ownership
               </h3>
               {editable && (
@@ -291,7 +291,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                   variant="outline" 
                   size="sm" 
                   onClick={addChainEntry}
-                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                  className="text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Add Owner
@@ -301,18 +301,18 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
 
             <div className="space-y-3">
               {(Array.isArray(data.chain) ? data.chain : []).map((entry, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-gray-500">Owner #{index + 1}</span>
+                    <span className="text-xs font-mono text-gray-500 dark:text-gray-400">Owner #{index + 1}</span>
                     {editable ? (
                       <button
                         onClick={() => removeChainEntry(index)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
                     ) : (
-                      <span className="text-gray-300 text-xs">&nbsp;</span>
+                      <span className="text-gray-300 dark:text-gray-600 text-xs">&nbsp;</span>
                     )}
                   </div>
                   
@@ -323,7 +323,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                       onChange={(e) => updateChainEntry(index, { owner: e.target.value })}
                       disabled={!editable}
                       placeholder="Owner name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                     />
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -332,7 +332,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                         value={entry.acquiredAt || ''}
                         onChange={(e) => updateChainEntry(index, { acquiredAt: e.target.value })}
                         disabled={!editable}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                       />
                       <input
                         type="text"
@@ -340,7 +340,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                         onChange={(e) => updateChainEntry(index, { notes: e.target.value })}
                         disabled={!editable}
                         placeholder="Notes"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                       />
                     </div>
                   </div>
@@ -348,10 +348,10 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               ))}
 
               {(!data.chain || data.chain.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm">No ownership history added yet</p>
-                  <p className="text-xs text-gray-400">Track the complete ownership chain of this object</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Track the complete ownership chain of this object</p>
                 </div>
               )}
             </div>
@@ -359,8 +359,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
 
           {/* Associated Documents */}
           <div className="">
-            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500" />
+            <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Associated Documents
             </h3>
 
@@ -369,7 +369,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 <input
                   type="url"
                   placeholder="Add document URL or reference"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                   readOnly={!editable}
                   onKeyPress={(e) => {
                     if (!editable) return;
@@ -398,13 +398,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               </div>
 
               {(Array.isArray(data.associatedDocuments) ? data.associatedDocuments : []).map((doc, index) => (
-                <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-md p-2">
-                  <Link2 className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 truncate flex-1">{doc}</span>
+                <div key={index} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-md p-2">
+                  <Link2 className="h-3 w-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{doc}</span>
                   {editable && (
                     <button
                       onClick={() => removeDocument(index)}
-                      className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors flex-shrink-0"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -416,8 +416,8 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
 
           {/* Provenance Notes */}
           <div className="">
-            <h3 className="font-serif text-xl text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500" />
+            <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Provenance Notes
             </h3>
             
@@ -427,7 +427,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               disabled={!editable}
               placeholder="Additional notes about the object's history, significance, or provenance details..."
               rows={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
             />
           </div>
         </div>
@@ -435,15 +435,15 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         {editable && (
           <div className="xl:col-span-2 flex justify-end">
             {onRequestSave && (
-              <Button onClick={onRequestSave} className="bg-black text-white px-5 py-2">Save Provenance</Button>
+              <Button onClick={onRequestSave} className="bg-black dark:bg-white text-white dark:text-black px-5 py-2">Save Provenance</Button>
             )}
           </div>
         )}
       </div>
 
       {/* Footer with save reminder */}
-      <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <Clock className="h-4 w-4" />
           <span>Provenance data is automatically saved when you save the object</span>
         </div>
