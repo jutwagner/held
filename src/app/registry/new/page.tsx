@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { isHeldPlus } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight,
 import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
+import CascadingSelect from '@/components/CascadingSelect';
 
 import ProvenanceSection from '@/components/ProvenanceSection';
 
@@ -44,20 +45,52 @@ export default function NewObjectPage() {
   const [forSaleCount, setForSaleCount] = useState(0);
 
   const [newTag, setNewTag] = useState('');
+  
+  // Cascading select states
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedItem, setSelectedItem] = useState('');
+  const [showCascadingSelect, setShowCascadingSelect] = useState(false);
+
+  // Handle cascading select changes - memoized to prevent infinite loops
+  const handleCascadingSelectChange = useCallback((category: string, brand: string, item: string) => {
+    setSelectedCategory(category);
+    setSelectedBrand(brand);
+    setSelectedItem(item);
+    
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      category: category,
+      maker: brand,
+      title: item
+    }));
+  }, []);
+
+  // Handle category box selection
+  const handleCategorySelect = (category: string) => {
+    setFormData(prev => ({ ...prev, category }));
+    setSelectedCategory(category);
+    setShowCascadingSelect(true);
+    // Reset brand and item when changing category
+    setSelectedBrand('');
+    setSelectedItem('');
+    setFormData(prev => ({ ...prev, maker: '', title: '' }));
+  };
 
   const steps = [
     { 
       id: 1, 
       title: "", 
-      subtitle: "Basic information",
-      icon: Heart,
+      subtitle: "Visual record",
+      icon: Camera,
       color: "bg-black"
     },
     { 
       id: 2, 
       title: "", 
-      subtitle: "Visual record",
-      icon: Camera,
+      subtitle: "Basic information",
+      icon: Heart,
       color: "bg-black"
     },
     { 
@@ -92,9 +125,9 @@ export default function NewObjectPage() {
   const canProceed = () => {
     switch(currentStep) {
       case 1:
-        return formData.title.trim() && formData.category;
+        return formData.images.length > 0; // Photos are required for step 1
       case 2:
-        return true; // Images are optional
+        return formData.title.trim() && formData.category && formData.maker; // Basic info required for step 2
       case 3:
         return true; // Details are optional
       case 4:
@@ -108,7 +141,7 @@ export default function NewObjectPage() {
     e.preventDefault();
     if (!user || typeof user.uid !== 'string') return;
 
-    if (!formData.title.trim() || !formData.category) {
+    if (!formData.title.trim() || !formData.category || !formData.maker) {
       return;
     }
 
@@ -145,7 +178,10 @@ export default function NewObjectPage() {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []).filter(f => 
+      f.type.startsWith('image/') || 
+      f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
+    );
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...files]
@@ -229,16 +265,16 @@ export default function NewObjectPage() {
                   const isActive = currentStep === step.id;
                   const isCompleted = completedSteps.has(step.id) || step.id < currentStep;
                   return (
-                    <>
-                      <div key={`c-${step.id}`} className={`relative z-10 flex items-center justify-center w-6 h-6 md:w-6 md:h-6 rounded-full transition-colors ${
+                    <React.Fragment key={`step-${step.id}`}>
+                      <div className={`relative z-10 flex items-center justify-center w-6 h-6 md:w-6 md:h-6 rounded-full transition-colors ${
                         isCompleted ? 'bg-black dark:bg-gray-100 text-white dark:text-gray-900' : isActive ? 'bg-white dark:bg-gray-800 ring-2 ring-black dark:ring-gray-300 text-black dark:text-gray-100 dark:text-gray-100' : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500'
                       }`}>
                         {isCompleted ? <Check className="h-6 w-6" /> : <span className="text-sm">{step.id}</span>}
                       </div>
                       {idx < steps.length - 1 && (
-                        <div key={`conn-${step.id}`} className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black dark:bg-gray-100' : 'text-sm bg-gray-200 dark:bg-gray-700'}`} />
+                        <div className={`flex-1 h-0.5 mx-3 md:mx-4 ${step.id < currentStep ? 'bg-black dark:bg-gray-100' : 'text-sm bg-gray-200 dark:bg-gray-700'}`} />
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -273,79 +309,8 @@ export default function NewObjectPage() {
                 {/* Step 1: Identification */}
                 {currentStep === 1 && (
                   <div className="space-y-12">
-                    <div className="space-y-12">
-                      <div className="transition-shadow">
-                        <label htmlFor="title" className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-3 uppercase tracking-widest">
-                          Name
-                        </label>
-                        <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
-                          <Input
-                            id="title"
-                            ref={titleRef as any}
-                            value={formData.title}
-                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                            required
-                            placeholder="What's the thing?"
-                            className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-6 uppercase tracking-widest">
-                          Category
-                        </label>
-                        <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                          {[
-                            { name: 'Art', Icon: Palette },
-                            { name: 'Books', Icon: Book },
-                            { name: 'Electronics', Icon: Cpu },
-                            { name: 'Fashion', Icon: Tag },
-                            { name: 'Furniture', Icon: Shapes },
-                            { name: 'HiFi', Icon: Music2 },
-                            { name: 'Industrial Design', Icon: Package },
-                            { name: 'Instruments', Icon: Guitar },
-                            { name: 'Lighting', Icon: Lamp },
-                            { name: 'Miscellaneous', Icon: Shapes },
-                            { name: 'Music', Icon: Music2 },
-                            { name: 'Photography', Icon: ImageIcon },
-                            { name: 'Tech', Icon: Cpu },
-                            { name: 'Timepieces', Icon: Clock3 },
-                            { name: 'Vintage', Icon: Archive },
-                          ].map(({ name, Icon }) => (
-                            <button
-                              key={name}
-                              type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, category: name }))}
-                              className={`group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 ${
-                                formData.category === name
-                                  ? 'bg-gray-900 border-gray-900 text-white shadow-lg'
-                                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              <span className={`flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 ${
-                                formData.category === name ? 'bg-white dark:bg-gray-800/10' : 'bg-gray-100 dark:bg-gray-700'
-                              }`}>
-                                <Icon className={`${formData.category === name ? 'text-white' : 'text-gray-600 dark:text-gray-300'} w-5 h-5 sm:w-6 sm:h-6`} />
-                              </span>
-                              <span className={`text-xs sm:text-sm font-medium text-center leading-snug ${
-                                formData.category === name ? 'text-white' : 'text-gray-800 dark:text-gray-200'
-                              }`}>
-                                {name}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 2: Documentation */}
-                {currentStep === 2 && (
-                  <div className="space-y-12">
                     <div className="border-b border-gray-100 dark:border-gray-800 dark:border-gray-800 pb-4">
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">02</div>
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">01</div>
                       <h2 className="text-4xl font-light text-black dark:text-gray-100 dark:text-gray-100 tracking-tight">Photos</h2>
                       <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">Add clear photos. The first will be used as the cover.</p>
                     </div>
@@ -360,7 +325,10 @@ export default function NewObjectPage() {
                           onDrop={(e) => {
                             e.preventDefault();
                             setDragActive(false);
-                            const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+                            const files = Array.from(e.dataTransfer?.files || []).filter(f => 
+                              f.type.startsWith('image/') || 
+                              f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
+                            );
                             if (files.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
                           }}
                           onPaste={(e) => {
@@ -386,7 +354,7 @@ export default function NewObjectPage() {
                           <input
                             type="file"
                             multiple
-                            accept="image/*"
+                            accept="image/*,.heic,.heif"
                             className="hidden"
                             id="image-upload"
                             onChange={handleImageUpload}
@@ -409,44 +377,179 @@ export default function NewObjectPage() {
                         {/* Image Preview */}
                         {formData.images.length > 0 && (
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
-                            {formData.images.map((image, index) => (
-                              <div key={index} className="relative group rounded-xl overflow-hidden ring-1 ring-black/5 dark:ring-gray-700/20 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                                <Image
-                                  src={URL.createObjectURL(image)}
-                                  alt={`Image ${index + 1}`}
-                                  width={400}
-                                  height={300}
-                                  className="w-full h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-3 right-3 bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                                {index === 0 ? (
-                                  <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded text-gray-900 dark:text-gray-100">Cover</span>
-                                ) : (
+                            {formData.images.map((image, index) => {
+                              const imageUrl = URL.createObjectURL(image);
+                              
+                              return (
+                                <div key={index} className="relative group rounded-xl overflow-hidden ring-1 ring-black/5 dark:ring-gray-700/20 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
+                                  <Image
+                                    src={imageUrl}
+                                    alt={`Image ${index + 1}`}
+                                    width={400}
+                                    height={300}
+                                    className="w-full h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                    onError={(e) => {
+                                      // Fallback for unsupported image formats (like HEIC)
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const fallback = target.nextElementSibling as HTMLElement;
+                                      if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                  />
+                                  {/* Fallback for failed image loads (HEIC, etc.) */}
+                                  <div className="w-full h-56 md:h-64 bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center" style={{ display: 'none' }}>
+                                    <div className="text-center">
+                                      <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mb-3 mx-auto">
+                                        <ImageIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+                                      </div>
+                                      <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                        {image.name.toLowerCase().endsWith('.heic') || image.name.toLowerCase().endsWith('.heif') 
+                                          ? 'HEIC Image' 
+                                          : 'Image Preview'
+                                        }
+                                      </p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{image.name}</p>
+                                    </div>
+                                  </div>
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      setFormData(prev => {
-                                        const imgs = [...prev.images];
-                                        const [picked] = imgs.splice(index, 1);
-                                        return { ...prev, images: [picked, ...imgs] };
-                                      });
-                                    }}
-                                    className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-900 dark:text-gray-100"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-3 right-3 bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
                                   >
-                                    Make cover
+                                    <X className="h-4 w-4" />
                                   </button>
-                                )}
-                              </div>
-                            ))}
+                                  {index === 0 ? (
+                                    <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded text-gray-900 dark:text-gray-100">Cover</span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData(prev => {
+                                          const imgs = [...prev.images];
+                                          const [picked] = imgs.splice(index, 1);
+                                          return { ...prev, images: [picked, ...imgs] };
+                                        });
+                                      }}
+                                      className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-900 dark:text-gray-100"
+                                    >
+                                      Make cover
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Basic Information */}
+                {currentStep === 2 && (
+                  <div className="space-y-12">
+                    <div className="border-b border-gray-100 dark:border-gray-800 dark:border-gray-800 pb-4">
+                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">02</div>
+                      <h2 className="text-4xl font-light text-black dark:text-gray-100 dark:text-gray-100 tracking-tight">Basic Information</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">Tell us about your item.</p>
+                    </div>
+                    <div className="space-y-12">
+                      <div className="transition-shadow">
+                        <label htmlFor="title" className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-3 uppercase tracking-widest">
+                          Name
+                        </label>
+                        <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
+                          <Input
+                            id="title"
+                            ref={titleRef as any}
+                            value={formData.title}
+                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                            required
+                            placeholder="What's the thing?"
+                            className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Category Selection Boxes */}
+                      <div>
+                        <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-6 uppercase tracking-widest">
+                          Category
+                        </label>
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                          {[
+                            { name: 'Art', Icon: Palette },
+                            { name: 'Books', Icon: Book },
+                            { name: 'Electronics', Icon: Cpu },
+                            { name: 'Fashion', Icon: Tag },
+                            { name: 'Furniture', Icon: Shapes },
+                            { name: 'HiFi', Icon: Music2 },
+                            { name: 'Industrial Design', Icon: Package },
+                            { name: 'Instruments', Icon: Guitar },
+                            { name: 'Lighting', Icon: Lamp },
+                            { name: 'Miscellaneous', Icon: Shapes },
+                            { name: 'Music', Icon: Music2 },
+                            { name: 'Photography', Icon: ImageIcon },
+                            { name: 'Tech', Icon: Cpu },
+                            { name: 'Timepieces', Icon: Clock3 },
+                            { name: 'Vintage', Icon: Archive },
+                          ].map(({ name, Icon }) => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => handleCategorySelect(name)}
+                              className={`group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 ${
+                                formData.category === name
+                                  ? 'bg-gray-900 border-gray-900 text-white shadow-lg'
+                                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <span className={`flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 ${
+                                formData.category === name ? 'bg-white dark:bg-gray-800/10' : 'bg-gray-100 dark:bg-gray-700'
+                              }`}>
+                                <Icon className={`${formData.category === name ? 'text-white' : 'text-gray-600 dark:text-gray-300'} w-5 h-5 sm:w-6 sm:h-6`} />
+                              </span>
+                              <span className={`text-xs sm:text-sm font-medium text-center leading-snug ${
+                                formData.category === name ? 'text-white' : 'text-gray-800 dark:text-gray-200'
+                              }`}>
+                                {name}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Show Cascading Select after category is selected */}
+                      {showCascadingSelect && formData.category && (
+                        <div className="mt-8">
+                          <div className="mb-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                              Select Brand and Item for {formData.category}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Choose from existing options or add your own
+                            </p>
+                          </div>
+                          <CascadingSelect 
+                            onSelectionChange={handleCascadingSelectChange}
+                            className="transition-shadow"
+                            preSelectedCategory={formData.category}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowCascadingSelect(false);
+                              setFormData(prev => ({ ...prev, category: '', maker: '', title: '' }));
+                              setSelectedCategory('');
+                              setSelectedBrand('');
+                              setSelectedItem('');
+                            }}
+                            className="mt-4 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                          >
+                            ← Back to category selection
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
