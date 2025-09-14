@@ -57,7 +57,7 @@ const CATEGORY_MAPPING: Record<string, string> = {
 
 async function analyzeImage(imageUrl: string) {
   // Ensure endpoint ends with slash for proper URL joining
-  const endpoint = AZURE_ENDPOINT.endsWith('/') ? AZURE_ENDPOINT : AZURE_ENDPOINT + '/';
+  const endpoint = AZURE_ENDPOINT!.endsWith('/') ? AZURE_ENDPOINT! : AZURE_ENDPOINT! + '/';
   const analyzeUrl = `${endpoint}vision/v3.2/analyze`;
   const params = new URLSearchParams({
     visualFeatures: "Categories,Description,Brands"
@@ -80,7 +80,7 @@ async function analyzeImage(imageUrl: string) {
     }
     
     const headers = {
-      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY,
+      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY!,
       "Content-Type": "application/octet-stream"
     };
 
@@ -104,7 +104,7 @@ async function analyzeImage(imageUrl: string) {
   } else {
     // Handle regular HTTP URLs
     const headers = {
-      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY,
+      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY!,
       "Content-Type": "application/json"
     };
 
