@@ -8,8 +8,8 @@ export const reportWebVitals = (metric: any) => {
   // Send to analytics in production
   if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
     // Send to Google Analytics or your analytics service
-    if (window.gtag) {
-      window.gtag('event', metric.name, {
+    if ((window as any).gtag) {
+      (window as any).gtag('event', metric.name, {
         value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
         event_category: 'Web Vitals',
         event_label: metric.id,
