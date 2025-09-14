@@ -80,13 +80,15 @@ export default function RegistryPage() {
     // Apply anchoring filter
     if (anchoringFilter !== 'all') {
       filtered = filtered.filter(obj => {
+        const anchored = !!obj.anchoring?.isAnchored;
+        const pending = !!obj.anchoring?.txHash && !anchored;
         switch (anchoringFilter) {
           case 'anchored':
-            return obj.anchoring?.status === 'anchored';
+            return anchored;
           case 'pending':
-            return obj.anchoring?.status === 'pending';
+            return pending;
           case 'not':
-            return !obj.anchoring || obj.anchoring.status === 'not_anchored';
+            return !anchored && !pending;
           default:
             return true;
         }
