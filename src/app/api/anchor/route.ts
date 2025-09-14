@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: 'Invalid PRIVATE_KEY format',
         details: 'Private key must be a 64-character hex string (with or without 0x prefix)'
-      }, { status: 500 });
+      }, { status: 500 }); 
     }
 
     let provider;
