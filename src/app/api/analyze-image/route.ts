@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Azure Vision API configuration
-const AZURE_ENDPOINT = process.env.AZURE_VISION_ENDPOINT || "https://held-computervision.cognitiveservices.azure.com/";
+// Azure Vision API configuration - ALL from environment variables
+const AZURE_ENDPOINT = process.env.AZURE_VISION_ENDPOINT;
 const AZURE_SUBSCRIPTION_KEY = process.env.AZURE_VISION_SUBSCRIPTION_KEY;
 
-if (!AZURE_SUBSCRIPTION_KEY) {
-  throw new Error('AZURE_VISION_SUBSCRIPTION_KEY environment variable is required');
+if (!AZURE_ENDPOINT || !AZURE_SUBSCRIPTION_KEY) {
+  throw new Error('Azure Vision environment variables are required: AZURE_VISION_ENDPOINT and AZURE_VISION_SUBSCRIPTION_KEY');
 }
 
 // Map Vision tags → Held categories
@@ -45,7 +45,7 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "indoor_bedroom": "Furniture",
   "people_portrait": "Art",
   "people_group": "Art",
-  "trans_car": "Automotive", // This was the issue - "trans_car" was mapping to "Trans Car"
+  "trans_car": "Automotive",
   "trans_truck": "Automotive",
   "trans_motorcycle": "Automotive",
   "trans_bicycle": "Bicycles",
@@ -80,7 +80,7 @@ async function analyzeImage(imageUrl: string) {
     }
     
     const headers = {
-      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY!,
+      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY,
       "Content-Type": "application/octet-stream"
     };
 
@@ -104,7 +104,7 @@ async function analyzeImage(imageUrl: string) {
   } else {
     // Handle regular HTTP URLs
     const headers = {
-      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY!,
+      "Ocp-Apim-Subscription-Key": AZURE_SUBSCRIPTION_KEY,
       "Content-Type": "application/json"
     };
 

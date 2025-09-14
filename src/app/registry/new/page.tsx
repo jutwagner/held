@@ -43,6 +43,15 @@ export default function NewObjectPage() {
     openToSale: false,
   });
   const [forSaleCount, setForSaleCount] = useState(0);
+  const [analyzingImage, setAnalyzingImage] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<{
+    brand?: string;
+    category?: string;
+    brandConfidence?: number;
+    categoryConfidence?: number;
+    error?: string;
+    debug?: any;
+  } | null>(null);
 
   const [newTag, setNewTag] = useState('');
   
@@ -182,15 +191,82 @@ export default function NewObjectPage() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).filter(f => 
       f.type.startsWith('image/') || 
       f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
     );
+    
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...files]
     }));
+
+    // Analyze the first image with Azure Vision if it's the first image
+    if (files.length > 0 && formData.images.length === 0) {
+      await analyzeFirstImage(files[0]);
+    }
+  };
+
+  const analyzeFirstImage = async (file: File) => {
+    setAnalyzingImage(true);
+    try {
+      // Upload image to Firebase Storage first, then analyze via URL
+      const { storage } = await import('@/lib/firebase');
+      const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      
+      // Create a temporary reference for analysis
+      const tempRef = ref(storage, `temp-analysis/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`);
+      
+      // Upload the file
+      await uploadBytes(tempRef, file);
+      
+      // Get the public URL
+      const publicUrl = await getDownloadURL(tempRef);
+      
+      // Analyze via URL
+      const response = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: publicUrl }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnalysisResult(result);
+        
+        // Auto-fill form fields if confidence is high enough
+        if (result.category && result.categoryConfidence && result.categoryConfidence > 0.5) {
+          setFormData(prev => ({ ...prev, category: result.category }));
+          setSelectedCategory(result.category);
+          setShowCascadingSelect(true); // Automatically show the cascading select
+        }
+        
+        if (result.brand && result.brandConfidence && result.brandConfidence > 0.6) {
+          setFormData(prev => ({ ...prev, maker: result.brand }));
+        }
+      } else {
+        // Handle API errors gracefully
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.warn('Image analysis failed:', errorData.error);
+        setAnalysisResult({ 
+          error: errorData.error || 'Analysis failed',
+          category: null,
+          brand: null 
+        });
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      setAnalysisResult({ 
+        error: 'Failed to analyze image',
+        category: null,
+        brand: null 
+      });
+    } finally {
+      setAnalyzingImage(false);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -327,19 +403,31 @@ export default function NewObjectPage() {
                           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                           onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
                           onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
-                          onDrop={(e) => {
+                          onDrop={async (e) => {
                             e.preventDefault();
                             setDragActive(false);
                             const files = Array.from(e.dataTransfer?.files || []).filter(f => 
                               f.type.startsWith('image/') || 
                               f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
                             );
-                            if (files.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+                            if (files.length) {
+                              setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+                              // Analyze the first image if it's the first image
+                              if (formData.images.length === 0) {
+                                await analyzeFirstImage(files[0]);
+                              }
+                            }
                           }}
-                          onPaste={(e) => {
+                          onPaste={async (e) => {
                             const items = Array.from(e.clipboardData?.items || []);
                             const images = items.map(i => i.type?.startsWith('image/') ? i.getAsFile() : null).filter(Boolean) as File[];
-                            if (images.length) setFormData(prev => ({ ...prev, images: [...prev.images, ...images] }));
+                            if (images.length) {
+                              setFormData(prev => ({ ...prev, images: [...prev.images, ...images] }));
+                              // Analyze the first image if it's the first image
+                              if (formData.images.length === 0) {
+                                await analyzeFirstImage(images[0]);
+                              }
+                            }
                           }}
                         >
                           <div className="mb-2 flex items-center justify-center">
@@ -378,6 +466,83 @@ export default function NewObjectPage() {
                             <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-black/30"></div>
                           )}
                         </div>
+
+                        {/* Analysis Status */}
+                        {analyzingImage && (
+                          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                              <span className="text-sm text-blue-700 dark:text-blue-300">
+                                Analyzing image with AI...
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {analysisResult && !analyzingImage && (
+                          <div className={`mt-6 p-4 rounded-lg ${
+                            analysisResult.error 
+                              ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                              : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                          }`}>
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                                analysisResult.error ? 'bg-red-500' : 'bg-green-500'
+                              }`}>
+                                {analysisResult.error ? (
+                                  <X className="h-3 w-3 text-white" />
+                                ) : (
+                                  <Check className="h-3 w-3 text-white" />
+                                )}
+                              </div>
+                              <span className={`text-sm font-medium ${
+                                analysisResult.error 
+                                  ? 'text-red-700 dark:text-red-300'
+                                  : 'text-green-700 dark:text-green-300'
+                              }`}>
+                                {analysisResult.error ? 'AI Analysis Failed' : 'AI Analysis Complete'}
+                              </span>
+                            </div>
+                            {analysisResult.error ? (
+                              <div className="text-sm text-red-600 dark:text-red-400">
+                                {analysisResult.error}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-green-600 dark:text-green-400">
+                                {analysisResult.category && (
+                                  <div className="mb-2">
+                                    <span className="font-medium">Category: {analysisResult.category}</span>
+                                    {analysisResult.categoryConfidence && (
+                                      <span className="ml-2 text-xs opacity-75">
+                                        ({Math.round(analysisResult.categoryConfidence * 100)}% confidence)
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                {analysisResult.brand && (
+                                  <div className="mb-2">
+                                    <span className="font-medium">Brand: {analysisResult.brand}</span>
+                                    {analysisResult.brandConfidence && (
+                                      <span className="ml-2 text-xs opacity-75">
+                                        ({Math.round(analysisResult.brandConfidence * 100)}% confidence)
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                {analysisResult.debug && (
+                                  <details className="mt-2 text-xs">
+                                    <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
+                                      Debug Info
+                                    </summary>
+                                    <pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto max-h-40">
+                                      {JSON.stringify(analysisResult.debug, null, 2)}
+                                    </pre>
+                                  </details>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* Image Preview */}
                         {formData.images.length > 0 && (
@@ -474,6 +639,43 @@ export default function NewObjectPage() {
                           />
                         </div>
                       </div>
+
+                      {/* AI Category Suggestion */}
+                      {analysisResult && analysisResult.category && !analysisResult.error && (
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                <Check className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                                  AI Auto-Selected: {analysisResult.category}
+                                </span>
+                                {analysisResult.categoryConfidence && (
+                                  <span className="ml-2 text-xs opacity-75">
+                                    ({Math.round(analysisResult.categoryConfidence * 100)}% confidence)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAnalysisResult(null);
+                                setShowCascadingSelect(false);
+                                setFormData(prev => ({ ...prev, category: '', maker: '', title: '' }));
+                                setSelectedCategory('');
+                                setSelectedBrand('');
+                                setSelectedItem('');
+                              }}
+                              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                            >
+                              Choose Different
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Category Selection or Cascading Select */}
                       {!showCascadingSelect ? (
