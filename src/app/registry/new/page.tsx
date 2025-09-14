@@ -67,10 +67,22 @@ export default function NewObjectPage() {
     setSelectedBrand(brand);
     setSelectedItem(item);
     
-    // Update form data - if title is empty, use "Brand, Item" format
+    // Update form data - auto-generate title from brand and item
     setFormData(prev => {
       const currentTitle = prev.title.trim();
-      const newTitle = currentTitle || (brand && item ? `${brand}, ${item}` : item || brand);
+      let newTitle = currentTitle;
+      
+      // If both brand and item are present, use "Brand, Item" format
+      if (brand && item) {
+        newTitle = `${brand}, ${item}`;
+      } else if (item) {
+        // If only item is present, use just the item
+        newTitle = item;
+      } else if (brand) {
+        // If only brand is present, use just the brand
+        newTitle = brand;
+      }
+      // If neither brand nor item, keep current title
       
       return {
         ...prev,
@@ -654,7 +666,7 @@ export default function NewObjectPage() {
                                 setSelectedBrand('');
                                 setSelectedItem('');
                               }}
-                              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                              className="px-3 py-1 bg-black dark:bg-gray-700 text-white dark:text-black text-sm rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                             >
                               Choose Different
                             </button>
@@ -713,6 +725,7 @@ export default function NewObjectPage() {
                                 Select brand and item, or add your own
                               </p>
                             </div>
+                            
                             <button
                               type="button"
                               onClick={() => {
