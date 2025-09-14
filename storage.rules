@@ -1,16 +1,36 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow users to upload images to their own folder
+    // User profile images - only the user can read/write their own
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Object images - users can manage their own objects
     match /objects/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Allow public read access to images that are marked as public
-    // This will be handled at the application level by checking the object's isPublic flag
+    // COA (Certificate of Authenticity) images - users can manage their own
+    match /coa/{objectId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Temporary analysis images - allow authenticated users to upload for AI analysis
+    match /temp-analysis/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Public object images - allow public read access for public objects only
+    // This requires the object to be marked as public in Firestore
+    match /public-objects/{allPaths=**} {
+      allow read: if true; // Public read access for public objects
+      allow write: if request.auth != null; // Only authenticated users can upload
+    }
+    
+    // Default deny all other paths
     match /{allPaths=**} {
-      allow read: if true; // Allow public read access for now
-      allow write: if request.auth != null; // Allow authenticated users to write
+      allow read, write: if false;
     }
   }
 }
