@@ -37,6 +37,19 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "console": "Tech",
   "vr": "Tech",
   "headset": "Tech",
+  "painting": "Art",
+  "art": "Art",
+  "sculpture": "Art",
+  "drawing": "Art",
+  "sketch": "Art",
+  "canvas": "Art",
+  "portrait": "Art",
+  "landscape": "Art",
+  "abstract": "Art",
+  "picture frame": "Art",
+  "frame": "Art",
+  "gallery": "Art",
+  "museum": "Art",
 };
 
 // Map Azure Vision categories → Held categories
@@ -61,6 +74,10 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "trans_train": "Automotive",
   "trans_airplane": "Automotive",
   "trans_boat": "Automotive",
+  "abstract_rect": "Art",
+  "abstract": "Art",
+  "abstract_nature": "Art",
+  "abstract_other": "Art",
 };
 
 async function analyzeImage(imageUrl: string) {
