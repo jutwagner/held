@@ -253,16 +253,16 @@ export default function NewObjectPage() {
         console.warn('Image analysis failed:', errorData.error);
         setAnalysisResult({ 
           error: errorData.error || 'Analysis failed',
-          category: null,
-          brand: null 
+          category: undefined,
+          brand: undefined 
         });
       }
     } catch (error) {
       console.error('Error analyzing image:', error);
       setAnalysisResult({ 
         error: 'Failed to analyze image',
-        category: null,
-        brand: null 
+        category: undefined,
+        brand: undefined
       });
     } finally {
       setAnalyzingImage(false);
