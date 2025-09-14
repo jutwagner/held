@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react';
 
 interface CSVRow {
@@ -35,6 +35,23 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
   const [newItem, setNewItem] = useState('');
   const [addingBrand, setAddingBrand] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
+  
+  // Refs for auto-focusing input fields
+  const newBrandInputRef = useRef<HTMLInputElement>(null);
+  const newItemInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus input fields when they appear
+  useEffect(() => {
+    if (showAddBrand && newBrandInputRef.current) {
+      newBrandInputRef.current.focus();
+    }
+  }, [showAddBrand]);
+
+  useEffect(() => {
+    if (showAddItem && newItemInputRef.current) {
+      newItemInputRef.current.focus();
+    }
+  }, [showAddItem]);
 
   // Load CSV data on component mount and when preSelectedCategory changes
   const loadCSVData = useCallback(async () => {
@@ -332,6 +349,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           {showAddBrand && (
             <div className="mt-2 flex gap-2">
               <input
+                ref={newBrandInputRef}
                 type="text"
                 value={newBrand}
                 onChange={(e) => setNewBrand(e.target.value)}
@@ -380,6 +398,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           {showAddItem && (
             <div className="mt-2 flex gap-2">
               <input
+                ref={newItemInputRef}
                 type="text"
                 value={newItem}
                 onChange={(e) => setNewItem(e.target.value)}
