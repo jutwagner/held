@@ -624,21 +624,6 @@ export default function NewObjectPage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">Tell us about your item.</p>
                     </div>
                     <div className="space-y-12">
-                      <div className="transition-shadow">
-                        <label htmlFor="title" className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-3 uppercase tracking-widest">
-                          Name <span className="text-gray-400 dark:text-gray-500 font-normal">(optional)</span>
-                        </label>
-                        <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
-                          <Input
-                            id="title"
-                            ref={titleRef as any}
-                            value={formData.title}
-                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                            placeholder="Leave empty to auto-generate from brand and item"
-                            className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
-                          />
-                        </div>
-                      </div>
 
                       {/* AI Category Suggestion */}
                       {analysisResult && analysisResult.category && !analysisResult.error && (
@@ -747,6 +732,23 @@ export default function NewObjectPage() {
                             className="transition-shadow"
                             preSelectedCategory={formData.category}
                           />
+                          
+                          {/* Name field - positioned after brand/maker selection */}
+                          <div className="mt-8 transition-shadow">
+                            <label htmlFor="title" className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-3 uppercase tracking-widest">
+                              Name <span className="text-gray-400 dark:text-gray-500 font-normal">(optional)</span>
+                            </label>
+                            <div className="focus-within:ring-2 focus-within:ring-black/80 rounded-md">
+                              <Input
+                                id="title"
+                                ref={titleRef as any}
+                                value={formData.title}
+                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder={selectedItem ? `${selectedBrand ? selectedBrand + ', ' : ''}${selectedItem}` : "Leave empty to auto-generate from brand and item"}
+                                className="text-3xl sm:text-4xl md:text-5xl leading-tight h-auto py-2 pb-3 border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
