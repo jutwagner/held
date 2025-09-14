@@ -687,7 +687,7 @@ export default function NewObjectPage() {
                             {[
                               { name: 'Art', Icon: Palette },
                               { name: 'Books', Icon: Book },
-                              { name: 'Electronics', Icon: Cpu },
+                              { name: 'Tech', Icon: Cpu },
                               { name: 'Fashion', Icon: Tag },
                               { name: 'Furniture', Icon: Shapes },
                               { name: 'HiFi', Icon: Music2 },

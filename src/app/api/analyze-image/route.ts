@@ -25,6 +25,18 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "bag": "Apparel",
   "record": "Media",
   "vinyl": "Media",
+  "computer": "Tech",
+  "laptop": "Tech",
+  "phone": "Tech",
+  "smartphone": "Tech",
+  "tablet": "Tech",
+  "monitor": "Tech",
+  "keyboard": "Tech",
+  "mouse": "Tech",
+  "gaming": "Tech",
+  "console": "Tech",
+  "vr": "Tech",
+  "headset": "Tech",
 };
 
 // Map Azure Vision categories → Held categories
