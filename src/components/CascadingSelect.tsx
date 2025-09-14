@@ -212,8 +212,9 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           setSelectedBrand(newBrand.trim());
           setNewBrand('');
           setShowAddBrand(false);
-          // Notify parent after state update
-          setTimeout(() => notifyParent(), 0);
+          // Notify parent immediately with the new brand
+          const category = preSelectedCategory || selectedCategory;
+          onSelectionChange(category, newBrand.trim(), selectedItem);
         } else {
           const error = await response.json();
           console.error('Failed to add brand:', error);
@@ -266,8 +267,9 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           setSelectedItem(newItem.trim());
           setNewItem('');
           setShowAddItem(false);
-          // Notify parent after state update
-          setTimeout(() => notifyParent(), 0);
+          // Notify parent immediately with the new item
+          const category = preSelectedCategory || selectedCategory;
+          onSelectionChange(category, selectedBrand, newItem.trim());
         } else {
           const error = await response.json();
           console.error('Failed to add item:', error);
