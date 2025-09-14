@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Plus, Search, Eye, EyeOff, List, Columns, CheckCircle, Clock, Shield, E
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
+import { debounce } from '@/lib/performance';
 
 import { MobileBottomBar } from '@/components/Navigation';
 
@@ -19,7 +20,6 @@ export default function RegistryPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [objects, setObjects] = useState<HeldObject[]>([]);
-  const [filteredObjects, setFilteredObjects] = useState<HeldObject[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [showPublicOnly, setShowPublicOnly] = useState(false);
@@ -42,44 +42,71 @@ export default function RegistryPage() {
   useEffect(() => {
     if (!user || typeof user.uid !== 'string') return;
     setLoadingObjects(true);
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates with limit for better performance
     const unsubscribe = subscribeObjects(user.uid, (userObjects) => {
       setObjects(userObjects);
       setLoadingObjects(false);
-    });
+    }, 100); // Limit to 100 objects initially
     return () => unsubscribe();
   }, [user]);
 
-  useEffect(() => {
-    filterObjects();
-    setPage(1); // Reset to first page on filter change
-  }, [objects, searchTerm, showPublicOnly, anchoringFilter]);
+  // Debounced search to avoid excessive filtering
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      setSearchTerm(term);
+    }, 300),
+    []
+  );
 
-  // loadObjects removed; now handled by subscribeObjects
-
-  const filterObjects = () => {
+  // Memoized filtering for better performance
+  const filteredObjects = useMemo(() => {
     let filtered = objects;
-    if (searchTerm) {
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(obj => 
-        obj.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        obj.maker?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (Array.isArray(obj.tags) && obj.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+        obj.title?.toLowerCase().includes(term) ||
+        obj.maker?.toLowerCase().includes(term) ||
+        obj.tags?.some(tag => tag.toLowerCase().includes(term))
       );
     }
+
+    // Apply public filter
     if (showPublicOnly) {
       filtered = filtered.filter(obj => obj.isPublic);
     }
+
+    // Apply anchoring filter
     if (anchoringFilter !== 'all') {
       filtered = filtered.filter(obj => {
-        const anchored = !!obj.anchoring?.isAnchored;
-        const pending = !!obj.anchoring?.txHash && !anchored;
-        if (anchoringFilter === 'anchored') return anchored;
-        if (anchoringFilter === 'pending') return pending;
-        return !anchored && !pending;
+        switch (anchoringFilter) {
+          case 'anchored':
+            return obj.anchoring?.status === 'anchored';
+          case 'pending':
+            return obj.anchoring?.status === 'pending';
+          case 'not':
+            return !obj.anchoring || obj.anchoring.status === 'not_anchored';
+          default:
+            return true;
+        }
       });
     }
-    setFilteredObjects(filtered);
-  };
+
+    return filtered;
+  }, [objects, searchTerm, showPublicOnly, anchoringFilter]);
+
+  useEffect(() => {
+    setPage(1); // Reset to first page on filter change
+  }, [searchTerm, showPublicOnly, anchoringFilter]);
+
+  // loadObjects removed; now handled by subscribeObjects
+
+  // Pagination for filtered objects
+  const paginatedObjects = useMemo(() => {
+    const startIndex = (page - 1) * pageSize;
+    return filteredObjects.slice(startIndex, startIndex + pageSize);
+  }, [filteredObjects, page, pageSize]);
 
   const toggleSelection = (id: string) => {
     setSelected(prev => {
@@ -191,8 +218,8 @@ export default function RegistryPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <Input
                     placeholder="Search objects, makers, or tags..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    defaultValue={searchTerm}
+                    onChange={(e) => debouncedSearch(e.target.value)}
                     className="pl-10 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
                   />
                 </div>
@@ -300,7 +327,7 @@ export default function RegistryPage() {
                   {view === 'grid' ? (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredObjects.slice((page-1)*pageSize, page*pageSize).map((obj) => (
+                        {paginatedObjects.map((obj) => (
                           <div key={obj.id}>
                             <div className="flex items-center gap-2 mb-2">
                               {/* <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
@@ -322,7 +349,7 @@ export default function RegistryPage() {
                         <thead className="bg-gray-50 dark:bg-gray-700">
                           <tr className="text-left">
                             <th className="p-3"><input type="checkbox" onChange={(e) => {
-                              if (e.target.checked) setSelected(new Set(filteredObjects.map(o => o.id))); else clearSelection();
+                              if (e.target.checked) setSelected(new Set(paginatedObjects.map(o => o.id))); else clearSelection();
                             }} /></th>
                             <th className="p-3">Title</th>
                             <th className="p-3">Category</th>
@@ -334,7 +361,7 @@ export default function RegistryPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredObjects.map(obj => {
+                          {paginatedObjects.map(obj => {
                             const anchored = !!obj.anchoring?.isAnchored;
                             const pending = !!obj.anchoring?.txHash && !anchored;
                             const prov = getProvenanceScore(obj);

@@ -11,9 +11,11 @@ import {
   where,
   orderBy,
   limit,
+  startAfter,
   serverTimestamp,
   onSnapshot,
   QuerySnapshot,
+  DocumentSnapshot,
   DocumentData,
 } from 'firebase/firestore';
 import {
@@ -383,22 +385,62 @@ export const createObject = async (userId: string, data: CreateObjectData): Prom
   const docRef = await addDoc(collection(db, 'objects'), objectData);
   return { id: docRef.id, ...objectData } as HeldObject;
 };
-// Real-time listener for user objects (returns unsubscribe function)
-export function subscribeObjects(userId: string, callback: (objects: HeldObject[]) => void): () => void {
+// Real-time listener for user objects with pagination (returns unsubscribe function)
+export function subscribeObjects(
+  userId: string, 
+  callback: (objects: HeldObject[]) => void,
+  limitCount: number = 50
+): () => void {
   const objectsRef = collection(db, 'objects');
   const q = query(
     objectsRef,
     where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(limitCount)
   );
   const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-  const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
+    const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as HeldObject[];
     callback(objects);
   });
   return unsubscribe;
+}
+
+// Get objects with pagination for better performance
+export async function getObjectsPaginated(
+  userId: string, 
+  pageSize: number = 20, 
+  lastDoc?: DocumentSnapshot
+): Promise<{ objects: HeldObject[], lastDoc: DocumentSnapshot | null }> {
+  const objectsRef = collection(db, 'objects');
+  let q = query(
+    objectsRef,
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    limit(pageSize)
+  );
+
+  if (lastDoc) {
+    q = query(
+      objectsRef,
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      startAfter(lastDoc),
+      limit(pageSize)
+    );
+  }
+
+  const querySnapshot = await getDocs(q);
+  const objects = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+  })) as HeldObject[];
+
+  const newLastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+  
+  return { objects, lastDoc: newLastDoc };
 }
 
 export const getObject = async (id: string): Promise<HeldObject | null> => {

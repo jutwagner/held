@@ -5,12 +5,27 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import ThemeBody from "@/components/ThemeBody";
+import { reportWebVitals } from "@/lib/performance";
 
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPassport = pathname?.startsWith('/passport');
+
+  useEffect(() => {
+    // Initialize Web Vitals monitoring
+    if (typeof window !== 'undefined') {
+      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(reportWebVitals);
+        getFID(reportWebVitals);
+        getFCP(reportWebVitals);
+        getLCP(reportWebVitals);
+        getTTFB(reportWebVitals);
+      });
+    }
+  }, []);
   return (
     <html lang="en">
       <head>
