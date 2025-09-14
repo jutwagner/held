@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     let provider;
-    try {
+    try { 
       console.log('[API/anchor] Attempting to get working Polygon provider...');
       provider = await getWorkingPolygonProvider();
       // Lower internal polling frequency to reduce background RPC load
