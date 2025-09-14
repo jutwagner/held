@@ -678,7 +678,7 @@ export default function NewObjectPage() {
                       )}
 
                       {/* Category Selection or Cascading Select */}
-                      {!showCascadingSelect ? (
+                      {!showCascadingSelect && !(analysisResult && analysisResult.category && !analysisResult.error) ? (
                         <div>
                           <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-6 uppercase tracking-widest">
                             Category
