@@ -37,6 +37,7 @@ A private, beautiful way to catalog and share the physical objects that matter t
 
 - Node.js 18+ 
 - Firebase account
+- Azure Cognitive Services Computer Vision account (for AI image analysis)
 - Git
 
 ### Installation
@@ -59,7 +60,20 @@ A private, beautiful way to catalog and share the physical objects that matter t
    - Set up Storage
    - Get your Firebase config from Project Settings
 
-4. **Configure environment variables**
+4. **Set up Azure Vision API (for AI image analysis)**
+   - Create an Azure Cognitive Services Computer Vision resource
+   - Get your endpoint URL and subscription key
+   - Run the setup script:
+   ```bash
+   ./setup-env.sh
+   ```
+   Or manually add to `.env.local`:
+   ```env
+   AZURE_VISION_ENDPOINT=https://your-vision-resource.cognitiveservices.azure.com/
+   AZURE_VISION_SUBSCRIPTION_KEY=your_subscription_key_here
+   ```
+
+5. **Configure environment variables**
    ```bash
    cp env.example .env.local
    ```
@@ -77,7 +91,7 @@ A private, beautiful way to catalog and share the physical objects that matter t
    
    ```
 
-5. **Set up Firestore security rules**
+6. **Set up Firestore security rules**
    
    In your Firebase console, go to Firestore Database > Rules and update with:
    ```javascript
