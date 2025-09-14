@@ -17,9 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // Initialize Web Vitals monitoring
     if (typeof window !== 'undefined') {
-      import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+      import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
         onCLS(reportWebVitals);
-        onFID(reportWebVitals);
+        onINP(reportWebVitals); // INP replaces FID in web-vitals v3+
         onFCP(reportWebVitals);
         onLCP(reportWebVitals);
         onTTFB(reportWebVitals);
