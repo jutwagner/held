@@ -213,7 +213,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           setNewBrand('');
           setShowAddBrand(false);
           // Notify parent immediately with the new brand
-          const category = preSelectedCategory || selectedCategory;
           onSelectionChange(category, newBrand.trim(), selectedItem);
         } else {
           const error = await response.json();
@@ -268,7 +267,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           setNewItem('');
           setShowAddItem(false);
           // Notify parent immediately with the new item
-          const category = preSelectedCategory || selectedCategory;
           onSelectionChange(category, selectedBrand, newItem.trim());
         } else {
           const error = await response.json();
