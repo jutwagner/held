@@ -162,7 +162,7 @@ export default function EditObjectPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {['Furniture','Lighting','Art','Decor','Textiles','Books','Other'].map(cat => (
+                  {['Art','Auto','Bicycle','Books','Ephemera','Everyday Carry','Fashion','Furniture','HiFi','Industrial Design','Instruments','Lighting','Miscellaneous','Moto','Movie','Music','Photography','Tech','Timepieces','Vintage'].map(cat => (
                     <button
                       key={cat}
                       type="button"
