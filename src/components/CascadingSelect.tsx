@@ -336,6 +336,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent appearance-none pr-10"
             >
               <option value="">Select a maker...</option>
+              <option value="I don't know">I don't know</option>
               <option value="__add_new__">+ Add new maker</option>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
@@ -385,6 +386,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent appearance-none pr-10"
             >
               <option value="">Select an item...</option>
+              <option value="I don't know">I don't know</option>
               <option value="__add_new__">+ Add new item</option>
               {items.map((item) => (
                 <option key={item} value={item}>
