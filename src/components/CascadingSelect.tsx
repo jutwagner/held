@@ -286,7 +286,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Refresh Button */}
+      {/* Refresh Button
       <div className="flex justify-end">
         <button
           type="button"
@@ -298,7 +298,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
           Refresh
         </button>
       </div>
-
+ */}
       {/* Category Select - Only show if no pre-selected category */}
       {!preSelectedCategory && (
         <div>

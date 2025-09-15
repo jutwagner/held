@@ -186,7 +186,7 @@ export function MobileBottomBar() {
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
         <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-          <Image src="/theCollaborative.svg" alt="theCollaborative" width={22} height={22} />
+          <Image src="/img/theCollaborative.svg" alt="theCollaborative" width={22} height={22} />
         </span>
       </Link>
 {/*}
