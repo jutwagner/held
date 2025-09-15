@@ -31,7 +31,7 @@ export default function NewRotationPage() {
   const [showAddModal, setShowAddModal] = useState(false);
 const [newItemData, setNewItemData] = useState<{ title: string; category: string; image: File | null }>({ title: '', category: '', image: null });
 const [addingItem, setAddingItem] = useState(false);
-const categoryOptions = ['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'];
+const categoryOptions = ['Art','Auto','Bicycle','Books','Ephemera','Everyday Carry','Fashion','Furniture','HiFi','Industrial Design','Instruments','Lighting','Miscellaneous','Moto','Movie','Music','Photography','Tech','Timepieces','Vintage'];
 
 const handleAddNewItem = async (e: React.FormEvent) => {
   e.preventDefault();

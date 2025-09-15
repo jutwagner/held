@@ -683,8 +683,11 @@ export default function NewObjectPage() {
                           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
                             {[
                               { name: 'Art', Icon: Palette },
+                              { name: 'Auto', Icon: Package },
+                              { name: 'Bicycle', Icon: Package },
                               { name: 'Books', Icon: Book },
-                              { name: 'Tech', Icon: Cpu },
+                              { name: 'Ephemera', Icon: Archive },
+                              { name: 'Everyday Carry', Icon: Archive },
                               { name: 'Fashion', Icon: Tag },
                               { name: 'Furniture', Icon: Shapes },
                               { name: 'HiFi', Icon: Music2 },
@@ -692,11 +695,13 @@ export default function NewObjectPage() {
                               { name: 'Instruments', Icon: Guitar },
                               { name: 'Lighting', Icon: Lamp },
                               { name: 'Miscellaneous', Icon: Shapes },
+                              { name: 'Moto', Icon: Package },
+                              { name: 'Movie', Icon: ImageIcon },
                               { name: 'Music', Icon: Music2 },
                               { name: 'Photography', Icon: ImageIcon },
                               { name: 'Tech', Icon: Cpu },
                               { name: 'Timepieces', Icon: Clock3 },
-                              { name: 'Everyday Carry', Icon: Archive },
+                              { name: 'Vintage', Icon: Clock3 },
                             ].map(({ name, Icon }) => (
                               <button
                                 key={name}
