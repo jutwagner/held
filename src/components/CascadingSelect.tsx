@@ -2,16 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react';
+import { getBrandsByCategory, getItemsByBrand, addBrandItem, subscribeToBrandsByCategory, subscribeToItemsByBrand, BrandItem } from '@/lib/brands-firestore';
 
-interface CSVRow {
-  category: string;
-  brand: string;
-  item: string;
-  era?: string;
-  country?: string;
-  type?: string;
-  notes?: string;
-}
 
 interface CascadingSelectProps {
   onSelectionChange: (category: string, brand: string, item: string) => void;
@@ -20,8 +12,6 @@ interface CascadingSelectProps {
 }
 
 export default function CascadingSelect({ onSelectionChange, className = '', preSelectedCategory }: CascadingSelectProps) {
-  const [csvData, setCsvData] = useState<CSVRow[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [items, setItems] = useState<string[]>([]);
   
@@ -53,55 +43,37 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     }
   }, [showAddItem]);
 
-  // Load CSV data on component mount and when preSelectedCategory changes
-  const loadCSVData = useCallback(async () => {
+  // Load brands from Firestore when category changes
+  const loadBrandsFromFirestore = useCallback(async (category: string) => {
+    if (!category) return;
+    
     try {
-      const response = await fetch('/list.csv');
-      const csvText = await response.text();
-      const lines = csvText.split('\n').slice(1); // Skip header
-      
-      const data: CSVRow[] = lines
-        .filter(line => line.trim())
-        .map(line => {
-          const columns = line.split(',');
-          return {
-            category: columns[0]?.trim() || '',
-            brand: columns[1]?.trim() || '',
-            item: columns[2]?.trim() || '',
-            era: columns[3]?.trim() || '',
-            country: columns[4]?.trim() || '',
-            type: columns[5]?.trim() || '',
-            notes: columns[6]?.trim() || ''
-          };
-        });
-      
-      setCsvData(data);
-      
-      // Extract unique categories
-      const uniqueCategories = Array.from(new Set(data.map(row => row.category).filter(Boolean)));
-      setCategories(uniqueCategories.sort());
+      const brandsData = await getBrandsByCategory(category, 100);
+      const uniqueBrands = Array.from(new Set(brandsData.map(item => item.brand).filter(Boolean)));
+      setBrands(uniqueBrands.sort());
     } catch (error) {
-      console.error('Error loading CSV data:', error);
+      console.error('Error loading brands from Firestore:', error);
     }
   }, []);
 
-  useEffect(() => {
-    loadCSVData();
-  }, [loadCSVData]);
+  // Load items from Firestore when brand changes
+  const loadItemsFromFirestore = useCallback(async (category: string, brand: string) => {
+    if (!category || !brand) return;
+    
+    try {
+      const itemsData = await getItemsByBrand(category, brand, 100);
+      const uniqueItems = Array.from(new Set(itemsData.map(item => item.item).filter(Boolean)));
+      setItems(uniqueItems.sort());
+    } catch (error) {
+      console.error('Error loading items from Firestore:', error);
+    }
+  }, []);
 
   // Update brands when category changes or when pre-selected category is available
   useEffect(() => {
     const category = preSelectedCategory || selectedCategory;
     if (category) {
-      const categoryBrands = Array.from(
-        new Set(
-          csvData
-            .filter(row => row.category === category)
-            .map(row => row.brand)
-            .filter(Boolean)
-        )
-      );
-      setBrands(categoryBrands.sort());
+      loadBrandsFromFirestore(category);
       if (!preSelectedCategory) {
         setSelectedBrand('');
         setSelectedItem('');
@@ -113,27 +85,19 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
       setSelectedItem('');
       setItems([]);
     }
-  }, [selectedCategory, preSelectedCategory, csvData]);
+  }, [selectedCategory, preSelectedCategory, loadBrandsFromFirestore]);
 
   // Update items when brand changes
   useEffect(() => {
     const category = preSelectedCategory || selectedCategory;
     if (category && selectedBrand) {
-      const brandItems = Array.from(
-        new Set(
-          csvData
-            .filter(row => row.category === category && row.brand === selectedBrand)
-            .map(row => row.item)
-            .filter(Boolean)
-        )
-      );
-      setItems(brandItems.sort());
+      loadItemsFromFirestore(category, selectedBrand);
       setSelectedItem('');
     } else {
       setItems([]);
       setSelectedItem('');
     }
-  }, [selectedCategory, selectedBrand, preSelectedCategory, csvData]);
+  }, [selectedCategory, selectedBrand, preSelectedCategory, loadItemsFromFirestore]);
 
   // Helper function to notify parent of changes
   const notifyParent = useCallback(() => {
@@ -179,8 +143,8 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     if (newBrand.trim() && category && !addingBrand) {
       setAddingBrand(true);
       try {
-        // Add to CSV via API
-        const response = await fetch('/api/csv-update', {
+        // Add to Firestore via API
+        const response = await fetch('/api/brands', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -198,16 +162,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
 
         if (response.ok) {
           // Update local state
-          const newRow: CSVRow = {
-            category: category,
-            brand: newBrand.trim(),
-            item: '',
-            era: '',
-            country: '',
-            type: '',
-            notes: ''
-          };
-          setCsvData(prev => [...prev, newRow]);
           setBrands(prev => [...prev, newBrand.trim()].sort());
           setSelectedBrand(newBrand.trim());
           setNewBrand('');
@@ -233,8 +187,8 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     if (newItem.trim() && category && selectedBrand && !addingItem) {
       setAddingItem(true);
       try {
-        // Add to CSV via API
-        const response = await fetch('/api/csv-update', {
+        // Add to Firestore via API
+        const response = await fetch('/api/brands', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -252,16 +206,6 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
 
         if (response.ok) {
           // Update local state
-          const newRow: CSVRow = {
-            category: category,
-            brand: selectedBrand,
-            item: newItem.trim(),
-            era: '',
-            country: '',
-            type: '',
-            notes: ''
-          };
-          setCsvData(prev => [...prev, newRow]);
           setItems(prev => [...prev, newItem.trim()].sort());
           setSelectedItem(newItem.trim());
           setNewItem('');
