@@ -186,9 +186,11 @@ export function MobileBottomBar() {
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
         <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/></svg>
+          <Image src="/theCollaborative.svg" alt="theCollaborative" width={22} height={22} />
         </span>
       </Link>
+{/*}
+
       {user && (
         <Link href="/settings" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
           <span className={`flex items-center justify-center h-10 w-10 ${isActive('/settings') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
@@ -199,6 +201,7 @@ export function MobileBottomBar() {
           </span>
         </Link>
       )}
+      */}
     </nav>
   );
 }
