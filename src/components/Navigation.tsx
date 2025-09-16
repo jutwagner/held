@@ -95,8 +95,7 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className={`border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky z-40${isDynamicIsland ? ' sticky-header-safe safe-area-top' : ''}`}
-        style={!isDynamicIsland ? { position: 'sticky', top: 0 } : undefined}
+        className={`border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-40${isDynamicIsland ? ' dynamic-island-safe' : ''}`}
       >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">

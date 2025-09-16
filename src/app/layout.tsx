@@ -41,8 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   gtag('config', 'G-8ZB18NNRPR');
 `}}
         />
-        {/* Prevent zoom on form fields (iOS) */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        {/* iOS native app configuration */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-touch-fullscreen" content="yes" />
         {/* Preconnect to Firebase Storage for faster image loads */}
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         {/* Preconnect to Google Fonts */}
@@ -52,7 +55,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeBody>
-            <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+            <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800" 
+                 style={{ 
+                   paddingTop: 'env(safe-area-inset-top)',
+                   paddingLeft: 'env(safe-area-inset-left)',
+                   paddingRight: 'env(safe-area-inset-right)'
+                 }}>
               <Navigation />
               <EmailVerificationBanner />
               {children}

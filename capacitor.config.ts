@@ -11,8 +11,18 @@ const config: CapacitorConfig = {
   },
   ios: {
     scheme: 'Held',
-    // Configure webview to prevent Safari-like behavior
-    webContentsDebuggingEnabled: false
+    // Enable web debugging to see actual errors instead of minified ones
+    webContentsDebuggingEnabled: true,
+    // Native iOS webview configuration
+    allowsLinkPreview: false,
+    scrollEnabled: true,
+    // Disable Safari-like behaviors
+    preferences: {
+      ScrollEnabled: true,
+      AllowInlineMediaPlayback: true,
+      MediaPlaybackRequiresUserAction: false,
+      DisallowOverscroll: true
+    }
   }
 };
 
