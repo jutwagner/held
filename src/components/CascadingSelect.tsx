@@ -169,8 +169,8 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
         });
 
         if (response.ok) {
-          // Update local state
-          setBrands(prev => [...prev, newBrand.trim()].sort());
+          // Refresh brands from Firestore to get the updated list
+          await loadBrandsFromFirestore(category);
           setSelectedBrand(newBrand.trim());
           setNewBrand('');
           setShowAddBrand(false);
@@ -213,8 +213,8 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
         });
 
         if (response.ok) {
-          // Update local state
-          setItems(prev => [...prev, newItem.trim()].sort());
+          // Refresh items from Firestore to get the updated list
+          await loadItemsFromFirestore(category, selectedBrand);
           setSelectedItem(newItem.trim());
           setNewItem('');
           setShowAddItem(false);
