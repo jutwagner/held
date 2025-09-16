@@ -55,6 +55,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             padding-top: ${isDynamicIslandDevice ? '60px' : '44px'} !important;
           }
           
+          /* Force sticky navigation with extended blur background */
+          nav[class*="sticky"] {
+            top: 0px !important;
+            padding-top: ${isDynamicIslandDevice ? '60px' : '44px'} !important;
+            margin-top: ${isDynamicIslandDevice ? '-60px' : '-44px'} !important;
+          }
+          
           /* Force remove Safari input styling */
           input, textarea, select {
             -webkit-appearance: none !important;
@@ -138,6 +145,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               @media screen and (max-device-width: 428px) {
                 body {
                   padding-top: 44px !important;
+                }
+                
+                /* Force sticky navigation with extended blur */
+                nav[class*="sticky"] {
+                  top: 0px !important;
+                  padding-top: 44px !important;
+                  margin-top: -44px !important;
+                }
+              }
+              
+              /* Dynamic Island sticky navigation with extended blur */
+              @media screen and (device-width: 393px) and (device-height: 852px),
+                     screen and (device-width: 430px) and (device-height: 932px),
+                     screen and (device-width: 428px) and (device-height: 926px) {
+                nav[class*="sticky"] {
+                  top: 0px !important;
+                  padding-top: 60px !important;
+                  margin-top: -60px !important;
                 }
               }
               

@@ -104,7 +104,12 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className={`border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-40${isDynamicIsland ? ' dynamic-island-safe' : ''}`}
+        className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky z-40"
+        style={{
+          top: '0px',
+          paddingTop: isDynamicIsland ? '60px' : '44px',
+          marginTop: isDynamicIsland ? '-60px' : '-44px'
+        }}
       >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
