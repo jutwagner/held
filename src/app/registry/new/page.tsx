@@ -16,6 +16,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 import CascadingSelect from '@/components/CascadingSelect';
+import MigrationButton from '@/components/MigrationButton';
 
 import ProvenanceSection from '@/components/ProvenanceSection';
 
@@ -342,6 +343,11 @@ export default function NewObjectPage() {
             <h1 className="text-4xl md:text-5xl font-light text-black dark:text-gray-100 dark:text-gray-100 mb-2 tracking-tighter leading-none">
               Add New
             </h1>
+          </div>
+
+          {/* Temporary Migration Button - Remove after migration is complete */}
+          <div className="mb-8">
+            <MigrationButton />
           </div>
 
 
@@ -709,17 +715,17 @@ export default function NewObjectPage() {
                                 onClick={() => handleCategorySelect(name)}
                                 className="group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
                               >
-                                <span className="flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2 bg-gray-100 dark:bg-gray-700">
+                                <span className="flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2">
                                   {typeof Icon === 'string' ? (
                                     <Image 
                                       src={`/cats/${Icon}`} 
                                       alt={name} 
                                       width={24} 
                                       height={24} 
-                                      className="w-5 h-5 sm:w-6 sm:h-6" 
+                                      className="w-15 h-15 sm:w-14 sm:h-14" 
                                     />
                                   ) : (
-                                    <Icon className="text-gray-600 dark:text-gray-300 w-5 h-5 sm:w-6 sm:h-6" />
+                                    <Icon className="text-gray-600 dark:text-gray-300 w-9 h-9 sm:w-6 sm:h-6" />
                                   )}
                                 </span>
                                 <span className="text-xs sm:text-sm font-medium text-center leading-snug text-gray-800 dark:text-gray-200">
