@@ -25,6 +25,76 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         onTTFB(reportWebVitals);
       });
     }
+
+    // Force iOS native styling
+    if (typeof window !== 'undefined') {
+      // Check if we're in Capacitor
+      const isCapacitor = !!(window as any).Capacitor;
+      
+      if (isCapacitor) {
+        console.log('🍎 Capacitor detected - applying iOS fixes');
+        
+        // Force Dynamic Island safe area
+        const screenHeight = window.screen.height;
+        const screenWidth = window.screen.width;
+        const pixelRatio = window.devicePixelRatio;
+        
+        const isDynamicIslandDevice = (
+          (screenWidth === 393 && screenHeight === 852 && pixelRatio === 3) ||
+          (screenWidth === 430 && screenHeight === 932 && pixelRatio === 3) ||
+          (screenWidth === 428 && screenHeight === 926 && pixelRatio === 3)
+        );
+        
+        console.log('📱 Device info:', { screenWidth, screenHeight, pixelRatio, isDynamicIslandDevice });
+        
+        // Add CSS directly to head
+        const style = document.createElement('style');
+        style.innerHTML = `
+          /* Force iOS native styling */
+          body {
+            padding-top: ${isDynamicIslandDevice ? '60px' : '44px'} !important;
+          }
+          
+          /* Force remove Safari input styling */
+          input, textarea, select {
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            border-radius: 8px !important;
+            border: 1px solid #d1d5db !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            font-size: 16px !important;
+          }
+          
+          input::-webkit-contacts-auto-fill-button,
+          input::-webkit-credentials-auto-fill-button,
+          input::-webkit-caps-lock-indicator,
+          input::-webkit-clear-button {
+            display: none !important;
+            visibility: hidden !important;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        // Force remove Safari UI on all inputs
+        const forceInputStyling = () => {
+          const inputs = document.querySelectorAll('input, textarea, select');
+          inputs.forEach((input: any) => {
+            input.style.webkitAppearance = 'none';
+            input.style.appearance = 'none';
+            input.style.outline = 'none';
+            input.style.webkitTapHighlightColor = 'transparent';
+            input.style.fontSize = '16px';
+          });
+        };
+        
+        // Run immediately and on DOM changes
+        forceInputStyling();
+        const observer = new MutationObserver(forceInputStyling);
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    }
   }, []);
   return (
     <html lang="en">
@@ -49,6 +119,56 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
+        
+        {/* Force iOS native styling directly in head */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Capacitor iOS specific overrides */
+            @media screen and (-webkit-min-device-pixel-ratio: 2) {
+              /* Force body padding for Dynamic Island devices */
+              @media screen and (device-width: 393px) and (device-height: 852px),
+                     screen and (device-width: 430px) and (device-height: 932px),
+                     screen and (device-width: 428px) and (device-height: 926px) {
+                body {
+                  padding-top: 60px !important;
+                }
+              }
+              
+              /* All other iOS devices */
+              @media screen and (max-device-width: 428px) {
+                body {
+                  padding-top: 44px !important;
+                }
+              }
+              
+              /* Force input styling */
+              input[type="text"], input[type="email"], input[type="password"], 
+              textarea, select {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                border-radius: 8px !important;
+                border: 1px solid #d1d5db !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                outline: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+                font-size: 16px !important;
+                box-shadow: none !important;
+              }
+              
+              /* Hide Safari UI elements */
+              input::-webkit-contacts-auto-fill-button,
+              input::-webkit-credentials-auto-fill-button,
+              input::-webkit-caps-lock-indicator,
+              input::-webkit-clear-button,
+              input::-webkit-inner-spin-button,
+              input::-webkit-outer-spin-button {
+                display: none !important;
+                visibility: hidden !important;
+                -webkit-appearance: none !important;
+              }
+            }
+          `
+        }} />
         {/* Preconnect to Firebase Storage for faster image loads */}
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         {/* Preconnect to Google Fonts */}
@@ -58,12 +178,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeBody>
-            <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800" 
-                 style={{ 
-                   paddingTop: 'env(safe-area-inset-top)',
-                   paddingLeft: 'env(safe-area-inset-left)',
-                   paddingRight: 'env(safe-area-inset-right)'
-                 }}>
+            <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
               <Navigation />
               <EmailVerificationBanner />
               {children}
