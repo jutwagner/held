@@ -18,6 +18,14 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
   const [selectedCategory, setSelectedCategory] = useState(preSelectedCategory || '');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedItem, setSelectedItem] = useState('');
+
+  // Define the categories list
+  const categories = [
+    'Art', 'Auto', 'Bicycle', 'Books', 'Ephemera', 'Everyday Carry', 'Fashion', 
+    'Furniture', 'HiFi', 'Industrial Design', 'Instruments', 'Lighting', 
+    'Miscellaneous', 'Moto', 'Movie', 'Music', 'Photography', 'Tech', 
+    'Timepieces', 'Vintage'
+  ];
   
   const [showAddBrand, setShowAddBrand] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
