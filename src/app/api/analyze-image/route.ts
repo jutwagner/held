@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Azure Vision API configuration - ALL from environment variables
-const AZURE_ENDPOINT = process.env.AZURE_VISION_ENDPOINT;
-const AZURE_SUBSCRIPTION_KEY = process.env.AZURE_VISION_SUBSCRIPTION_KEY;
-
 // Map Vision tags → Held categories
 const TAG_TO_CATEGORY: Record<string, string> = {
   "speaker": "Audio",
@@ -81,6 +77,10 @@ const CATEGORY_MAPPING: Record<string, string> = {
 };
 
 async function analyzeImage(imageUrl: string) {
+  // Get environment variables at runtime
+  const AZURE_ENDPOINT = process.env.AZURE_VISION_ENDPOINT;
+  const AZURE_SUBSCRIPTION_KEY = process.env.AZURE_VISION_SUBSCRIPTION_KEY;
+  
   // Validate environment variables
   if (!AZURE_ENDPOINT || !AZURE_SUBSCRIPTION_KEY) {
     throw new Error('Azure Vision environment variables not configured');
@@ -238,6 +238,10 @@ function extractBrandCategory(data: any) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get environment variables at runtime
+    const AZURE_ENDPOINT = process.env.AZURE_VISION_ENDPOINT;
+    const AZURE_SUBSCRIPTION_KEY = process.env.AZURE_VISION_SUBSCRIPTION_KEY;
+    
     // Validate environment variables at runtime
     if (!AZURE_ENDPOINT || !AZURE_SUBSCRIPTION_KEY) {
       return NextResponse.json(
