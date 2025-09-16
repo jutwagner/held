@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import ThemeBody from "@/components/ThemeBody";
+import IOSNativeHandler from "@/components/IOSNativeHandler";
 import { reportWebVitals } from "@/lib/performance";
 
 import { usePathname } from 'next/navigation';
@@ -220,6 +221,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeBody>
+            <IOSNativeHandler />
             <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
               <Navigation />
               <EmailVerificationBanner />
