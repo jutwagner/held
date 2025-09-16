@@ -145,7 +145,6 @@
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
-				6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
@@ -417,7 +416,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
@@ -428,21 +426,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6AFE26DB2E5FE0C5007AF8EA /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 		};
-		6AFE26DD2E5FE0C5007AF8EA /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 		};
-		6AFE26DF2E5FE0C5007AF8EA /* FirebaseDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 		};
 		6AFE26E12E5FE0C5007AF8EA /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6AFE26DA2E5FE0C5007AF8EA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
