@@ -62,19 +62,27 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "indoor_bedroom": "Furniture",
   "people_portrait": "Art",
   "people_group": "Art",
-  "trans_car": "Automotive",
-  "trans_truck": "Automotive",
-  "trans_motorcycle": "Automotive",
-  "trans_bicycle": "Bicycles",
-  "trans_bus": "Automotive",
-  "trans_train": "Automotive",
-  "trans_airplane": "Automotive",
-  "trans_boat": "Automotive",
+  "trans_car": "Auto",
+  "trans_truck": "Auto",
+  "trans_motorcycle": "Moto",
+  "trans_bicycle": "Bicycle",
+  "trans_bus": "Auto",
+  "trans_train": "Auto",
+  "trans_airplane": "Auto",
+  "trans_boat": "Auto",
   "abstract_rect": "Art",
   "abstract": "Art",
   "abstract_nature": "Art",
   "abstract_other": "Art",
 };
+
+// Define valid categories that can be auto-selected
+const VALID_CATEGORIES = [
+  'Art', 'Auto', 'Bicycle', 'Books', 'Ephemera', 'Everyday Carry', 'Fashion', 
+  'Furniture', 'HiFi', 'Industrial Design', 'Instruments', 'Lighting', 
+  'Miscellaneous', 'Moto', 'Movie', 'Music', 'Photography', 'Tech', 
+  'Timepieces', 'Vintage'
+];
 
 async function analyzeImage(imageUrl: string) {
   // Get environment variables at runtime
@@ -217,6 +225,13 @@ function extractBrandCategory(data: any) {
       categoryConfidence = 0.85; // Higher confidence for tag-based mapping
       break;
     }
+  }
+
+  // Validate that the category is in our valid categories list
+  if (category && !VALID_CATEGORIES.includes(category)) {
+    console.log(`❌ Category "${category}" not in valid categories list, clearing auto-selection`);
+    category = undefined;
+    categoryConfidence = undefined;
   }
 
   const result = {
