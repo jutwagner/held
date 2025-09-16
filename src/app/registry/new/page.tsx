@@ -732,17 +732,17 @@ export default function NewObjectPage() {
                                 onClick={() => handleCategorySelect(name)}
                                 className="group flex flex-col items-center justify-center rounded-xl border transition-all duration-200 aspect-square p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
                               >
-                                <span className="flex items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 mb-2">
+                                <span className="flex items-center justify-center rounded-full w-20 h-20 sm:w-22 sm:h-22 mb-2">
                                   {typeof Icon === 'string' ? (
                                     <Image 
                                       src={`/cats/${Icon}`} 
                                       alt={name} 
                                       width={24} 
                                       height={24} 
-                                      className="w-15 h-15 sm:w-14 sm:h-14" 
+                                      className="w-25 h-25 sm:w-24 sm:h-24" 
                                     />
                                   ) : (
-                                    <Icon className="text-gray-600 dark:text-gray-300 w-9 h-9 sm:w-6 sm:h-6" />
+                                    <Icon className="text-gray-600 dark:text-gray-300 w-25 h-25 sm:w-25 sm:h-25" />
                                   )}
                                 </span>
                                 <span className="text-xs sm:text-sm font-medium text-center leading-snug text-gray-800 dark:text-gray-200">
