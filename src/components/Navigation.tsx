@@ -77,13 +77,22 @@ export default function Navigation() {
   }, [user?.uid]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.navigator.userAgent) {
-      const ua = window.navigator.userAgent;
-      // iPhone 14 Pro/Pro Max, iOS 16+, Safari only
-      const isIOS = /iPhone/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua);
-      // Dynamic Island devices: iPhone 14 Pro, 14 Pro Max, 15 Pro, 15 Pro Max
-      const isDynamic = /iPhone\s?(14|15)\s?Pro/.test(ua);
-      setIsDynamicIsland(isIOS && isDynamic);
+    if (typeof window !== 'undefined') {
+      // Check for Dynamic Island devices by screen dimensions
+      const screenHeight = window.screen.height;
+      const screenWidth = window.screen.width;
+      const pixelRatio = window.devicePixelRatio;
+      
+      // iPhone 14 Pro: 393x852 @3x, iPhone 15 Pro: 393x852 @3x
+      // iPhone 14 Pro Max: 430x932 @3x, iPhone 15 Pro Max: 430x932 @3x
+      const isDynamicIslandDevice = (
+        (screenWidth === 393 && screenHeight === 852 && pixelRatio === 3) ||
+        (screenWidth === 430 && screenHeight === 932 && pixelRatio === 3) ||
+        (screenWidth === 428 && screenHeight === 926 && pixelRatio === 3)
+      );
+      
+      console.log('Device detection:', { screenWidth, screenHeight, pixelRatio, isDynamicIslandDevice });
+      setIsDynamicIsland(isDynamicIslandDevice);
     }
   }, []);
 

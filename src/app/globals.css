@@ -452,29 +452,41 @@ nav .held-container{
   input[type="password"],
   input[type="number"],
   input[type="search"],
-  textarea {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+  input[type="url"],
+  input[type="tel"],
+  textarea,
+  select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
     
     /* Remove Safari's default styling */
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
+    border-radius: 8px !important;
+    border: 1px solid #d1d5db !important;
     
     /* Native iOS styling */
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     
-    /* Remove Safari's focus ring */
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
+    /* Remove Safari's focus ring and highlights */
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-focus-ring-color: transparent !important;
     
     /* Prevent zoom on focus */
-    font-size: 16px;
+    font-size: 16px !important;
+    
+    /* Remove Safari autocomplete styling */
+    -webkit-text-security: none !important;
+    -webkit-rtl-ordering: logical !important;
     
     /* Smooth transitions */
-    transition: all 0.2s ease;
+    transition: all 0.2s ease !important;
+    
+    /* Remove Safari selection styling */
+    -webkit-user-select: text !important;
+    -webkit-touch-callout: none !important;
   }
   
   /* Focus states for inputs */
@@ -512,11 +524,35 @@ nav .held-container{
   
   /* Hide Safari's autocomplete dropdown styling */
   input::-webkit-contacts-auto-fill-button,
-  input::-webkit-credentials-auto-fill-button {
-    visibility: hidden;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
+  input::-webkit-credentials-auto-fill-button,
+  input::-webkit-caps-lock-indicator,
+  input::-webkit-clear-button,
+  input::-webkit-inner-spin-button,
+  input::-webkit-outer-spin-button {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    right: 0 !important;
+    display: none !important;
+    -webkit-appearance: none !important;
+  }
+  
+  /* Hide Safari's password suggestion and autofill UI */
+  input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Remove Safari's input decoration */
+  input::-webkit-textfield-decoration-container {
+    display: none !important;
+  }
+  
+  /* Force remove any Safari UI elements */
+  *::-webkit-search-cancel-button,
+  *::-webkit-search-decoration {
+    -webkit-appearance: none !important;
+    display: none !important;
   }
 }
 
@@ -539,12 +575,17 @@ nav .held-container{
   }
 }
 
-/* Dynamic Island specific adjustments */
+/* Dynamic Island specific adjustments - More aggressive padding */
 @media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3),
        screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3),
        screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
   /* iPhone 14 Pro, 15 Pro, 14 Pro Max, 15 Pro Max - devices with Dynamic Island */
   .dynamic-island-safe {
+    padding-top: max(env(safe-area-inset-top), 60px) !important;
+  }
+  
+  /* Force safe area on all iOS devices in native app */
+  body {
     padding-top: max(env(safe-area-inset-top), 44px) !important;
   }
 }
