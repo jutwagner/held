@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import WebKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -8,6 +9,76 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // Configure webview to disable Safari behaviors
+        if #available(iOS 14.0, *) {
+            let config = WKWebViewConfiguration()
+            
+            // Disable Safari-like behaviors
+            config.allowsInlineMediaPlayback = true
+            config.mediaTypesRequiringUserActionForPlayback = []
+            config.suppressesIncrementalRendering = false
+            
+            // Configure user content controller to inject CSS
+            let userContentController = WKUserContentController()
+            
+            let cssString = """
+                /* Force remove Safari input styling */
+                input, textarea, select {
+                    -webkit-appearance: none !important;
+                    appearance: none !important;
+                    outline: none !important;
+                    border: 1px solid #d1d5db !important;
+                    border-radius: 8px !important;
+                    background: rgba(255, 255, 255, 0.9) !important;
+                    font-size: 16px !important;
+                    -webkit-tap-highlight-color: transparent !important;
+                }
+                
+                /* Hide all Safari input decorations */
+                input::-webkit-contacts-auto-fill-button,
+                input::-webkit-credentials-auto-fill-button,
+                input::-webkit-caps-lock-indicator,
+                input::-webkit-clear-button,
+                input::-webkit-inner-spin-button,
+                input::-webkit-outer-spin-button {
+                    display: none !important;
+                    visibility: hidden !important;
+                }
+                
+                /* Force safe area for Dynamic Island */
+                body {
+                    padding-top: max(env(safe-area-inset-top), 44px) !important;
+                }
+            """
+            
+            let cssScript = WKUserScript(source: """
+                var style = document.createElement('style');
+                style.innerHTML = `\(cssString)`;
+                document.head.appendChild(style);
+                
+                // Force remove Safari UI on all inputs
+                function removeSafariUI() {
+                    var inputs = document.querySelectorAll('input, textarea, select');
+                    inputs.forEach(function(input) {
+                        input.style.webkitAppearance = 'none';
+                        input.style.appearance = 'none';
+                        input.style.outline = 'none';
+                        input.style.fontSize = '16px';
+                        input.style.webkitTapHighlightColor = 'transparent';
+                    });
+                }
+                
+                removeSafariUI();
+                document.addEventListener('DOMContentLoaded', removeSafariUI);
+                document.addEventListener('input', removeSafariUI);
+                setInterval(removeSafariUI, 1000);
+            """, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+            
+            userContentController.addUserScript(cssScript)
+            config.userContentController = userContentController
+        }
+        
         return true
     }
 
