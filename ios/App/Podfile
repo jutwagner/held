@@ -17,7 +17,13 @@ end
 
 target 'App' do
   capacitor_pods
-  # Add your Pods here
+  
+  # Firebase pods
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Database'
+  pod 'Firebase/Storage'
+  pod 'Firebase/Firestore'
 end
 
 post_install do |installer|

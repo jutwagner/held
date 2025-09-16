@@ -12,20 +12,22 @@ export default function IOSNativeHandler() {
           console.log('🍎 Initializing native iOS controls...');
           
           try {
-            // Import Capacitor plugins
+            // Import our custom native plugin
+            const HeldNative = await import('@/lib/held-native-plugin');
+            
+            // Use our custom plugin to configure webview natively
+            const result = await HeldNative.default.configureWebView();
+            console.log('✅ Native webview configured:', result);
+            
+            // Also configure status bar and keyboard
             const { StatusBar } = await import('@capacitor/status-bar');
             const { Keyboard } = await import('@capacitor/keyboard');
             
-            // Configure status bar to not overlay
             await StatusBar.setOverlaysWebView({ overlay: false });
             await StatusBar.setStyle({ style: 'DARK' });
-            
-            console.log('✅ Status bar configured - no overlay');
-            
-            // Configure keyboard to hide accessory bar
             await Keyboard.setAccessoryBarVisible({ isVisible: false });
             
-            console.log('✅ Keyboard accessory bar hidden');
+            console.log('✅ Status bar and keyboard configured');
             
             // Force remove all Safari UI with more aggressive approach
             const removeAllSafariUI = () => {

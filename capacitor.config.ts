@@ -14,18 +14,29 @@ const config: CapacitorConfig = {
   },
   ios: {
     scheme: 'Held',
-    // Enable web debugging to see actual errors instead of minified ones
     webContentsDebuggingEnabled: true,
-    // Native iOS webview configuration
     allowsLinkPreview: false,
     scrollEnabled: true,
-    // Disable Safari-like behaviors
+    // Most aggressive webview configuration
     preferences: {
       ScrollEnabled: true,
       AllowInlineMediaPlayback: true,
       MediaPlaybackRequiresUserAction: false,
-      DisallowOverscroll: true
-    }
+      DisallowOverscroll: true,
+      KeyboardDisplayRequiresUserAction: false,
+      SuppressesIncrementalRendering: false,
+      AllowsAirPlayForMediaPlayback: false,
+      AllowsPictureInPictureMediaPlayback: false,
+      IgnoresViewportScaleLimits: true,
+      AllowsBackForwardNavigationGestures: false
+    },
+    // Force content insets
+    contentInset: { top: 60, bottom: 0, left: 0, right: 0 },
+    // Override user agent to prevent Safari detection
+    overrideUserAgent: 'Held-iOS-App/1.0',
+    // Disable automatic adjustments
+    automaticallyAdjustsScrollIndicatorInsets: false,
+    contentInsetAdjustmentBehavior: 'never'
   }
 };
 
