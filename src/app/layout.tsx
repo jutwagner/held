@@ -100,6 +100,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         forceInputStyling();
         const observer = new MutationObserver(forceInputStyling);
         observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Clear iOS app cache to fix chunk loading issues
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+        
+        // Force reload chunks on chunk load error
+        window.addEventListener('error', (e) => {
+          if (e.message && e.message.includes('ChunkLoadError')) {
+            console.log('🔄 ChunkLoadError detected, reloading...');
+            window.location.reload();
+          }
+        });
       }
     }
   }, []);
