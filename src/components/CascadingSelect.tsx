@@ -26,6 +26,23 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     'Miscellaneous', 'Moto', 'Movie', 'Music', 'Photography', 'Tech', 
     'Timepieces', 'Vintage'
   ];
+
+  // Get contextual label for brand/maker field based on category
+  const getBrandLabel = (category: string) => {
+    switch (category) {
+      case 'Art': return 'Artist';
+      case 'Music': return 'Artist/Band';
+      case 'Photography': return 'Photographer';
+      case 'Books': return 'Author';
+      case 'Fashion': return 'Designer/Brand';
+      case 'Furniture': return 'Designer/Manufacturer';
+      case 'Lighting': return 'Designer/Manufacturer';
+      case 'Movie': return 'Director/Studio';
+      case 'Ephemera': return 'Creator/Publisher';
+      case 'Industrial Design': return 'Designer/Manufacturer';
+      default: return 'Brand/Maker';
+    }
+  };
   
   const [showAddBrand, setShowAddBrand] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
@@ -277,7 +294,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
       {(preSelectedCategory || selectedCategory) && (
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Brand/Maker *
+            {getBrandLabel(preSelectedCategory || selectedCategory)} *
           </label>
           <div className="relative">
             <select
@@ -285,9 +302,9 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
               onChange={(e) => handleBrandChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent appearance-none pr-10"
             >
-              <option value="">Select a maker...</option>
+              <option value="">Select a {getBrandLabel(preSelectedCategory || selectedCategory).toLowerCase()}...</option>
               <option value="I don't know">I don't know</option>
-              <option value="__add_new__">+ Add new maker</option>
+              <option value="__add_new__">+ Add new {getBrandLabel(preSelectedCategory || selectedCategory).toLowerCase()}</option>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand}
@@ -306,7 +323,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
                 type="text"
                 value={newBrand}
                 onChange={(e) => setNewBrand(e.target.value)}
-                placeholder="Enter brand name..."
+                placeholder={`Enter ${getBrandLabel(preSelectedCategory || selectedCategory).toLowerCase()} name...`}
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-transparent"
                 onKeyPress={(e) => e.key === 'Enter' && handleAddBrand()}
               />

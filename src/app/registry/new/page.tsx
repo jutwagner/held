@@ -24,6 +24,23 @@ export default function NewObjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Get contextual label for brand/maker field based on category
+  const getBrandLabel = (category: string) => {
+    switch (category) {
+      case 'Art': return 'Artist';
+      case 'Music': return 'Artist/Band';
+      case 'Photography': return 'Photographer';
+      case 'Books': return 'Author';
+      case 'Fashion': return 'Designer/Brand';
+      case 'Furniture': return 'Designer/Manufacturer';
+      case 'Lighting': return 'Designer/Manufacturer';
+      case 'Movie': return 'Director/Studio';
+      case 'Ephemera': return 'Creator/Publisher';
+      case 'Industrial Design': return 'Designer/Manufacturer';
+      default: return 'Manufacturer';
+    }
+  };
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(new Set<number>());
   const titleRef = useRef<HTMLInputElement | null>(null);
@@ -801,12 +818,12 @@ export default function NewObjectPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                         <div>
                           <label className="block text-xs font-medium text-black dark:text-gray-100 dark:text-gray-100 mb-4 uppercase tracking-widest">
-                            Manufacturer
+                            {getBrandLabel(formData.category)}
                           </label>
                           <Input
                             value={formData.maker}
                             onChange={(e) => setFormData(prev => ({ ...prev, maker: e.target.value }))}
-                            placeholder="Herman Miller"
+                            placeholder={formData.category === 'Art' ? 'Van Gogh' : formData.category === 'Music' ? 'The Beatles' : formData.category === 'Books' ? 'J.K. Rowling' : 'Herman Miller'}
                             className="text-xl py-6 border-0 border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100"
                           />
                         </div>
