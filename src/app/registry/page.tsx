@@ -8,13 +8,23 @@ import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
 import { subscribeObjects, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
-import { Plus, Search, Eye, EyeOff, List, Columns, CheckCircle, Clock, Shield, Edit2, Save, X as XIcon } from 'lucide-react';
+import { Plus, Search, Eye, EyeOff, List, Columns, CheckCircle, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { debounce } from '@/lib/performance';
 
 import { MobileBottomBar } from '@/components/Navigation';
+
+function getProvenanceScore(o: HeldObject): number {
+  let score = 0;
+  let total = 4;
+  if (o.serialNumber) score++;
+  if (o.certificateOfAuthenticity) score++;
+  if (Array.isArray(o.chain) && o.chain.length > 0) score++;
+  if (o.acquisitionDate) score++;
+  return Math.round((score / total) * 100);
+}
 
 export default function RegistryPage() {
   const { user, loading } = useAuth();
@@ -26,12 +36,42 @@ export default function RegistryPage() {
   const [page, setPage] = useState(1);
   const pageSize = 9;
   const [view, setView] = useState<'grid' | 'table'>('grid');
+  const [sortField, setSortField] = useState<'title' | 'category' | 'isPublic' | 'updatedAt' | 'provenance'>('updatedAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [anchoringFilter, setAnchoringFilter] = useState<'all' | 'anchored' | 'pending' | 'not'>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
+
+  // Load view preference from localStorage
+  useEffect(() => {
+    const savedView = localStorage.getItem('held-registry-view') as 'grid' | 'table';
+    if (savedView && (savedView === 'grid' || savedView === 'table')) {
+      setView(savedView);
+    }
+  }, []);
+
+  // Save view preference to localStorage when changed
+  const handleViewChange = (newView: 'grid' | 'table') => {
+    setView(newView);
+    localStorage.setItem('held-registry-view', newView);
+  };
+
+  // Handle column sorting
+  const handleSort = (field: typeof sortField) => {
+    console.log('🎯 HANDLE SORT CLICKED:', field);
+    if (sortField === field) {
+      const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      console.log('📊 Same field, changing direction to:', newDirection);
+      setSortDirection(newDirection);
+    } else {
+      console.log('🆕 New field:', field, 'setting direction to asc');
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -88,15 +128,60 @@ export default function RegistryPage() {
           case 'pending':
             return pending;
           case 'not':
-            return !anchored && !pending;
+        return !anchored && !pending;
           default:
             return true;
         }
       });
     }
 
-    return filtered;
-  }, [objects, searchTerm, showPublicOnly, anchoringFilter]);
+    // Apply sorting - create new array to ensure React detects change
+    if (sortField !== 'updatedAt' || sortDirection !== 'desc') {
+      console.log('🔄 SORTING:', { sortField, sortDirection, objectCount: filtered.length });
+    }
+    
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal: any, bVal: any;
+      
+      switch (sortField) {
+        case 'title':
+          aVal = (a.title || '').toLowerCase();
+          bVal = (b.title || '').toLowerCase();
+          break;
+        case 'category':
+          aVal = (a.category || '').toLowerCase();
+          bVal = (b.category || '').toLowerCase();
+          break;
+        case 'isPublic':
+          aVal = a.isPublic ? 1 : 0;
+          bVal = b.isPublic ? 1 : 0;
+          break;
+        case 'updatedAt':
+          aVal = a.updatedAt ? (typeof a.updatedAt === 'object' && 'seconds' in a.updatedAt ? a.updatedAt.seconds : new Date(a.updatedAt).getTime()) : 0;
+          bVal = b.updatedAt ? (typeof b.updatedAt === 'object' && 'seconds' in b.updatedAt ? b.updatedAt.seconds : new Date(b.updatedAt).getTime()) : 0;
+          break;
+        case 'provenance':
+          aVal = getProvenanceScore(a);
+          bVal = getProvenanceScore(b);
+          break;
+        default:
+          return 0;
+      }
+      
+      const result = sortDirection === 'asc' 
+        ? (aVal < bVal ? -1 : aVal > bVal ? 1 : 0)
+        : (aVal > bVal ? -1 : aVal < bVal ? 1 : 0);
+      
+      // Debug logging for first few comparisons
+      if (filtered.length > 0 && Math.random() < 0.1) {
+        console.log(`🔍 COMPARE: "${aVal}" vs "${bVal}" = ${result} (${sortField}, ${sortDirection})`);
+      }
+      
+      return result;
+    });
+
+    return sorted;
+  }, [objects, searchTerm, showPublicOnly, anchoringFilter, sortField, sortDirection]);
 
   useEffect(() => {
     setPage(1); // Reset to first page on filter change
@@ -192,7 +277,7 @@ export default function RegistryPage() {
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                   <Button
                     variant={view === 'grid' ? 'default' : 'outline'}
-                    onClick={() => setView('grid')}
+                    onClick={() => handleViewChange('grid')}
                     title="Grid view"
                     className={view === 'grid' ? 'bg-gray-600 dark:bg-gray-400 text-white hover:bg-gray-700 dark:hover:bg-gray-300 border-transparent' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}
                   >
@@ -200,7 +285,7 @@ export default function RegistryPage() {
                   </Button>
                   <Button 
                   variant={view === 'table' ? 'default' : 'outline'} 
-                  onClick={() => setView('table')} 
+                  onClick={() => handleViewChange('table')} 
                   title="Table view"
                   className={view === 'table' ? 'bg-gray-600 dark:bg-gray-400 text-white hover:bg-gray-700 dark:hover:bg-gray-300 border-transparent' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}
                   >
@@ -215,26 +300,27 @@ export default function RegistryPage() {
               </div>
 
               {/* Search and Filters */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="flex flex-row gap-3 mb-10">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <Input
                     placeholder="Search objects, makers, or tags..."
                     defaultValue={searchTerm}
                     onChange={(e) => debouncedSearch(e.target.value)}
-                    className="pl-10 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
+                    className="pl-4 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
                   />
                 </div>
                 <Button
                   variant={showPublicOnly ? "default" : "outline"}
                   onClick={() => setShowPublicOnly(!showPublicOnly)}
-                  className={`flex items-center h-12 ${
+                  className={`flex items-center justify-center h-12 w-12 ${
                     showPublicOnly 
                       ? 'bg-gray-600 dark:bg-gray-400 text-white hover:bg-gray-700 dark:hover:bg-gray-300' 
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
+                  title={showPublicOnly ? 'Show All Objects' : 'Show Public Only'}
                 >
-                  {showPublicOnly ? 'Public Only' : 'All Objects'}
+                  <Globe className="h-5 w-5" />
                 </Button>
                 </div>
                 {/*
@@ -346,65 +432,210 @@ export default function RegistryPage() {
                       </div>
                     </>
                   ) : (
-                    <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                          <tr className="text-left">
-                            <th className="p-3"><input type="checkbox" onChange={(e) => {
-                              if (e.target.checked) setSelected(new Set(paginatedObjects.map(o => o.id))); else clearSelection();
-                            }} /></th>
-                            <th className="p-3">Title</th>
-                            <th className="p-3">Category</th>
-                            <th className="p-3">Visibility</th>
-                            <th className="p-3">Anchoring</th>
-                            <th className="p-3">Prov.</th>
-                            <th className="p-3">Updated</th>
-                            <th className="p-3">Actions</th>
+                    <div className="overflow-hidden rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-b border-gray-200/50 dark:border-gray-600/50">
+                            <tr>
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('title')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Registry Item
+                                  {sortField === 'title' && (
+                                    sortDirection === 'asc' ? 
+                                    <ChevronUp className="h-4 w-4" /> : 
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </th>
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('category')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Category
+                                  {sortField === 'category' && (
+                                    sortDirection === 'asc' ? 
+                                    <ChevronUp className="h-4 w-4" /> : 
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </th>
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('isPublic')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Visibility
+                                  {sortField === 'isPublic' && (
+                                    sortDirection === 'asc' ? 
+                                    <ChevronUp className="h-4 w-4" /> : 
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </th>
+                              <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-200">
+                                Anchoring
+                              </th>
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('provenance')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Provenance
+                                  {sortField === 'provenance' && (
+                                    sortDirection === 'asc' ? 
+                                    <ChevronUp className="h-4 w-4" /> : 
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </th>
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('updatedAt')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Updated
+                                  {sortField === 'updatedAt' && (
+                                    sortDirection === 'asc' ? 
+                                    <ChevronUp className="h-4 w-4" /> : 
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </th>
+                              <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-200">
+                                
+                              </th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {paginatedObjects.map(obj => {
+                          <tbody className="divide-y divide-gray-200/50 dark:divide-gray-600/50">
+                            {paginatedObjects.map((obj, index) => {
                             const anchored = !!obj.anchoring?.isAnchored;
                             const pending = !!obj.anchoring?.txHash && !anchored;
                             const prov = getProvenanceScore(obj);
                             return (
-                              <tr key={obj.id} className="border-t border-gray-200 dark:border-gray-600">
-                                <td className="p-3 align-top"><input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} /></td>
-                                <td className="p-3 align-top">
+                                <tr key={`${obj.id}-${sortField}-${sortDirection}-${index}`} className="hover:bg-white/70 dark:hover:bg-gray-700/50 transition-colors">
+                                  <td className="px-6 py-4">
                                   {editingId === obj.id ? (
                                     <div className="flex items-center gap-2">
-                                      <input value={editingTitle} onChange={e => setEditingTitle(e.target.value)} className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 w-full" />
-                                      <button onClick={() => saveEdit(obj)} title="Save"><Save className="h-4 w-4" /></button>
-                                      <button onClick={() => setEditingId(null)} title="Cancel"><XIcon className="h-4 w-4" /></button>
+                                        <input 
+                                          value={editingTitle} 
+                                          onChange={e => setEditingTitle(e.target.value)} 
+                                          className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-1.5 w-full focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all" 
+                                        />
+                                        <button 
+                                          onClick={() => saveEdit(obj)} 
+                                          title="Save"
+                                          className="p-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors"
+                                        >
+                                          <Save className="h-4 w-4" />
+                                        </button>
+                                        <button 
+                                          onClick={() => setEditingId(null)} 
+                                          title="Cancel"
+                                          className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                                        >
+                                          <XIcon className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-3">
+                                        {/* Thumbnail Image */}
+                                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                                          {obj.images && obj.images.length > 0 ? (
+                                            <Image
+                                              src={obj.images[0]}
+                                              alt={obj.title}
+                                              width={40}
+                                              height={40}
+                                              className="w-full h-full object-cover"
+                                              loading="lazy"
+                                              onError={(e) => {
+                                                e.currentTarget.onerror = null;
+                                                e.currentTarget.src = '/img/placeholder.svg';
+                                              }}
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                              <Image 
+                                                src="/img/placeholder.svg" 
+                                                alt="No image" 
+                                                width={20} 
+                                                height={20} 
+                                                className="w-5 h-5 opacity-40" 
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                        <span className="font-semibold text-gray-900 dark:text-gray-100">{obj.title}</span>
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                    {obj.category || 'Uncategorized'}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-center justify-center">
+                                      {obj.isPublic ? (
+                                        <Globe className="h-5 w-5 text-green-600 dark:text-green-400" title="Public" />
+                                      ) : (
+                                        <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" title="Private" />
+                                      )}
                                     </div>
-                                  ) : (
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-center justify-center">
+                                      {anchored ? (
+                                        <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" title="Anchored" />
+                                      ) : pending ? (
+                                        <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" title="Pending" />
+                                      ) : (
+                                        <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" title="Not Anchored" />
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                      <span className="font-medium text-gray-900 dark:text-gray-100">{obj.title}</span>
-                                      <button onClick={() => startEdit(obj)} title="Edit"><Edit2 className="h-3.5 w-3.5 text-gray-500" /></button>
+                                      <div className={`h-2 w-16 rounded-full overflow-hidden ${
+                                        prov >= 75 ? 'bg-green-200 dark:bg-green-900' :
+                                        prov >= 50 ? 'bg-yellow-200 dark:bg-yellow-900' :
+                                        prov >= 25 ? 'bg-orange-200 dark:bg-orange-900' :
+                                        'bg-red-200 dark:bg-red-900'
+                                      }`}>
+                                        <div 
+                                          className={`h-full transition-all duration-300 ${
+                                            prov >= 75 ? 'bg-green-500' :
+                                            prov >= 50 ? 'bg-yellow-500' :
+                                            prov >= 25 ? 'bg-orange-500' :
+                                            'bg-red-500'
+                                          }`}
+                                          style={{ width: `${prov}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem]">
+                                        {prov}%
+                                      </span>
                                     </div>
-                                  )}
                                 </td>
-                                <td className="p-3 align-top text-gray-900 dark:text-gray-100">{obj.category || '-'}</td>
-                                <td className="p-3 align-top text-gray-900 dark:text-gray-100">{obj.isPublic ? 'Public' : 'Private'}</td>
-                                <td className="p-3 align-top">
-                                  {anchored ? (
-                                    <span className="inline-flex items-center gap-1 text-emerald-700"><CheckCircle className="h-4 w-4" /> Anchored</span>
-                                  ) : pending ? (
-                                    <span className="inline-flex items-center gap-1 text-amber-700"><Clock className="h-4 w-4" /> Pending</span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 text-gray-500"><Shield className="h-4 w-4" /> Not Anchored</span>
-                                  )}
+                                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                    {obj.updatedAt ? new Date((obj.updatedAt as any).seconds ? (obj.updatedAt as any).seconds * 1000 : obj.updatedAt).toLocaleDateString() : '-'}
                                 </td>
-                                <td className="p-3 align-top text-gray-900 dark:text-gray-100">{prov}%</td>
-                                <td className="p-3 align-top text-gray-900 dark:text-gray-100">{obj.updatedAt ? new Date((obj.updatedAt as any).seconds ? (obj.updatedAt as any).seconds * 1000 : obj.updatedAt).toLocaleDateString() : '-'}</td>
-                                <td className="p-3 align-top">
-                                  <Link href={`/registry/${obj.id}`} className="text-blue-600 dark:text-blue-400 underline">Open</Link>
+                                  <td className="px-6 py-4">
+                                    <Link 
+                                      href={`/registry/${obj.id}`} 
+                                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    >
+                                      Open
+                                    </Link>
                                 </td>
                               </tr>
                             );
                           })}
                         </tbody>
                       </table>
+                      </div>
                     </div>
                   )}
                 </>
@@ -609,14 +840,4 @@ function DocumentsManager({ objects }: { objects: HeldObject[] }) {
       </table>
     </div>
   );
-}
-
-function getProvenanceScore(o: HeldObject): number {
-  let score = 0;
-  let total = 4;
-  if (o.serialNumber) score++;
-  if (o.certificateOfAuthenticity) score++;
-  if (Array.isArray(o.chain) && o.chain.length > 0) score++;
-  if (o.acquisitionDate) score++;
-  return Math.round((score / total) * 100);
 }

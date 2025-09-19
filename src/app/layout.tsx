@@ -5,119 +5,63 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation, { MobileBottomBar } from "@/components/Navigation";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import ThemeBody from "@/components/ThemeBody";
-import IOSNativeHandler from "@/components/IOSNativeHandler";
+import IOSOnboarding from "@/components/IOSOnboarding";
 import { reportWebVitals } from "@/lib/performance";
 
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPassport = pathname?.startsWith('/passport');
+  const [showIOSOnboarding, setShowIOSOnboarding] = useState(false);
+  const [isCapacitor, setIsCapacitor] = useState(false);
 
   useEffect(() => {
     // Initialize Web Vitals monitoring
     if (typeof window !== 'undefined') {
       import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
         onCLS(reportWebVitals);
-        onINP(reportWebVitals); // INP replaces FID in web-vitals v3+
+        onINP(reportWebVitals);
         onFCP(reportWebVitals);
         onLCP(reportWebVitals);
         onTTFB(reportWebVitals);
       });
     }
 
-    // Force iOS native styling
+    // iOS/Capacitor detection and setup
     if (typeof window !== 'undefined') {
-      // Check if we're in Capacitor
-      const isCapacitor = !!(window as any).Capacitor;
+      const capacitorDetected = !!(window as any).Capacitor;
+      setIsCapacitor(capacitorDetected);
       
-      if (isCapacitor) {
-        console.log('🍎 Capacitor detected - applying iOS fixes');
+      if (capacitorDetected) {
+        console.log('🍎 Capacitor detected - applying iOS styling and keyboard setup');
+        document.body.classList.add('capacitor-ios');
         
-        // Force Dynamic Island safe area
-        const screenHeight = window.screen.height;
-        const screenWidth = window.screen.width;
-        const pixelRatio = window.devicePixelRatio;
-        
-        const isDynamicIslandDevice = (
-          (screenWidth === 393 && screenHeight === 852 && pixelRatio === 3) ||
-          (screenWidth === 430 && screenHeight === 932 && pixelRatio === 3) ||
-          (screenWidth === 428 && screenHeight === 926 && pixelRatio === 3)
-        );
-        
-        console.log('📱 Device info:', { screenWidth, screenHeight, pixelRatio, isDynamicIslandDevice });
-        
-        // Add CSS directly to head
-        const style = document.createElement('style');
-        style.innerHTML = `
-          /* Force iOS native styling */
-          body {
-            padding-top: ${isDynamicIslandDevice ? '60px' : '44px'} !important;
-          }
-          
-          /* Force sticky navigation with extended blur background */
-          nav[class*="sticky"] {
-            top: 0px !important;
-            padding-top: ${isDynamicIslandDevice ? '60px' : '44px'} !important;
-            margin-top: ${isDynamicIslandDevice ? '-60px' : '-44px'} !important;
-          }
-          
-          /* Force remove Safari input styling */
-          input, textarea, select {
-            -webkit-appearance: none !important;
-            appearance: none !important;
-            border-radius: 8px !important;
-            border: 1px solid #d1d5db !important;
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            outline: none !important;
-            -webkit-tap-highlight-color: transparent !important;
-            font-size: 16px !important;
-          }
-          
-          input::-webkit-contacts-auto-fill-button,
-          input::-webkit-credentials-auto-fill-button,
-          input::-webkit-caps-lock-indicator,
-          input::-webkit-clear-button {
-            display: none !important;
-            visibility: hidden !important;
-          }
-        `;
-        document.head.appendChild(style);
-        
-        // Force remove Safari UI on all inputs
-        const forceInputStyling = () => {
-          const inputs = document.querySelectorAll('input, textarea, select');
-          inputs.forEach((input: any) => {
-            input.style.webkitAppearance = 'none';
-            input.style.appearance = 'none';
-            input.style.outline = 'none';
-            input.style.webkitTapHighlightColor = 'transparent';
-            input.style.fontSize = '16px';
-          });
-        };
-        
-        // Run immediately and on DOM changes
-        forceInputStyling();
-        const observer = new MutationObserver(forceInputStyling);
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        // Clear iOS app cache to fix chunk loading issues
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for(let registration of registrations) {
-              registration.unregister();
-            }
-          });
+        // Check if onboarding should be shown
+        const onboardingCompleted = localStorage.getItem('held-ios-onboarding-completed');
+        if (!onboardingCompleted) {
+          setShowIOSOnboarding(true);
         }
         
-        // Force reload chunks on chunk load error
-        window.addEventListener('error', (e) => {
-          if (e.message && e.message.includes('ChunkLoadError')) {
-            console.log('🔄 ChunkLoadError detected, reloading...');
-            window.location.reload();
-          }
+        // Import and configure Capacitor Keyboard plugin
+        import('@capacitor/keyboard').then(({ Keyboard }) => {
+          // Enable keyboard
+          Keyboard.setAccessoryBarVisible({ isVisible: false });
+          Keyboard.setScroll({ isDisabled: false });
+          Keyboard.setStyle({ style: 'DARK' });
+          
+          console.log('✅ Keyboard plugin configured');
+        }).catch(err => {
+          console.log('⚠️ Keyboard plugin not available:', err);
         });
+
+        // Debug function to reset onboarding
+        (window as any).resetOnboarding = () => {
+          localStorage.removeItem('held-ios-onboarding-completed');
+          setShowIOSOnboarding(true);
+          console.log('🔄 Onboarding reset - refresh to see it again');
+        };
       }
     }
   }, []);
@@ -140,10 +84,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Held" />
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
+        
+        {/* iOS app icons */}
+        <link rel="apple-touch-icon" href="/icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon-144x144.png" />
         
         {/* Force iOS native styling directly in head */}
         <style dangerouslySetInnerHTML={{
@@ -162,14 +113,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               /* All other iOS devices */
               @media screen and (max-device-width: 428px) {
                 body {
-                  padding-top: 44px !important;
                 }
                 
                 /* Force sticky navigation with extended blur */
                 nav[class*="sticky"] {
                   top: 0px !important;
-                  padding-top: 44px !important;
-                  margin-top: -44px !important;
                 }
               }
               
@@ -221,7 +169,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeBody>
-            <IOSNativeHandler />
             <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
               <Navigation />
               <EmailVerificationBanner />
@@ -246,6 +193,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </ThemeBody>
         </AuthProvider>
+        
+        {/* iOS Onboarding - Only show on Capacitor and first launch */}
+        {showIOSOnboarding && isCapacitor && (
+          <IOSOnboarding onComplete={() => setShowIOSOnboarding(false)} />
+        )}
       </body>
     </html>
   );

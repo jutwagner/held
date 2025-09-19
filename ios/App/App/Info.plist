@@ -45,27 +45,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>UIWebViewBounce</key>
-	<false/>
-	<key>UIScrollViewBounces</key>
-	<false/>
-	<key>KeyboardDisplayRequiresUserAction</key>
-	<false/>
-	<key>UIWebViewDisallowOverscroll</key>
-	<true/>
-	<key>UIWebViewBounce</key>
-	<false/>
-	<key>UIScrollViewBounces</key>
-	<false/>
-	<key>UIWebViewAllowsInlineMediaPlayback</key>
-	<true/>
-	<key>UIWebViewMediaPlaybackRequiresUserAction</key>
-	<false/>
-	<key>UIWebViewAllowsAirPlay</key>
-	<false/>
-	<key>UIWebViewAllowsPictureInPictureMediaPlayback</key>
-	<false/>
-	<key>UIWebViewDataDetectorTypes</key>
-	<string>UIDataDetectorTypeNone</string>
 </dict>
 </plist>

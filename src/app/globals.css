@@ -440,120 +440,73 @@ nav .held-container{
   filter: none !important;
 }
 
-/* ===== iOS NATIVE APP STYLING ===== */
+/* ===== CAPACITOR iOS NATIVE APP STYLING ===== */
 
-/* Hide Safari UI elements in iOS app */
-@supports (-webkit-touch-callout: none) {
-  /* iOS-specific styles */
+/* iOS safe area handling - ONLY for Capacitor */
+body.capacitor-ios {
+  background: #ffffff !important;
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+/* Fix navigation for iOS safe area */
+body.capacitor-ios nav[class*="fixed"] {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* AGGRESSIVE Safari UI removal for Capacitor iOS */
+body.capacitor-ios input[type="text"],
+body.capacitor-ios input[type="email"], 
+body.capacitor-ios input[type="password"],
+body.capacitor-ios input[type="number"],
+body.capacitor-ios input[type="search"],
+body.capacitor-ios input[type="url"],
+body.capacitor-ios input[type="tel"],
+body.capacitor-ios textarea,
+body.capacitor-ios select {
+  /* Remove ALL Safari styling */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
   
-  /* Remove Safari input styling and use native iOS appearance */
-  input[type="text"],
-  input[type="email"], 
-  input[type="password"],
-  input[type="number"],
-  input[type="search"],
-  input[type="url"],
-  input[type="tel"],
-  textarea,
-  select {
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    
-    /* Remove Safari's default styling */
-    border-radius: 8px !important;
-    border: 1px solid #d1d5db !important;
-    
-    /* Native iOS styling */
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    
-    /* Remove Safari's focus ring and highlights */
-    outline: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-    -webkit-focus-ring-color: transparent !important;
-    
-    /* Prevent zoom on focus */
-    font-size: 16px !important;
-    
-    /* Remove Safari autocomplete styling */
-    -webkit-text-security: none !important;
-    -webkit-rtl-ordering: logical !important;
-    
-    /* Smooth transitions */
-    transition: all 0.2s ease !important;
-    
-    /* Remove Safari selection styling */
-    -webkit-user-select: text !important;
-    -webkit-touch-callout: none !important;
-  }
+  /* Custom styling */
+  border-radius: 8px !important;
+  border: 1px solid #d1d5db !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
   
-  /* Focus states for inputs */
-  input:focus,
-  textarea:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    background-color: rgba(255, 255, 255, 0.95);
-  }
+  /* Remove focus effects */
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent !important;
   
-  /* Dark mode input styling */
-  .dark input[type="text"],
-  .dark input[type="email"], 
-  .dark input[type="password"],
-  .dark input[type="number"],
-  .dark input[type="search"],
-  .dark textarea {
-    background-color: rgba(17, 24, 39, 0.9);
-    border-color: #374151;
-    color: white;
-  }
+  /* Prevent zoom */
+  font-size: 16px !important;
   
-  .dark input:focus,
-  .dark textarea:focus {
-    background-color: rgba(17, 24, 39, 0.95);
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-  }
-  
-  /* Remove Safari's selection handles and context menu */
-  input, textarea, select {
-    -webkit-user-select: text;
-    -webkit-touch-callout: none;
-  }
-  
-  /* Hide Safari's autocomplete dropdown styling */
-  input::-webkit-contacts-auto-fill-button,
-  input::-webkit-credentials-auto-fill-button,
-  input::-webkit-caps-lock-indicator,
-  input::-webkit-clear-button,
-  input::-webkit-inner-spin-button,
-  input::-webkit-outer-spin-button {
-    visibility: hidden !important;
-    pointer-events: none !important;
-    position: absolute !important;
-    right: 0 !important;
-    display: none !important;
-    -webkit-appearance: none !important;
-  }
-  
-  /* Hide Safari's password suggestion and autofill UI */
-  input[type="password"]::-webkit-credentials-auto-fill-button {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  /* Remove Safari's input decoration */
-  input::-webkit-textfield-decoration-container {
-    display: none !important;
-  }
-  
-  /* Force remove any Safari UI elements */
-  *::-webkit-search-cancel-button,
-  *::-webkit-search-decoration {
-    -webkit-appearance: none !important;
-    display: none !important;
-  }
+  /* Remove Safari behaviors */
+  -webkit-text-security: none !important;
+  -webkit-rtl-ordering: logical !important;
+  -webkit-user-select: text !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Hide ALL Safari UI decorations in Capacitor */
+body.capacitor-ios input::-webkit-contacts-auto-fill-button,
+body.capacitor-ios input::-webkit-credentials-auto-fill-button,
+body.capacitor-ios input::-webkit-caps-lock-indicator,
+body.capacitor-ios input::-webkit-clear-button,
+body.capacitor-ios input::-webkit-inner-spin-button,
+body.capacitor-ios input::-webkit-outer-spin-button,
+body.capacitor-ios input::-webkit-search-cancel-button,
+body.capacitor-ios input::-webkit-search-decoration,
+body.capacitor-ios input::-webkit-textfield-decoration-container {
+  display: none !important;
+  visibility: hidden !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Safe area insets for devices with notches/Dynamic Island */
@@ -610,4 +563,13 @@ nav .held-container{
   input[type="color"] {
     font-size: 16px;
   }
+}
+
+.min-h-screen{
+  min-height: calc(100vh - 320px);
+}
+
+.oneone, .oneone img{
+  aspect-ratio: 1/1;
+  height: auto;
 }

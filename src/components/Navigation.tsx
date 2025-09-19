@@ -16,6 +16,7 @@ export default function Navigation() {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isDynamicIsland, setIsDynamicIsland] = useState(false);
+  const [isCapacitor, setIsCapacitor] = useState(false);
 
   // Decide what to show in the primary action slot (Add/Sign In)
   const primaryButton = loading ? (
@@ -103,14 +104,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav
-        className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky z-40"
-        style={{
-          top: '0px',
-          paddingTop: isDynamicIsland ? '60px' : '44px',
-          marginTop: isDynamicIsland ? '-60px' : '-44px'
-        }}
-      >
+          <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}

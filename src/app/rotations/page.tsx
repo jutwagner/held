@@ -217,21 +217,38 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           )}
           <div className="mb-6 blur">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-              <div className="flex -space-x-3 justify-center">
-                {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
-                  <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
+              <div className="flex justify-center items-center overflow-hidden px-2">
+                {rotation.objects.slice(0, 5).map((obj: HeldObject, index) => (
+                  <div 
+                    key={obj.id} 
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white rounded-full border-2 border-white shadow-lg ring-1 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300 flex-shrink-0"
+                    style={{ 
+                      zIndex: 10 - index, 
+                      marginLeft: index > 0 ? '-6px' : '0',
+                      aspectRatio: '1',
+                      minWidth: '40px',
+                      minHeight: '40px'
+                    }}
+                  >
                     {obj.images.length > 0 ? (
-                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
+                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" style={{ aspectRatio: '1' }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-400 dark:text-gray-500 text-sm">?</span>
+                      <div className="w-full h-full flex items-center justify-center" style={{ aspectRatio: '1' }}>
+                        <span className="text-gray-400 dark:text-gray-500 text-xs sm:text-sm">?</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {rotation.objects.length > 5 && (
-                  <div className="blur w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
-                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm font-medium">+{rotation.objects.length - 5}</span>
+                  <div 
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gray-200 dark:bg-gray-700 rounded-full border-2 border-white shadow-lg ring-1 ring-gray-200 flex items-center justify-center flex-shrink-0"
+                    style={{ 
+                      zIndex: 5, 
+                      marginLeft: '-6px',
+                      aspectRatio: '1'
+                    }}
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
               </div>
@@ -338,14 +355,24 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           {/* Objects Preview - Enhanced with better visual weight */}
           <div className="mb-6">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-              <div className="flex -space-x-3 justify-center">
-                {rotation.objects.slice(0, 5).map((obj: HeldObject) => (
-                  <div key={obj.id} className="w-14 h-14 bg-white rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300">
+              <div className="flex justify-center items-center overflow-hidden px-2">
+                {rotation.objects.slice(0, 5).map((obj: HeldObject, index) => (
+                  <div 
+                    key={obj.id} 
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white rounded-full border-2 border-white shadow-lg ring-1 ring-gray-200 overflow-hidden transition-transform duration-200 hover:scale-110 hover:ring-blue-300 flex-shrink-0"
+                    style={{ 
+                      zIndex: 10 - index, 
+                      marginLeft: index > 0 ? '-6px' : '0',
+                      aspectRatio: '1',
+                      minWidth: '40px',
+                      minHeight: '40px'
+                    }}
+                  >
                     {obj.images.length > 0 ? (
-                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" />
+                      <Image src={obj.images[0]} alt={obj.title} width={56} height={56} className="w-full h-full object-cover" style={{ aspectRatio: '1' }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-400 dark:text-gray-500 text-sm">?</span>
+                      <div className="w-full h-full flex items-center justify-center" style={{ aspectRatio: '1' }}>
+                        <span className="text-gray-400 dark:text-gray-500 text-xs sm:text-sm">?</span>
                       </div>
                     )}
                   </div>

@@ -153,9 +153,16 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
           </div>
         </header>
-        <nav className="sticky top-25 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800 py-2 flex gap-2 justify-center">
+        <nav className="sticky top-25 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800 py-2 flex justify-center overflow-hidden px-4">
           {[...Array(5)].map((_, idx) => (
-            <div key={idx} className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-800 shadow" />
+            <div 
+              key={idx} 
+              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-800 shadow flex-shrink-0" 
+              style={{ 
+                marginLeft: idx > 0 ? '-8px' : '0',
+                aspectRatio: '1'
+              }}
+            />
           ))}
         </nav>
         <main className="held-container held-container-wide py-12">
@@ -225,21 +232,7 @@ function RotationPageClient({ id }: { id: string }) {
 
         <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="flex -space-x-4">
-              {objects.slice(0, 5).map((object, idx) => (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  key={idx}
-                  src={object.images[0] || '/placeholder.png'}
-                  alt={object.title}
-                  className="w-12 h-12 rounded-full border-2 border-white shadow"
-                  style={{ zIndex: 10 - idx }}
-                />
-              ))}
-              {objects.length > 5 && (
-                <span className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 flex items-center justify-center text-xs font-mono text-gray-600 dark:text-gray-400 dark:text-gray-300 border-2 border-white dark:border-gray-800 shadow">+{objects.length - 5}</span>
-              )}
-            </div>
+            
             {/* Always show title/description with enhanced styling */}
             <div className="max-w-full">
               {!editing ? (
@@ -342,7 +335,7 @@ function RotationPageClient({ id }: { id: string }) {
                 const el = document.getElementById(`object-${idx}`);
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
+              className="w-20 h-20 oneone rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
               title={object.title}
             >
               <Image src={object.images[0] || '/placeholder.png'} alt={object.title} width={80} height={80} className="w-full h-full object-cover" />
