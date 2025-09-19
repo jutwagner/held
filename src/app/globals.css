@@ -162,7 +162,7 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
     @apply max-w-7xl;
   }
   
-  /* Safe area utilities - iOS only */
+  /* Safe area utilities - iOS only * /
   @supports (padding: env(safe-area-inset-top)) {
     .safe-area-top {
       padding-top: max(env(safe-area-inset-top), 20px);
@@ -187,7 +187,7 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
       padding-right: env(safe-area-inset-right);
     }
     
-    /* For sticky headers that need to stay below Dynamic Island */
+    /* For sticky headers that need to stay below Dynamic Island * /
     .sticky-header-safe {
       top: max(env(safe-area-inset-top), 20px);
     }
@@ -448,12 +448,10 @@ body.capacitor-ios {
   padding-top: env(safe-area-inset-top, 0px) !important;
 }
 
-/* Fix navigation for iOS safe area */
-body.capacitor-ios nav[class*="fixed"] {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+/* Hide top navigation on iOS */
+body.capacitor-ios nav[class*="fixed"],
+body.capacitor-ios nav[class*="sticky"] {
+  display: none !important;
 }
 
 /* AGGRESSIVE Safari UI removal for Capacitor iOS */
@@ -509,7 +507,7 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   height: 0 !important;
 }
 
-/* Safe area insets for devices with notches/Dynamic Island */
+/* Safe area insets for devices with notches/Dynamic Island * /
 @supports (padding: max(0px)) {
   .safe-area-top {
     padding-top: max(env(safe-area-inset-top), 20px);
@@ -528,16 +526,16 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   }
 }
 
-/* Dynamic Island specific adjustments - More aggressive padding */
+/* Dynamic Island specific adjustments - More aggressive padding * /
 @media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3),
        screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3),
        screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
-  /* iPhone 14 Pro, 15 Pro, 14 Pro Max, 15 Pro Max - devices with Dynamic Island */
+  /* iPhone 14 Pro, 15 Pro, 14 Pro Max, 15 Pro Max - devices with Dynamic Island * /
   .dynamic-island-safe {
     padding-top: max(env(safe-area-inset-top), 60px) !important;
   }
   
-  /* Force safe area on all iOS devices in native app */
+  /* Force safe area on all iOS devices in native app * /
   body {
     padding-top: max(env(safe-area-inset-top), 44px) !important;
   }
@@ -572,4 +570,9 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 .oneone, .oneone img{
   aspect-ratio: 1/1;
   height: auto;
+}
+
+
+.line-height-lrg{
+  line-height: 2.9rem;
 }

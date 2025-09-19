@@ -17,11 +17,11 @@ interface OnboardingScreen {
 const onboardingScreens: OnboardingScreen[] = [
   {
     id: 1,
-    title: "Welcome to Held",
-    subtitle: "Your quiet home for the things you hold dear",
+    title: "Quiet home for the things you hold.",
+    subtitle: "",
     description: "A way to catalog the things that matter to you, with no social pressure and no algorithms. Just your collection, your way.",
     image: "/held-logo.svg",
-    gradient: "from-blue-50 to-indigo-100"
+    gradient: "from-white via-white via-blue-100 to-indigo-200"
   },
   {
     id: 2,
@@ -29,7 +29,7 @@ const onboardingScreens: OnboardingScreen[] = [
     subtitle: "Catalog your meaningful possessions",
     description: "Document your collectibles, gear, and cherished items with photos, stories, and details. Create a personal archive of what matters most.",
     image: "/img/registry.svg",
-    gradient: "from-green-50 to-emerald-100"
+    gradient: "from-white via-white via-green-100 to-emerald-200"
   },
   {
     id: 3,
@@ -37,7 +37,7 @@ const onboardingScreens: OnboardingScreen[] = [
     subtitle: "Share your style and discoveries",
     description: "Show off your daily carries, outfit choices, and favorite finds. Inspire others while staying true to your aesthetic.",
     image: "/img/rotations.svg",
-    gradient: "from-purple-50 to-violet-100"
+    gradient: "from-white via-white via-purple-100 to-violet-200"
   },
   {
     id: 4,
@@ -45,7 +45,7 @@ const onboardingScreens: OnboardingScreen[] = [
     subtitle: "Unlock premium features",
     description: "Get unlimited storage, advanced organization tools, priority support, and exclusive features to enhance your Held experience.",
     image: "/held-seal-plus.svg",
-    gradient: "from-amber-50 to-yellow-100"
+    gradient: "from-white via-white via-amber-100 to-yellow-200"
   },
   {
     id: 5,
@@ -53,7 +53,7 @@ const onboardingScreens: OnboardingScreen[] = [
     subtitle: "Let's add your first item",
     description: "Begin building your personal registry by adding something meaningful to you. It could be anything - a watch, book, piece of art, or treasured memory.",
     image: "/img/add-photo.svg",
-    gradient: "from-rose-50 to-pink-100",
+    gradient: "from-white via-white via-rose-100 to-pink-200",
     isLastScreen: true
   }
 ];
@@ -67,6 +67,14 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
   const router = useRouter();
+
+  // Prevent body scrolling during onboarding
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleNext = () => {
     if (isAnimating) return;
@@ -120,20 +128,43 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
   const currentScreenData = onboardingScreens[currentScreen];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white overflow-hidden">
-      {/* Safe Area Top Fill - Prevents content showing through Dynamic Island */}
-      <div 
-        className="absolute top-0 left-0 right-0 bg-white z-10"
-        style={{ height: 'env(safe-area-inset-top, 44px)' }}
-      />
-      
-      {/* Background Gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${currentScreenData.gradient} transition-all duration-700 ease-out`} />
+    <div 
+      className={`fixed inset-0 z-[100] overflow-hidden transition-all duration-700 ease-out`}
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        background: `linear-gradient(135deg, white 0%, white 40%, var(--gradient-via) 70%, var(--gradient-to) 100%)`,
+        backgroundSize: '300% 300%',
+        animation: 'gradientShift 8s ease-in-out infinite'
+      }}
+    >
+      <style jsx>{`
+        @keyframes gradientShift {
+          0%, 100% {
+            background-position: 20% 20%;
+          }
+          50% {
+            background-position: 80% 80%;
+          }
+        }
+        :global(:root) {
+          --gradient-via: ${currentScreenData.gradient.includes('blue') ? '#dbeafe' : 
+                          currentScreenData.gradient.includes('green') ? '#dcfce7' :
+                          currentScreenData.gradient.includes('purple') ? '#e7e5ff' :
+                          currentScreenData.gradient.includes('amber') ? '#fef3c7' : '#fce7f3'};
+          --gradient-to: ${currentScreenData.gradient.includes('blue') ? '#c7d2fe' : 
+                         currentScreenData.gradient.includes('green') ? '#bbf7d0' :
+                         currentScreenData.gradient.includes('purple') ? '#d8b4fe' :
+                         currentScreenData.gradient.includes('amber') ? '#fde68a' : '#fbcfe8'};
+        }
+      `}</style>
       
       {/* Top Button Row */}
       <div 
-        className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-6 pt-3"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 44px) + 12px)' }}
+        className="absolute left-0 right-0 z-20 flex justify-between items-center px-6 pt-4"
+        style={{ 
+          top: 'env(safe-area-inset-top, 44px)'
+        }}
       >
         {/* Back Button */}
         <button
@@ -150,12 +181,20 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
 
         {/* Skip Button */}
         {!currentScreenData.isLastScreen && (
-          <button
-            onClick={handleSkip}
-            className="text-gray-600 text-sm font-medium hover:text-gray-800 transition-colors"
-          >
-            Skip
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="text-gray-500 text-xs font-medium hover:text-gray-700 transition-colors"
+            >
+              🔄
+            </button>
+            <button
+              onClick={handleSkip}
+              className="text-gray-600 text-sm font-medium hover:text-gray-800 transition-colors"
+            >
+              Skip
+            </button>
+          </div>
         )}
       </div>
 
@@ -164,22 +203,22 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
         {/* Content Area */}
         <div className="flex-1 flex flex-col items-center justify-center px-8 pb-8">
           {/* Image Container */}
-          <div className={`mb-12 transition-all duration-500 ease-out ${
+          <div className={`mb-2 transition-all duration-500 ease-out ${
             isAnimating 
               ? slideDirection === 'next' 
                 ? 'transform translate-x-8 opacity-0' 
                 : 'transform -translate-x-8 opacity-0'
               : 'transform translate-x-0 opacity-100'
           }`}>
-            <div className="w-24 h-24 mx-auto mb-8 relative">
-              <div className="absolute inset-0 bg-white/20 rounded-3xl backdrop-blur-sm shadow-lg" />
-              <div className="absolute inset-2 bg-white rounded-2xl shadow-sm flex items-center justify-center">
+            <div className="w-24 h-24 mx-auto relative">
+              <div className="absolute" />
+              <div className="absolute flex items-center justify-center">
                 <Image
                   src={currentScreenData.image}
                   alt={currentScreenData.title}
-                  width={40}
-                  height={40}
-                  className="w-10 h-10"
+                  width={100}
+                  height={100}
+                  className="w-100 h-100"
                 />
               </div>
             </div>
@@ -193,7 +232,7 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
                 : 'transform -translate-x-8 opacity-0'
               : 'transform translate-x-0 opacity-100'
           }`}>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3 line-height-lrg">
               {currentScreenData.title}
             </h1>
             <h2 className="text-lg font-medium text-gray-700 mb-6">
@@ -206,7 +245,7 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
         </div>
 
         {/* Bottom Section */}
-        <div className="px-8 pb-8" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}>
+        <div className="px-8 pb-8">
           {/* Progress Indicators */}
           <div className="flex justify-center space-x-2 mb-8">
             {onboardingScreens.map((_, index) => (

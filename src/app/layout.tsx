@@ -60,8 +60,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         (window as any).resetOnboarding = () => {
           localStorage.removeItem('held-ios-onboarding-completed');
           setShowIOSOnboarding(true);
-          console.log('🔄 Onboarding reset - refresh to see it again');
+          console.log('🔄 Onboarding reset - showing now');
         };
+
+        // Force show onboarding for testing (remove this line when done testing)
+        localStorage.removeItem('held-ios-onboarding-completed');
+        setShowIOSOnboarding(true);
       }
     }
   }, []);

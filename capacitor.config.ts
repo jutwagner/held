@@ -6,10 +6,12 @@ const config: CapacitorConfig = {
   webDir: '.next',
   server: {
     url: 'http://192.168.1.243:3000',
-    cleartext: true
+    cleartext: true,
+    originalTimeout: 60000,
+    androidScheme: 'https'
   },
   ios: {
-    scheme: 'Held',
+    scheme: 'App',
     webContentsDebuggingEnabled: true,
     allowsLinkPreview: false,
     scrollEnabled: true,
@@ -18,7 +20,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     Keyboard: {
-      resize: 'ionic',
+      resize: 'body',
       style: 'dark',
       resizeOnFullScreen: true
     }
