@@ -7,7 +7,6 @@ const config: CapacitorConfig = {
   server: {
     url: 'http://192.168.1.243:3000',
     cleartext: true,
-    originalTimeout: 60000,
     androidScheme: 'https'
   },
   ios: {

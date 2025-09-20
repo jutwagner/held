@@ -27,7 +27,7 @@ const onboardingScreens: OnboardingScreen[] = [
     id: 2,
     title: "Registry",
     subtitle: "Catalog your meaningful possessions",
-    description: "Document your collectibles, gear, and cherished items with photos, stories, and details. Create a personal archive of what matters most.",
+    description: "Your private, structured database for physical objects. Track makers, years, values, and conditions with beautiful organization.",
     image: "/img/registry.svg",
     gradient: "from-white via-white via-green-100 to-emerald-200"
   },
@@ -35,7 +35,7 @@ const onboardingScreens: OnboardingScreen[] = [
     id: 3,
     title: "Rotations",
     subtitle: "Share your style and discoveries",
-    description: "Show off your daily carries, outfit choices, and favorite finds. Inspire others while staying true to your aesthetic.",
+    description: "Time-specific snapshots of your collection. Grouped, seasonal setups, themed collections, or current favorites.",
     image: "/img/rotations.svg",
     gradient: "from-white via-white via-purple-100 to-violet-200"
   },
@@ -121,8 +121,8 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
     // Call completion callback if provided
     onComplete?.();
     
-    // Navigate to add registry item
-    router.push('/registry/new');
+    // Navigate to login/signup for new users
+    router.push('/auth/signin');
   };
 
   const currentScreenData = onboardingScreens[currentScreen];
@@ -210,15 +210,17 @@ export default function IOSOnboarding({ onComplete }: IOSOnboardingProps = {}) {
                 : 'transform -translate-x-8 opacity-0'
               : 'transform translate-x-0 opacity-100'
           }`}>
-            <div className="w-24 h-24 mx-auto relative">
+            <div className={`mx-auto relative ${
+              currentScreen === 0 ? 'w-24 h-24' : 'w-16 h-16'
+            }`}>
               <div className="absolute" />
-              <div className="absolute flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <Image
                   src={currentScreenData.image}
                   alt={currentScreenData.title}
-                  width={100}
-                  height={100}
-                  className="w-100 h-100"
+                  width={currentScreen === 0 ? 100 : 64}
+                  height={currentScreen === 0 ? 100 : 64}
+                  className={currentScreen === 0 ? "w-24 h-24" : "w-16 h-16"}
                 />
               </div>
             </div>

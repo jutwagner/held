@@ -125,9 +125,12 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         
         {/* Left Column - Identity & Documentation */}
         <div className="space-y-4 md:space-y-6">
-          <div className="rounded-lg shadow-sm">
+          <div className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               Object Identity
+              {!editable && onRequestEdit && (
+                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+              )}
             </h3>
             
             <div className="space-y-4">
@@ -195,10 +198,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Certificate of Authenticity */}
-          <div className="rounded-lg shadow-sm">
+          <div className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 mt-10 md:mb-4 flex items-center gap-2">
               <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Certificate of Authenticity
+              {!editable && onRequestEdit && (
+                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+              )}
             </h3>
             
             <div className="space-y-4">
@@ -280,11 +286,14 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
         <div className="space-y-4 md:space-y-6">
           
           {/* Chain of Ownership */}
-          <div className="shadow-sm">
+          <div className={`shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 Chain of Ownership
+                {!editable && onRequestEdit && (
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-2" />
+                )}
               </h3>
               {editable && (
                 <Button 
@@ -358,10 +367,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Associated Documents */}
-          <div className="">
+          <div className={`${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Associated Documents
+              {!editable && onRequestEdit && (
+                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+              )}
             </h3>
 
             <div className="space-y-3">
@@ -415,10 +427,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Provenance Notes */}
-          <div className="">
+          <div className={`${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Provenance Notes
+              {!editable && onRequestEdit && (
+                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+              )}
             </h3>
             
             <textarea

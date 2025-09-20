@@ -146,10 +146,10 @@ export default function PassportClient() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
-                <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-5" />
+                <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-5 mt-5" />
         {/* Passport Header */}
         <div className="mb-10 sm:mb-16">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0">
+          <div className="flex flex-col md:flex-row items-stretch md:items-baseline justify-between gap-4 md:gap-0">
             <div className="flex-1 w-full">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-black leading-tight tracking-tight mb-2 sm:mb-4 text-center md:text-left">
                 {object.title}

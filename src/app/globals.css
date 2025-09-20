@@ -453,6 +453,11 @@ body.capacitor-ios nav[class*="fixed"],
 body.capacitor-ios nav[class*="sticky"] {
   display: none !important;
 }
+/* Hide top navigation on iOS */
+body.capacitor-ios nav[class*="fixed"].mobileNav,
+body.capacitor-ios nav[class*="sticky"].mobileNav {
+  display: flex !important;
+}
 
 /* AGGRESSIVE Safari UI removal for Capacitor iOS */
 body.capacitor-ios input[type="text"],
@@ -507,7 +512,7 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   height: 0 !important;
 }
 
-/* Safe area insets for devices with notches/Dynamic Island * /
+/* Safe area insets for devices with notches/Dynamic Island */
 @supports (padding: max(0px)) {
   .safe-area-top {
     padding-top: max(env(safe-area-inset-top), 20px);
@@ -564,7 +569,7 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 }
 
 .min-h-screen{
-  min-height: calc(100vh - 320px);
+  min-height: calc(100vh);
 }
 
 .oneone, .oneone img{

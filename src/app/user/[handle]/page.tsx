@@ -24,6 +24,35 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isPublicProfile, setIsPublicProfile] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser || !isOwnProfile) return;
+
+    setUploadingCover(true);
+    try {
+      // Import upload functions
+      const { uploadImages, updateUser } = await import('@/lib/firebase-services');
+      
+      // Upload image (uploadImages expects array, returns array)
+      const imageUrls = await uploadImages([file], currentUser.uid);
+      const imageUrl = imageUrls[0];
+      
+      // Update user profile with cover image
+      await updateUser(currentUser.uid, { coverImage: imageUrl });
+      
+      // Update local state
+      if (profileUser) {
+        setProfileUser({ ...profileUser, coverImage: imageUrl });
+      }
+    } catch (error) {
+      console.error('Error uploading cover image:', error);
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -137,16 +166,63 @@ export default function ProfilePage() {
           <div className="w-full">
             <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               {/* Cover Image */}
-              <div className="h-48 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 relative">
+              <div className="h-48 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 relative group">
                 {profileUser.coverImage ? (
-                  <Image
-                    src={profileUser.coverImage}
-                    alt="Cover"
-                    fill
-                    className="object-cover"
-                  />
+                  <>
+                    <Image
+                      src={profileUser.coverImage}
+                      alt="Cover"
+                      fill
+                      className="object-cover"
+                    />
+                    {/* Gradient shadow overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+                  </>
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 opacity-20" />
+                )}
+                
+                {/* Cover Upload/Delete Buttons - Only show for own profile */}
+                {isOwnProfile && (
+                  <>
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+                      <button
+                        onClick={() => coverInputRef.current?.click()}
+                        disabled={uploadingCover}
+                        className="bg-white/90 text-gray-800 px-4 py-2 rounded-lg font-medium shadow-lg hover:bg-white transition-colors"
+                      >
+                        {uploadingCover ? 'Uploading...' : profileUser.coverImage ? 'Change Cover' : 'Add Cover Image'}
+                      </button>
+                      
+                      {profileUser.coverImage && (
+                        <button
+                          onClick={async () => {
+                            setUploadingCover(true);
+                            try {
+                              const { updateUser } = await import('@/lib/firebase-services');
+                              await updateUser(currentUser.uid, { coverImage: null });
+                              setProfileUser({ ...profileUser, coverImage: null });
+                            } catch (error) {
+                              console.error('Error removing cover image:', error);
+                            } finally {
+                              setUploadingCover(false);
+                            }
+                          }}
+                          disabled={uploadingCover}
+                          className="bg-red-500/90 text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:bg-red-500 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      ref={coverInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverUpload}
+                      className="hidden"
+                    />
+                  </>
                 )}
               </div>
 
@@ -178,14 +254,14 @@ export default function ProfilePage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <h1 className={`text-2xl font-bold ${profileUser.coverImage ? 'text-white drop-shadow-lg' : 'text-gray-900 dark:text-gray-100'}`}>
                           {profileUser.displayName || 'Unnamed User'}
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className={`${profileUser.coverImage ? 'text-white/90 drop-shadow-lg' : 'text-gray-600 dark:text-gray-300'}`}>
                           @{profileUser.handle}
                         </p>
                         {profileUser.bio && (
-                          <p className="text-gray-700 dark:text-gray-300 mt-2 max-w-md">
+                          <p className={`mt-2 max-w-md ${profileUser.coverImage ? 'text-white/90 drop-shadow-lg' : 'text-gray-700 dark:text-gray-300'}`}>
                             {profileUser.bio}
                           </p>
                         )}

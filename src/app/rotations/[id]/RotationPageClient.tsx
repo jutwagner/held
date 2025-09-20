@@ -216,6 +216,10 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
           </div>
         )}
+
+
+
+
         {/* Cover Image Background - Integrated into header */}
         {rotation.coverImage && (
           <div className="absolute inset-0 z-0">
@@ -230,49 +234,98 @@ function RotationPageClient({ id }: { id: string }) {
           </div>
         )}
 
-        <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <div className="flex items-center gap-4">
-            
-            {/* Always show title/description with enhanced styling */}
-            <div className="max-w-full">
+
+
+
+
+
+        {/* Enhanced Header with Better Visual Hierarchy */}
+        <div className="held-container held-container-wide py-8 relative z-10">
+          <div className="flex flex-col gap-6">
+            {/* Title and Description */}
+            <div className="text-center md:text-left">
               {!editing ? (
                 <>
-                  <h1 className="text-3xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-1 drop-shadow-sm truncate">{rotation.name || 'Unnamed Rotation'}</h1>
-                  <p className="text-gray-600 dark:text-gray-400 dark:text-gray-300 text-base font-mono drop-shadow-sm truncate">{rotation.description || 'No description available'}</p>
+                  <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3 leading-tight">
+                    {rotation.name || 'Unnamed Rotation'}
+                  </h1>
+                  <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
+                    {rotation.description || 'No description available'}
+                  </p>
                 </>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-4 max-w-2xl">
                   <input
-                    className="border-0 border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent text-3xl font-serif tracking-tight w-full text-gray-900 dark:text-gray-100 dark:text-gray-100"
+                    className="border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent text-4xl md:text-5xl font-serif font-bold tracking-tight w-full text-gray-900 dark:text-gray-100 pb-2"
                     value={form.name}
                     onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
                     maxLength={80}
+                    placeholder="Rotation name"
                   />
                   <textarea
-                    className="border-0 border-b border-gray-200 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent w-full text-base text-gray-700 dark:text-gray-300 dark:text-gray-300"
+                    className="border-0 border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent w-full text-lg text-gray-700 dark:text-gray-300 pb-2 resize-none"
                     value={form.description || ''}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     rows={2}
+                    placeholder="Add a description..."
                   />
-                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-300">
-                    <span>Private</span>
-                    <Switch checked={!form.isPublic} onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: !checked }))} />
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">Visibility:</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`${form.isPublic ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100 font-medium'}`}>Private</span>
+                      <Switch checked={form.isPublic} onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: checked }))} />
+                      <span className={`${form.isPublic ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400'}`}>Public</span>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono shadow-sm">{objects.length} object{objects.length !== 1 ? 's' : ''}</span>
-            {canEdit && !editing && (
-              <button className="ml-2 px-3 py-1 rounded bg-black dark:bg-gray-800 text-white dark:text-gray-100 text-xs" onClick={() => setEditing(true)}>Edit</button>
-            )}
-            {canEdit && editing && (
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 dark:text-gray-100 text-xs" onClick={() => setEditing(false)}>Cancel</button>
-                <button className="px-3 py-1 rounded bg-black dark:bg-gray-700 text-white dark:text-gray-100 text-xs" onClick={saveEdits}>Save</button>
+
+            {/* Stats and Actions Bar */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {objects.length} {objects.length === 1 ? 'Object' : 'Objects'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {rotation.isPublic ? 'Public' : 'Private'}
+                  </span>
+                </div>
               </div>
-            )}
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3">
+                {canEdit && !editing && (
+                  <button 
+                    className="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                    onClick={() => setEditing(true)}
+                  >
+                    Edit Rotation
+                  </button>
+                )}
+                {canEdit && editing && (
+                  <div className="flex items-center gap-2">
+                    <button 
+                      className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      onClick={() => setEditing(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm"
+                      onClick={saveEdits}
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -325,22 +378,35 @@ function RotationPageClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* Floating Object Nav */}
-      <nav className="sticky top-25 z-20 bg-white/90 backdrop-blur border-b border-gray-100 py-2">
-        <div className="held-container held-container-wide flex gap-2 justify-center">
-          {objects.map((object, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                const el = document.getElementById(`object-${idx}`);
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-              className="w-20 h-20 oneone rounded-full overflow-hidden border-2 border-blue-200 shadow hover:scale-110 transition-transform duration-200 bg-white"
-              title={object.title}
-            >
-              <Image src={object.images[0] || '/placeholder.png'} alt={object.title} width={80} height={80} className="w-full h-full object-cover" />
-            </button>
-          ))}
+      {/* Enhanced Object Navigation */}
+      <nav className="sticky top-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 py-4 shadow-sm">
+        <div className="held-container held-container-wide">
+          <div className="flex items-center justify-center overflow-hidden px-4">
+            {objects.map((object, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  const el = document.getElementById(`object-${idx}`);
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white dark:border-gray-600 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 bg-white flex-shrink-0"
+                style={{ 
+                  marginLeft: idx > 0 ? '-8px' : '0',
+                  aspectRatio: '1',
+                  zIndex: 10 - idx
+                }}
+                title={object.title}
+              >
+                <Image 
+                  src={object.images?.[0] || '/img/placeholder.svg'} 
+                  alt={object.title} 
+                  width={80} 
+                  height={80} 
+                  className="w-full h-full object-cover" 
+                />
+              </button>
+            ))}
+          </div>
         </div>
       </nav>
 

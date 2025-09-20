@@ -175,7 +175,15 @@ export default function Navigation() {
 export function MobileBottomBar() {
   const { user } = useAuth();
   const pathname = usePathname();
+  const [isCapacitor, setIsCapacitor] = useState(false);
   const isActive = (href: string) => pathname?.startsWith(href);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      setIsCapacitor(true);
+    }
+  }, []);
+
   return (
     <nav
       className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md shadow-lg z-50 flex justify-around items-center"
@@ -196,19 +204,29 @@ export function MobileBottomBar() {
           <Image src="/img/theCollaborative.svg" alt="theCollaborative" width={22} height={22} />
         </span>
       </Link>
-{/*}
-
-      {user && (
-        <Link href="/settings" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
-          <span className={`flex items-center justify-center h-10 w-10 ${isActive('/settings') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-            <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
+      
+      {/* Profile icon - Show only on iOS when user is logged in */}
+      {isCapacitor && user && (
+        <Link href={`/user/${user.handle}`} className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+          <span className={`flex items-center justify-center h-10 w-10 ${isActive('/user/') || isActive('/settings') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
+            {user.avatarUrl ? (
+              <Image src={user.avatarUrl} alt="Profile" width={24} height={24} className="w-6 h-6 object-cover rounded-full" />
+            ) : (
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/>
+                <path d="M16 20v-2a4 4 0 00-8 0v2" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+            )}
           </span>
         </Link>
       )}
-      */}
+      
+      {/* Debug info for iOS - shows why profile icon isn't appearing */}
+      {isCapacitor && !user && (
+        <div className="flex flex-col items-center justify-center text-gray-400 h-full text-xs">
+          <span>Login</span>
+        </div>
+      )}
     </nav>
   );
 }

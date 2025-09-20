@@ -42,6 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         const onboardingCompleted = localStorage.getItem('held-ios-onboarding-completed');
         if (!onboardingCompleted) {
           setShowIOSOnboarding(true);
+        } else {
+          // For returning iOS users, redirect to registry if on home page
+          if (window.location.pathname === '/') {
+            window.location.href = '/registry';
+          }
         }
         
         // Import and configure Capacitor Keyboard plugin

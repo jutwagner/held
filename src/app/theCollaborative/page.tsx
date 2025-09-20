@@ -73,7 +73,7 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
               <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : rotationObjects.length > 0 ? (
-            <div className="flex items-center justify-center overflow-hidden px-4">
+            <div className="flex items-center justify-center  px-4">
               {rotationObjects.slice(0, 6).map((obj, index) => (
                 <div key={obj.id} className="relative flex-shrink-0">
                   <div 

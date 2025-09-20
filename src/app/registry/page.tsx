@@ -33,8 +33,7 @@ export default function RegistryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [showPublicOnly, setShowPublicOnly] = useState(false);
-  const [page, setPage] = useState(1);
-  const pageSize = 9;
+  // Removed pagination - show all objects
   const [view, setView] = useState<'grid' | 'table'>('grid');
   const [sortField, setSortField] = useState<'title' | 'category' | 'isPublic' | 'updatedAt' | 'provenance'>('updatedAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -86,7 +85,7 @@ export default function RegistryPage() {
     const unsubscribe = subscribeObjects(user.uid, (userObjects) => {
       setObjects(userObjects);
       setLoadingObjects(false);
-    }, 100); // Limit to 100 objects initially
+    }, 1000); // High limit to show all objects
     return () => unsubscribe();
   }, [user]);
 
@@ -184,16 +183,13 @@ export default function RegistryPage() {
   }, [objects, searchTerm, showPublicOnly, anchoringFilter, sortField, sortDirection]);
 
   useEffect(() => {
-    setPage(1); // Reset to first page on filter change
+    // No pagination reset needed
   }, [searchTerm, showPublicOnly, anchoringFilter]);
 
   // loadObjects removed; now handled by subscribeObjects
 
-  // Pagination for filtered objects
-  const paginatedObjects = useMemo(() => {
-    const startIndex = (page - 1) * pageSize;
-    return filteredObjects.slice(startIndex, startIndex + pageSize);
-  }, [filteredObjects, page, pageSize]);
+  // Show all filtered objects (no pagination)
+  const displayedObjects = filteredObjects;
 
   const toggleSelection = (id: string) => {
     setSelected(prev => {
@@ -415,7 +411,7 @@ export default function RegistryPage() {
                   {view === 'grid' ? (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {paginatedObjects.map((obj) => (
+                        {displayedObjects.map((obj) => (
                           <div key={obj.id}>
                             <div className="flex items-center gap-2 mb-2">
                               {/* <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
@@ -425,11 +421,7 @@ export default function RegistryPage() {
                           </div>
                         ))}
                       </div>
-                      <div className="flex justify-center mt-8 gap-2">
-                        <Button disabled={page === 1} onClick={() => setPage(page-1)} variant="outline">Previous</Button>
-                        <span className="px-4 py-2 text-gray-600 dark:text-gray-300">Page {page} of {Math.ceil(filteredObjects.length/pageSize)}</span>
-                        <Button disabled={page*pageSize >= filteredObjects.length} onClick={() => setPage(page+1)} variant="outline">Next</Button>
-                      </div>
+                      {/* Pagination removed - showing all objects */}
                     </>
                   ) : (
                     <div className="overflow-hidden rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
@@ -511,7 +503,7 @@ export default function RegistryPage() {
                           </tr>
                         </thead>
                           <tbody className="divide-y divide-gray-200/50 dark:divide-gray-600/50">
-                            {paginatedObjects.map((obj, index) => {
+                            {displayedObjects.map((obj, index) => {
                             const anchored = !!obj.anchoring?.isAnchored;
                             const pending = !!obj.anchoring?.txHash && !anchored;
                             const prov = getProvenanceScore(obj);
@@ -541,7 +533,7 @@ export default function RegistryPage() {
                                         </button>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-3">
+                                      <Link href={`/registry/${obj.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                                         {/* Thumbnail Image */}
                                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                                           {obj.images && obj.images.length > 0 ? (
@@ -569,8 +561,8 @@ export default function RegistryPage() {
                                             </div>
                                           )}
                                         </div>
-                                        <span className="font-semibold text-gray-900 dark:text-gray-100">{obj.title}</span>
-                                      </div>
+                                        <span className="font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{obj.title}</span>
+                                      </Link>
                                     )}
                                   </td>
                                   <td className="px-6 py-4 text-gray-700 dark:text-gray-300">

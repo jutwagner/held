@@ -101,7 +101,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-serif font-medium mb-4 text-gray-900 dark:text-gray-100">Passport</h3>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Shareable identity pages for any object. Clean permalinks with metadata optimized for discovery, for those who want their favorite things to be seen, not just stored.</p>
+            Clean permalinks with metadata for discovery. When you want your favorite things seen, not just stored.</p>
           </div>
 
           {/* Rotation */}
@@ -111,7 +111,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-serif font-medium mb-4 text-gray-900 dark:text-gray-100">Rotations</h3>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-              Time-specific snapshots of your collection. Share seasonal setups, 
+              Time-specific snapshots of your collection. Grouped, seasonal setups, 
               themed collections, or current favorites.
             </p>
           </div>
