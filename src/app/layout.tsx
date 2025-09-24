@@ -32,7 +32,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
     // iOS/Capacitor detection and setup
     if (typeof window !== 'undefined') {
-      const capacitorDetected = !!(window as any).Capacitor;
+      // More robust Capacitor detection - check for Capacitor AND platform info
+      const hasCapacitor = !!(window as any).Capacitor;
+      const isNativePlatform = hasCapacitor && 
+                               (window as any).Capacitor.isNativePlatform && 
+                               (window as any).Capacitor.isNativePlatform();
+      const capacitorDetected = hasCapacitor && isNativePlatform;
+      
+      // Debug logging
+      console.log('🔍 Capacitor Detection:', {
+        hasCapacitor,
+        isNativePlatform,
+        capacitorDetected,
+        userAgent: navigator.userAgent,
+        isWeb: !capacitorDetected
+      });
+      
       setIsCapacitor(capacitorDetected);
       
       if (capacitorDetected) {
