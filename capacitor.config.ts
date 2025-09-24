@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { KeyboardStyle } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
   appId: 'com.held.app',
@@ -19,7 +20,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     Keyboard: {
-      style: 'dark',
+      style: KeyboardStyle.Dark,
       resizeOnFullScreen: true
     }
   }

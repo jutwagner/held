@@ -197,11 +197,12 @@ export default function ProfilePage() {
                       {profileUser.coverImage && (
                         <button
                           onClick={async () => {
+                            if (!currentUser) return;
                             setUploadingCover(true);
                             try {
                               const { updateUser } = await import('@/lib/firebase-services');
-                              await updateUser(currentUser.uid, { coverImage: null });
-                              setProfileUser({ ...profileUser, coverImage: null });
+                              await updateUser(currentUser.uid, { coverImage: undefined });
+                              setProfileUser({ ...profileUser, coverImage: undefined });
                             } catch (error) {
                               console.error('Error removing cover image:', error);
                             } finally {

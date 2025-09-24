@@ -571,20 +571,20 @@ export default function RegistryPage() {
                                   <td className="px-6 py-4">
                                     <div className="flex items-center justify-center">
                                       {obj.isPublic ? (
-                                        <Globe className="h-5 w-5 text-green-600 dark:text-green-400" title="Public" />
+                                        <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
                                       ) : (
-                                        <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" title="Private" />
+                                        <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                       )}
                                     </div>
                                   </td>
                                   <td className="px-6 py-4">
                                     <div className="flex items-center justify-center">
                                       {anchored ? (
-                                        <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" title="Anchored" />
+                                        <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                                       ) : pending ? (
-                                        <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" title="Pending" />
+                                        <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                       ) : (
-                                        <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" title="Not Anchored" />
+                                        <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                       )}
                                     </div>
                                   </td>

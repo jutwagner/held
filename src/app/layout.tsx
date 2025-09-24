@@ -7,6 +7,7 @@ import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import ThemeBody from "@/components/ThemeBody";
 import IOSOnboarding from "@/components/IOSOnboarding";
 import { reportWebVitals } from "@/lib/performance";
+import { KeyboardStyle } from '@capacitor/keyboard';
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -54,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // Enable keyboard
           Keyboard.setAccessoryBarVisible({ isVisible: false });
           Keyboard.setScroll({ isDisabled: false });
-          Keyboard.setStyle({ style: 'DARK' });
+          Keyboard.setStyle({ style: KeyboardStyle.Dark });
           
           console.log('✅ Keyboard plugin configured');
         }).catch(err => {
