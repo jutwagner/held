@@ -160,7 +160,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="held-container-wide py-8 align-center mobile-no-top-padding">
+      <div className="held-container-wide pt-8 align-center mobile-no-top-padding">
         {/* Profile Header */}
         <div className="flex justify-center mb-8">
           <div className="w-full">
@@ -315,8 +315,8 @@ export default function ProfilePage() {
 
         {/* Registry Carousel */}
         {objects.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb">
+            <div className="flex items-center justify-between mb-4 mobile-padding-left-carousel">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Registry ({objects.length})
               </h2>
@@ -412,7 +412,7 @@ export default function ProfilePage() {
       {/* Rotations Carousel - Bleeds to edge */}
       {rotations.length > 0 && (
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4" style={{ paddingLeft: 'calc((100vw - 80rem) / 2)' }}>
+          <div className="flex items-center justify-between mb-4 mobile-padding-left-carousel" style={{ paddingLeft: 'calc((100vw - 80rem) / 2)' }}>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Rotations ({rotations.length})
             </h2>
