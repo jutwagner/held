@@ -581,3 +581,16 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 .line-height-lrg{
   line-height: 2.9rem;
 }
+
+
+
+@media screen and (max-width: 768px) {
+  .mobile-no-top-padding{
+    padding-top: 0;
+  }
+
+  .mobile-padding-left-carousel{
+    padding-left: 2rem!important
+  }
+}
+

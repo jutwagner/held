@@ -139,7 +139,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 ">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="held-container py-6  held-container-wide py-8 align-center" >
+        <div className="held-container py-6 held-container-wide align-center" >
           <div className="flex items-center justify-between">
             <Link
               href="/"
@@ -160,7 +160,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="held-container-wide py-8 align-center">
+      <div className="held-container-wide py-8 align-center mobile-no-top-padding">
         {/* Profile Header */}
         <div className="flex justify-center mb-8">
           <div className="w-full">
@@ -228,7 +228,7 @@ export default function ProfilePage() {
 
               {/* Profile Info */}
               <div className="relative px-6 pb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:items-end gap-4 -mt-16">
                   {/* Avatar */}
                   <div className="relative">
                     <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
@@ -253,15 +253,15 @@ export default function ProfilePage() {
                   {/* Profile Details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
-                        <h1 className={`text-2xl font-bold ${profileUser.coverImage ? 'text-white drop-shadow-lg' : 'text-gray-900 dark:text-gray-100'}`}>
+                      <div className="text-center sm:text-left">
+                        <h1 className={`text-2xl font-bold ${profileUser.coverImage ? 'text-black sm:text-white sm:drop-shadow-lg' : 'text-black'}`}>
                           {profileUser.displayName || 'Unnamed User'}
                         </h1>
-                        <p className={`${profileUser.coverImage ? 'text-white/90 drop-shadow-lg' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <p className={`${profileUser.coverImage ? 'text-black sm:text-white/90 sm:drop-shadow-lg' : 'text-black'}`}>
                           @{profileUser.handle}
                         </p>
                         {profileUser.bio && (
-                          <p className={`mt-2 max-w-md ${profileUser.coverImage ? 'text-white/90 drop-shadow-lg' : 'text-gray-700 dark:text-gray-300'}`}>
+                          <p className="mt-2 max-w-md mx-auto sm:mx-0 text-black">
                             {profileUser.bio}
                           </p>
                         )}
@@ -288,20 +288,20 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Stats */}
-                    <div className="flex gap-6 mt-4">
+                    <div className="flex gap-6 mt-4 justify-center sm:justify-start">
                       <div className="text-center">
-                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        <div className="text-xl font-semibold text-black">
                           {objects.length}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-black">
                           Objects
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        <div className="text-xl font-semibold text-black">
                           {rotations.length}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-black">
                           Rotations
                         </div>
                       </div>
@@ -552,7 +552,7 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
     <div className="relative">
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide py-6 pl-4 pr-4"
+        className="flex gap-4 overflow-x-auto scrollbar-hide py-12 pl-4 pr-4 mobile-padding-left-carousel"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingLeft: 'calc((100vw - 80rem) / 2)' }}
         onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
       >
