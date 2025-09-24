@@ -470,7 +470,6 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
           {(object as any).openToSale && <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Open to sale</span>}
         </div>
         <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-800">Allow messages for offers</label>
           <Button
             variant={(object as any).openToSale ? 'outline' : 'default'}
             onClick={async () => {
@@ -488,7 +487,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
               }
             }}
           >
-            {(object as any).openToSale ? 'Enabled' : 'Enable'}
+            {(object as any).openToSale ? 'Disable' : 'Allow messages for offers'}
           </Button>
           {!isHeldPlus(user) && (
             <span className="text-xs text-gray-500">You can mark {3 - forSaleCount > 0 ? `${3 - forSaleCount} more` : '0'} items for sale.</span>
@@ -499,18 +498,85 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
       {/* Provenance Meter (Held+) */}
       {heldPlus ? (
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm text-gray-600">Provenance Completeness</div>
-            <div className="text-sm font-mono">{prov}%</div>
+          {/* Header with circular progress */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12">
+                {/* Background circle */}
+                <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 48 48">
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    className="text-gray-200 dark:text-gray-700"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 20}`}
+                    strokeDashoffset={`${2 * Math.PI * 20 * (1 - prov / 100)}`}
+                    className="text-blue-500 transition-all duration-500 ease-out"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {/* Percentage text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{prov}%</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">Provenance</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Documentation Progress</div>
+              </div>
+            </div>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
-            <div className="h-full bg-gray-900" style={{ width: `${prov}%` }} />
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
-            <Prompt ok={!!object.serialNumber}>Add Serial</Prompt>
-            <Prompt ok={!!object.certificateOfAuthenticity || (!!object.associatedDocuments && object.associatedDocuments.length > 0)}>Attach Document</Prompt>
-            <Prompt ok={Array.isArray(object.chain) && object.chain.length > 0}>Add Owner</Prompt>
-            <Prompt ok={!!object.acquisitionDate}>Add Acquisition Date</Prompt>
+          
+          {/* Checklist items */}
+          <div className="space-y-2">
+            <ProvenanceStep 
+              completed={!!object.serialNumber}
+              title="Add Serial Number"
+              description="Unique identifier or serial number"
+              onClick={() => {
+                const element = document.querySelector('[data-provenance-section="identity"]');
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+            <ProvenanceStep 
+              completed={!!object.certificateOfAuthenticity || (!!object.associatedDocuments && object.associatedDocuments.length > 0)}
+              title="Attach Documents"
+              description="Certificates, receipts, or references"
+              onClick={() => {
+                const element = document.querySelector('[data-provenance-section="certificate"]');
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+            <ProvenanceStep 
+              completed={Array.isArray(object.chain) && object.chain.length > 0}
+              title="Add Ownership History"
+              description="Track previous owners and transfers"
+              onClick={() => {
+                const element = document.querySelector('[data-provenance-section="chain"]');
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+            <ProvenanceStep 
+              completed={!!object.acquisitionDate}
+              title="Add Acquisition Date"
+              description="When you acquired this item"
+              onClick={() => {
+                const element = document.querySelector('[data-provenance-section="identity"]');
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
           </div>
         </div>
       ) : (
@@ -520,45 +586,41 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
         </div>
       )}
 
-      {/* Documents (Held+) */}
-      {heldPlus ? (
+      {/* Documents (Held+) - Only show if documents exist */}
+      {heldPlus && (object.certificateOfAuthenticity || (object.associatedDocuments && object.associatedDocuments.length > 0)) ? (
         <div className="mb-6">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2"><FileText className="h-4 w-4" /> Documents</div>
-          {object.certificateOfAuthenticity || (object.associatedDocuments && object.associatedDocuments.length>0) ? (
-            <ul className="list-disc list-inside text-sm text-gray-700">
-              {object.certificateOfAuthenticity && (
-                <li className="flex items-center gap-2">
-                  {/^https?:\/\//i.test(object.certificateOfAuthenticity) ? (
-                    <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-black underline">Certificate of Authenticity</a>
-                  ) : (
-                    <span className="text-gray-700">Certificate of Authenticity</span>
-                  )}
-                  {object.certificateImage && (
-                    <>
-                      <img
-                        src={object.certificateImage}
-                        alt="Certificate thumbnail"
-                        className="h-6 w-auto border rounded cursor-pointer"
-                        onClick={() => setShowCertModal(true)}
-                      />
-                      <button
-                        type="button"
-                        className="px-2 py-0.5 border border-gray-300 text-xs hover:bg-gray-50"
-                        onClick={() => setShowCertModal(true)}
-                      >
-                        View
-                      </button>
-                    </>
-                  )}
-                </li>
-              )}
-              {(object.associatedDocuments||[]).map((d, i) => (
-                <li key={i}><a href={d} target="_blank" rel="noopener noreferrer" className="text-black underline">Document {i+1}</a></li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-sm text-gray-500">No documents attached.</div>
-          )}
+          <ul className="list-disc list-inside text-sm text-gray-700">
+            {object.certificateOfAuthenticity && (
+              <li className="flex items-center gap-2">
+                {/^https?:\/\//i.test(object.certificateOfAuthenticity) ? (
+                  <a href={object.certificateOfAuthenticity} target="_blank" rel="noopener noreferrer" className="text-black underline">Certificate of Authenticity</a>
+                ) : (
+                  <span className="text-gray-700">Certificate of Authenticity</span>
+                )}
+                {object.certificateImage && (
+                  <>
+                    <img
+                      src={object.certificateImage}
+                      alt="Certificate thumbnail"
+                      className="h-6 w-auto border rounded cursor-pointer"
+                      onClick={() => setShowCertModal(true)}
+                    />
+                    <button
+                      type="button"
+                      className="px-2 py-0.5 border border-gray-300 text-xs hover:bg-gray-50"
+                      onClick={() => setShowCertModal(true)}
+                    >
+                      View
+                    </button>
+                  </>
+                )}
+              </li>
+            )}
+            {(object.associatedDocuments||[]).map((d, i) => (
+              <li key={i}><a href={d} target="_blank" rel="noopener noreferrer" className="text-black underline">Document {i+1}</a></li>
+            ))}
+          </ul>
         </div>
       ) : null}
 
@@ -597,6 +659,53 @@ function Prompt({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
     <div className={`border px-2 py-1 text-center ${ok ? 'border-green-200 text-green-700 bg-green-50' : 'border-gray-200 text-gray-700 bg-white'}`}>
       {children}
+    </div>
+  );
+}
+
+function ProvenanceStep({ completed, title, description, onClick }: { completed: boolean; title: string; description: string; onClick?: () => void }) {
+  return (
+    <div 
+      className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer ${
+        completed 
+          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30' 
+          : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-750'
+      }`}
+      onClick={onClick}
+    >
+      {/* Checkmark or circle */}
+      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
+        completed 
+          ? 'bg-green-500 text-white' 
+          : 'bg-gray-200 dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500'
+      }`}>
+        {completed ? (
+          <CheckCircle className="h-4 w-4" />
+        ) : (
+          <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full" />
+        )}
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className={`font-medium text-sm ${completed ? 'text-green-800 dark:text-green-200' : 'text-gray-700 dark:text-gray-300'}`}>
+          {title}
+        </div>
+        <div className={`text-xs ${completed ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+          {description}
+        </div>
+      </div>
+      
+      {/* Navigation indicator */}
+      <div className="flex-shrink-0">
+        {completed ? (
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        ) : (
+          <svg className="h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        )}
+      </div>
     </div>
   );
 }

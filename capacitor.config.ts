@@ -15,7 +15,15 @@ const config: CapacitorConfig = {
     allowsLinkPreview: false,
     scrollEnabled: true,
     contentInset: 'automatic',
-    overrideUserAgent: 'Held-iOS-App/1.0'
+    overrideUserAgent: 'Held-iOS-App/1.0',
+    preferences: {
+      KeyboardDisplayRequiresUserAction: false,
+      HideKeyboardFormAccessoryBar: false,
+      DisallowOverscroll: false,
+      SuppressesIncrementalRendering: false,
+      AllowInlineMediaPlayback: true,
+      MediaPlaybackRequiresUserAction: false
+    }
   },
   plugins: {
     Keyboard: {

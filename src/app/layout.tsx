@@ -61,6 +61,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           console.log('⚠️ Keyboard plugin not available:', err);
         });
 
+        // Aggressive keyboard fix - remove readonly/disabled attributes
+        const enableInputs = () => {
+          const inputs = document.querySelectorAll('input, textarea, select');
+          inputs.forEach((input: any) => {
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+            input.style.userSelect = 'text';
+            input.style.webkitUserSelect = 'text';
+            input.style.pointerEvents = 'auto';
+            input.setAttribute('contenteditable', 'true');
+          });
+          console.log(`🔧 Enabled ${inputs.length} input fields for iOS`);
+        };
+
+        // Run immediately and on DOM changes
+        enableInputs();
+        const observer = new MutationObserver(() => {
+          setTimeout(enableInputs, 100);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Force focus on tap
+        document.addEventListener('touchstart', (e) => {
+          const target = e.target as HTMLElement;
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+            setTimeout(() => {
+              (target as HTMLInputElement).focus();
+              console.log('🎯 Forced focus on input:', target.tagName);
+            }, 50);
+          }
+        });
+
         // Debug function to reset onboarding
         (window as any).resetOnboarding = () => {
           localStorage.removeItem('held-ios-onboarding-completed');
@@ -99,11 +131,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
         
+        {/* Favicons */}
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        
         {/* iOS app icons */}
-        <link rel="apple-touch-icon" href="/icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon-192x192.png" />
+        
+        {/* Web app manifest */}
+        <link rel="manifest" href="/manifest.json" />
         
         {/* Force iOS native styling directly in head */}
         <style dangerouslySetInnerHTML={{
@@ -141,8 +180,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 }
               }
               
-              /* Force input styling */
+              /* Force input styling and enable keyboard */
               input[type="text"], input[type="email"], input[type="password"], 
+              input[type="search"], input[type="tel"], input[type="url"],
               textarea, select {
                 -webkit-appearance: none !important;
                 appearance: none !important;
@@ -153,6 +193,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 -webkit-tap-highlight-color: transparent !important;
                 font-size: 16px !important;
                 box-shadow: none !important;
+                -webkit-user-select: text !important;
+                user-select: text !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                -webkit-touch-callout: default !important;
+              }
+              
+              /* Force input focus state */
+              input:focus, textarea:focus, select:focus {
+                border-color: #3b82f6 !important;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
               }
               
               /* Hide Safari UI elements */

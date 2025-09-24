@@ -334,8 +334,23 @@ export default function ProfilePage() {
       {objects.length > 0 && (
         <div className="mb-8">
           <HorizontalCarousel>
-            {objects.slice(0, 8).map((object) => (
-              <Link key={object.id} href={`/registry/${object.slug}`} className="w-64 flex-shrink-0">
+            {objects.slice(0, 8).map((object) => {
+              // Determine the correct URL based on privacy and ownership
+              const getItemUrl = () => {
+                if (object.isPublic && object.slug) {
+                  // Public items go to passport page
+                  return `/passport/${object.slug}`;
+                } else if (isOwnProfile) {
+                  // Private items for owner go to registry detail
+                  return `/registry/${object.id}`;
+                } else {
+                  // Private items for others shouldn't be clickable, but just in case
+                  return `/registry/${object.id}`;
+                }
+              };
+
+              return (
+                <Link key={object.id} href={getItemUrl()} className="w-64 flex-shrink-0">
                 <div className="relative rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_24px_64px_rgba(0,0,0,0.4)] h-[400px] flex flex-col transition-transform duration-300 hover:scale-[1.02] cursor-pointer group">
                   {/* Subtle top sheen */}
                   <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-b from-white/50 dark:from-gray-800/50 to-transparent" />
@@ -387,8 +402,9 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </HorizontalCarousel>
         </div>
       )}

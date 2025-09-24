@@ -98,6 +98,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
 
   return (
     <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl space-y-6 md:space-y-8">
+      {/* Header with premium badge */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 dark:from-gray-600 dark:to-gray-800 rounded-full flex items-center justify-center shadow-lg">
@@ -106,24 +107,33 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             </span>
           </div>
           <div>
-            <h2 className="font-serif text-xl text-gray-900 dark:text-gray-100">Provenance</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Authentication and Chain of Custody</p>
+            <h2 className="text-xl font-serif font-semibold text-gray-900 dark:text-gray-100">Provenance Documentation</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">Held+ Premium Feature</p>
           </div>
+        </div>
+        <div>
           {!editable && onRequestEdit && (
-            <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+            <Button variant="outline" size="sm" className="border-black dark:border-gray-300 text-black dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700" onClick={onRequestEdit}>
+              <Edit className="h-4 w-4 mr-2" /> Edit
+            </Button>
           )}
         </div>
       </div>
 
-      <div className="space-y-6">
+      {/* Two-column layout */}
+      <div className="grid xl:grid-cols-2 gap-8">
+        
+        {/* Left Column - Identity & Documentation */}
         <div className="space-y-4 md:space-y-6">
-          {/* Identity & Documentation */}
-          <div className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`}>
+          <div 
+            data-provenance-section="identity"
+            className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`} 
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
-              <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              Identity & Documentation
+              Object Identity
               {!editable && onRequestEdit && (
-                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
               )}
             </h3>
             
@@ -135,104 +145,109 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                     type="text"
                     value={data.serialNumber || ''}
                     onChange={(e) => updateData({ serialNumber: e.target.value })}
-                    placeholder="Enter serial number if available"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Enter serial number or unique identifier"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                   />
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Origin</label>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Origin</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                     <input
                       type="text"
                       value={data.origin || ''}
                       onChange={(e) => updateData({ origin: e.target.value })}
-                      placeholder="Where was this acquired?"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Place of manufacture or origin"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Acquisition Date</label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Acquisition Date</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                     <input
                       type="date"
                       value={data.acquisitionDate || ''}
                       onChange={(e) => updateData({ acquisitionDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transfer Method</label>
-                  <input
-                    type="text"
+                  <select
                     value={data.transferMethod || ''}
                     onChange={(e) => updateData({ transferMethod: e.target.value })}
-                    placeholder="How was this object acquired? (Purchase, gift, inheritance, etc.)"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  />
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="">Select method</option>
+                    <option value="purchase">Purchase</option>
+                    <option value="gift">Gift</option>
+                    <option value="inheritance">Inheritance</option>
+                    <option value="trade">Trade</option>
+                    <option value="commission">Commission</option>
+                    <option value="auction">Auction</option>
+                    <option value="found">Found</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {data.serialNumber && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <Hash className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Serial Number</div>
-                        <div className="font-mono text-gray-900 dark:text-gray-100">{data.serialNumber}</div>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 dark:text-blue-400 text-sm font-semibold">#</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Serial Number</div>
+                      <div className="font-mono text-gray-900 dark:text-gray-100">{data.serialNumber}</div>
                     </div>
                   </div>
                 )}
 
                 {data.origin && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                        <MapPin className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Origin</div>
-                        <div className="text-gray-900 dark:text-gray-100">{data.origin}</div>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Origin</div>
+                      <div className="text-gray-900 dark:text-gray-100">{data.origin}</div>
                     </div>
                   </div>
                 )}
 
                 {data.acquisitionDate && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                        <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Acquired</div>
-                        <div className="text-gray-900 dark:text-gray-100">
-                          {new Date(data.acquisitionDate).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                        </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Acquisition Date</div>
+                      <div className="font-mono text-gray-900 dark:text-gray-100">
+                        {new Date(data.acquisitionDate).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {data.transferMethod && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                        <Award className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Transfer Method</div>
-                        <div className="text-gray-900 dark:text-gray-100">{data.transferMethod}</div>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center">
+                      <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">↔</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Transfer Method</div>
+                      <div className="text-gray-900 dark:text-gray-100 capitalize">{data.transferMethod}</div>
                     </div>
                   </div>
                 )}
@@ -240,17 +255,22 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 {!data.serialNumber && !data.origin && !data.acquisitionDate && !data.transferMethod && (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Hash className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+                      <span className="text-gray-400 dark:text-gray-500 text-lg">📋</span>
                     </div>
                     <p className="text-sm">No identity information added yet</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Add serial number, origin, and acquisition details</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Add serial numbers, origin, and acquisition details</p>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          <div>
+          {/* Certificate of Authenticity */}
+          <div 
+            data-provenance-section="certificate"
+            className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`} 
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 mt-10 md:mb-4 flex items-center gap-2">
               <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Certificate of Authenticity
@@ -262,80 +282,40 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             {editable ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Details</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Description</label>
+                  <textarea
                     value={data.certificateOfAuthenticity || ''}
                     onChange={(e) => updateData({ certificateOfAuthenticity: e.target.value })}
-                    placeholder="Certificate number, issuer, or details"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate URL</label>
-                  <input
-                    type="url"
-                    value={data.certificateUrl || ''}
-                    onChange={(e) => updateData({ certificateUrl: e.target.value })}
-                    placeholder="Link to digital certificate"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Describe the certificate or authentication details"
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Image</label>
-                  {data.certificateImage ? (
-                    <div className="flex items-center gap-3">
-                      <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border border-gray-300 dark:border-gray-600 rounded" />
-                      {editable && <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>}
-                    </div>
-                  ) : (
-                    <div 
-                      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                        editable ? (dragActive ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500') : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60'
-                      }`}
-                      onDragOver={(e) => { if (!editable) return; e.preventDefault(); setDragActive(true); }}
-                      onDragLeave={() => { if (!editable) return; setDragActive(false); }}
-                      onDrop={(e) => {
-                        if (!editable) return;
-                        e.preventDefault();
-                        setDragActive(false);
-                        const file = Array.from(e.dataTransfer.files || []).find(f => f.type.startsWith('image/'));
-                        performUpload(file);
-                      }}
-                    >
-                      <Upload className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Drop certificate image here, or</p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = (e.target.files || [])[0];
-                          performUpload(f);
-                          if (e.currentTarget) e.currentTarget.value = '';
-                        }}
-                      />
-                      <Button variant="outline" size="sm" disabled={uploading || !editable} onClick={() => fileInputRef.current?.click()}>
-                        {uploading ? 'Uploading…' : 'Choose File'}
-                      </Button>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">PNG, JPG up to 10MB</p>
-                    </div>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate URL or Reference</label>
+                  <div className="relative">
+                    <Link2 className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <input
+                      type="url"
+                      value={data.certificateUrl || ''}
+                      onChange={(e) => updateData({ certificateUrl: e.target.value })}
+                      placeholder="https://... or reference number"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {data.certificateOfAuthenticity && (
                   <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Award className="h-4 w-4 text-green-600 dark:text-green-400" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Certificate of Authenticity</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Certificate Description</div>
                         <div className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed">{data.certificateOfAuthenticity}</div>
                       </div>
                     </div>
@@ -343,17 +323,20 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 )}
 
                 {data.certificateUrl && (
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Link2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Certificate URL</div>
-                        <a href={data.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline text-sm break-all">
-                          {data.certificateUrl}
-                        </a>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                      <Link2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Certificate Reference</div>
+                      <a 
+                        href={data.certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:underline text-sm break-all"
+                      >
+                        {data.certificateUrl}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -364,26 +347,76 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                       <Award className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                     </div>
                     <p className="text-sm">No certificate information added yet</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Add certificate details or upload images</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Add authentication details and references</p>
                   </div>
                 )}
               </div>
             )}
-          </div>
 
-          {/* Chain of Custody */}
-          <div className={`shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
+              {/* Certificate Image Upload */}
+              <div >
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Certificate Image</label>
+                {data.certificateImage ? (
+                  <div className="flex items-center gap-3">
+                    <img src={data.certificateImage} alt="Certificate" className="h-16 w-auto border border-gray-300 dark:border-gray-600 rounded" />
+                    {editable && <Button variant="outline" size="sm" onClick={() => updateData({ certificateImage: '' })}>Remove</Button>}
+                  </div>
+                ) : (
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      editable ? (dragActive ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500') : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60'
+                    }`}
+                    onDragOver={(e) => { if (!editable) return; e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={() => { if (!editable) return; setDragActive(false); }}
+                    onDrop={(e) => {
+                      if (!editable) return;
+                      e.preventDefault();
+                      setDragActive(false);
+                      const file = Array.from(e.dataTransfer.files || []).find(f => f.type.startsWith('image/'));
+                      performUpload(file);
+                    }}
+                  >
+                    <Upload className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Drop certificate image here, or</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = (e.target.files || [])[0];
+                        performUpload(f);
+                        if (e.currentTarget) e.currentTarget.value = '';
+                      }}
+                    />
+                    <Button variant="outline" size="sm" disabled={uploading || !editable} onClick={() => fileInputRef.current?.click()}>
+                      {uploading ? 'Uploading…' : 'Choose File'}
+                    </Button>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">PNG, JPG up to 10MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Chain & Documents */}
+        <div className="space-y-4 md:space-y-6">
+          
+          {/* Chain of Ownership */}
+          <div 
+            data-provenance-section="chain"
+            className={`shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} 
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                Chain of Custody
+                Chain of Ownership
                 {!editable && onRequestEdit && (
-                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-2" />
                 )}
               </h3>
-            </div>
-
-            <div className="space-y-4">
               {editable && (
                 <Button 
                   variant="outline" 
@@ -395,93 +428,93 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                   Add Owner
                 </Button>
               )}
+            </div>
 
-              <div className="space-y-3">
-                {(Array.isArray(data.chain) ? data.chain : []).map((entry, index) => (
-                  <div key={index} className={`rounded-lg p-4 space-y-3 transition-all duration-200 ${
-                    editable 
-                      ? 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700' 
-                      : 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Owner #{index + 1}</span>
-                      {editable && (
-                        <button
-                          onClick={() => removeChainEntry(index)}
-                          className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                    
-                    {editable ? (
-                      <div className="grid gap-3">
+            <div className="space-y-3">
+              {(Array.isArray(data.chain) ? data.chain : []).map((entry, index) => (
+                <div key={index} className={`rounded-lg p-4 space-y-3 transition-all duration-200 ${
+                  editable 
+                    ? 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700' 
+                    : 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Owner #{index + 1}</span>
+                    {editable && (
+                      <button
+                        onClick={() => removeChainEntry(index)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {editable ? (
+                    <div className="grid gap-3">
+                      <input
+                        type="text"
+                        value={entry.owner || ''}
+                        onChange={(e) => updateChainEntry(index, { owner: e.target.value })}
+                        placeholder="Owner name"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                      />
+                      
+                      <div className="grid grid-cols-2 gap-3">
                         <input
-                          type="text"
-                          value={entry.owner || ''}
-                          onChange={(e) => updateChainEntry(index, { owner: e.target.value })}
-                          placeholder="Owner name"
+                          type="date"
+                          value={entry.acquiredAt || ''}
+                          onChange={(e) => updateChainEntry(index, { acquiredAt: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                         />
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="date"
-                            value={entry.acquiredAt || ''}
-                            onChange={(e) => updateChainEntry(index, { acquiredAt: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={entry.notes || ''}
-                            onChange={(e) => updateChainEntry(index, { notes: e.target.value })}
-                            placeholder="Notes"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-                          />
-                        </div>
+                        <input
+                          type="text"
+                          value={entry.notes || ''}
+                          onChange={(e) => updateChainEntry(index, { notes: e.target.value })}
+                          placeholder="Notes"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                        />
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                            {entry.owner?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                          {entry.owner?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900 dark:text-gray-100">
+                            {entry.owner || 'Unknown Owner'}
                           </div>
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-gray-100">
-                              {entry.owner || 'Unknown Owner'}
-                            </div>
-                            {entry.notes && (
-                              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {entry.notes}
-                              </div>
-                            )}
-                          </div>
-                          {entry.acquiredAt && (
-                            <div className="text-right">
-                              <div className="text-sm font-mono text-gray-500 dark:text-gray-400">
-                                {new Date(entry.acquiredAt).toLocaleDateString('en-US', { 
-                                  month: '2-digit', 
-                                  day: '2-digit', 
-                                  year: 'numeric' 
-                                })}
-                              </div>
+                          {entry.notes && (
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {entry.notes}
                             </div>
                           )}
                         </div>
+                        {entry.acquiredAt && (
+                          <div className="text-right">
+                            <div className="text-sm font-mono text-gray-500 dark:text-gray-400">
+                              {new Date(entry.acquiredAt).toLocaleDateString('en-US', { 
+                                month: '2-digit', 
+                                day: '2-digit', 
+                                year: 'numeric' 
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  )}
+                </div>
+              ))}
 
-                {(!data.chain || data.chain.length === 0) && (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <Users className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-                    <p className="text-sm">No ownership history added yet</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Track the complete ownership chain of this object</p>
-                  </div>
-                )}
-              </div>
+              {(!data.chain || data.chain.length === 0) && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+                  <p className="text-sm">No ownership history added yet</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Track the complete ownership chain of this object</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -617,21 +650,20 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             )}
           </div>
         </div>
-        
         {editable && (
-          <div className="flex justify-end">
+          <div className="xl:col-span-2 flex justify-end">
             {onRequestSave && (
               <Button onClick={onRequestSave} className="bg-black dark:bg-white text-white dark:text-black px-5 py-2">Save Provenance</Button>
             )}
           </div>
         )}
-        
-        {/* Footer with save reminder */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Clock className="h-4 w-4" />
-            <span>Provenance data is automatically saved when you save the object</span>
-          </div>
+      </div>
+      </div>
+      {/* Footer with save reminder */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <Clock className="h-4 w-4" />
+          <span>Provenance data is automatically saved when you save the object</span>
         </div>
       </div>
     </div>
