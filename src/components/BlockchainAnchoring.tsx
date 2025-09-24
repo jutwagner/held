@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/Badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ExternalLink, Anchor, CheckCircle, XCircle, Loader2, Shield, Crown, Clock, Sparkles } from 'lucide-react';
+import { ExternalLink, Anchor, XCircle, Loader2, Shield, Crown, Clock, Sparkles } from 'lucide-react';
+import AnchorIcon from '@/components/AnchorIcon';
 import { HeldObject } from '@/types';
 import {
   anchorPassport,
@@ -217,7 +218,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       return {
         status: 'anchored',
         label: 'Anchored on Polygon',
-        icon: CheckCircle,
+        icon: AnchorIcon,
         color: 'bg-green-100 text-green-800 border-green-200',
         description: 'This Passport is anchored on the Polygon blockchain'
       };
@@ -236,7 +237,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       return {
         status: 'verified',
         label: 'Verified on Polygon',
-        icon: CheckCircle,
+        icon: AnchorIcon,
         color: 'bg-blue-100 text-blue-800 border-blue-200',
         description: 'This Passport is verified on the Polygon blockchain'
       };
@@ -266,7 +267,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       {passport.anchoring?.isAnchored ? (
         <div className="">
           <div className="flex items-center gap-4 mb-4">
-            <CheckCircle className="h-6 w-6 text-black" />
+            <AnchorIcon className="h-6 w-6 text-black" />
             <div>
               <h3 className="text-lg font-light text-black">Blockchain Verified</h3>
               <p className="text-sm text-gray-600">This passport is anchored on the Polygon blockchain</p>
@@ -414,7 +415,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
               </>
             ) : (
               <>
-                <CheckCircle className="h-6 w-6 text-black" />
+                <AnchorIcon className="h-6 w-6 text-black" />
                 <div>
                   <h4 className="text-lg font-light text-black">Submitted</h4>
                   <p className="text-sm text-gray-600">Confirmation continues in the background.</p>
@@ -470,7 +471,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       {verificationResult && !passport.anchoring?.isAnchored && (
         <div className="border-2 border-green-300 p-6">
           <div className="flex items-center gap-4 mb-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <AnchorIcon className="h-5 w-5 text-green-600" />
             <span className="text-green-600 font-medium">Verification Complete</span>
           </div>
           <p className="text-sm text-green-600">

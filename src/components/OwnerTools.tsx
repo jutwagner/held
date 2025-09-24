@@ -8,7 +8,8 @@ import { subscribeObjects, updateObject } from '@/lib/firebase-services';
 import { formatCurrency } from '@/lib/utils';
 import { updateObjectAnchoring } from '@/lib/firebase-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
-import { CheckCircle, Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
+import { Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
+import AnchorIcon from '@/components/AnchorIcon';
 import Switch from '@/components/ui/switch';
 
 type Props = {
@@ -422,7 +423,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm text-gray-600">Anchoring Status</div>
           {anchored ? (
-            <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 inline-flex items-center gap-1 text-emerald-700 text-sm"><CheckCircle className="h-4 w-4" /> Anchored</span>
+            <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 inline-flex items-center gap-1 text-emerald-700 text-sm"><AnchorIcon className="h-4 w-4" /> Anchored</span>
           ) : pending ? (
             <span className="inline-flex items-center gap-1 text-amber-700 text-sm"><Clock className="h-4 w-4" /> Pending</span>
           ) : (
@@ -680,7 +681,7 @@ function ProvenanceStep({ completed, title, description, onClick }: { completed:
           : 'bg-gray-200 dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500'
       }`}>
         {completed ? (
-          <CheckCircle className="h-4 w-4" />
+          <AnchorIcon className="h-4 w-4" />
         ) : (
           <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full" />
         )}

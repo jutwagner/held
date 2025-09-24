@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
 import { subscribeObjects, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
-import { Plus, Search, Eye, EyeOff, List, Columns, CheckCircle, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown, Globe, Lock } from 'lucide-react';
+import { Plus, Search, Eye, EyeOff, List, Columns, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown, Globe, Lock } from 'lucide-react';
+import AnchorIcon from '@/components/AnchorIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
@@ -341,7 +342,7 @@ export default function RegistryPage() {
                   const not = objects.length - anchored - pending;
                   return (
                     <>
-                      <StatusCard label="Anchored" value={anchored} icon={CheckCircle} />
+                      <StatusCard label="Anchored" value={anchored} icon={AnchorIcon} />
                       <StatusCard label="Pending" value={pending} icon={Clock} />
                       <StatusCard label="Not Anchored" value={not} icon={Shield} />
                        <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
@@ -580,7 +581,7 @@ export default function RegistryPage() {
                                   <td className="px-6 py-4">
                                     <div className="flex items-center justify-center">
                                       {anchored ? (
-                                        <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                        <AnchorIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                                       ) : pending ? (
                                         <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                       ) : (
