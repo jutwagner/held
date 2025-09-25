@@ -3,10 +3,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { subscribePublicPosts, subscribePublicRotations, getObject } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
 import type { HeldObject, Rotation } from '@/types';
-import { addRotation } from '@/scripts/addRotation';
 import { MobileBottomBar } from '@/components/Navigation';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRotationCategories } from '@/hooks/useRotationCategories';
 
 function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false);
@@ -206,35 +205,27 @@ export default function TheCollaborativeCategoryPage({ params }: TheCollaborativ
   const [loading, setLoading] = useState(true);
   const [allRotations, setAllRotations] = useState<Rotation[]>([]);
   const [allPosts, setAllPosts] = useState<any[]>([]);
-  const router = useRouter();
+  const rotationCategoryMap = useRotationCategories(allRotations);
 
   // Get all available categories from posts (rotations don't have categories directly)
-  const availableCategories = useMemo(() => {
-    const postCategories = new Set<string>();
-    
-    allPosts.forEach(post => {
-      if (post.category) {
-        postCategories.add(post.category);
-      }
-    });
-    
-    return Array.from(postCategories).sort();
-  }, [allPosts]);
-
-  // Filter content based on category
   const filteredContent = useMemo(() => {
-    const category = params.slug;
-    
-    // For now, only filter posts since rotations don't have categories
-    // TODO: Could potentially filter rotations based on their objects' categories
-    const filteredRotations = allRotations; // Show all rotations for now
-    
-    const filteredPosts = allPosts.filter(post => 
-      post.category?.toLowerCase() === category.toLowerCase()
+    const category = params.slug?.toLowerCase() ?? '';
+
+    if (!category) {
+      return { rotations: allRotations, posts: allPosts };
+    }
+
+    const filteredRotations = allRotations.filter((rotation) => {
+      const categories = rotationCategoryMap[rotation.id] ?? [];
+      return categories.some((rotationCategory) => rotationCategory.toLowerCase() === category);
+    });
+
+    const filteredPosts = allPosts.filter(
+      (post) => post.category?.toLowerCase() === category
     );
-    
+
     return { rotations: filteredRotations, posts: filteredPosts };
-  }, [allRotations, allPosts, params.slug]);
+  }, [allRotations, allPosts, params.slug, rotationCategoryMap]);
 
   useEffect(() => {
     const unsubscribePosts = subscribePublicPosts((publicPosts) => {
@@ -259,14 +250,6 @@ export default function TheCollaborativeCategoryPage({ params }: TheCollaborativ
     setPosts(filteredContent.posts);
   }, [filteredContent]);
 
-  const handleCategoryFilter = (category: string | null) => {
-    if (category) {
-      router.push(`/theCollaborative/category/${category}`);
-    } else {
-      router.push('/theCollaborative');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       <MobileBottomBar />
@@ -277,35 +260,6 @@ export default function TheCollaborativeCategoryPage({ params }: TheCollaborativ
             <p className="text-gray-600/90 dark:text-gray-300/90">
               {params.slug ? `${params.slug} shared content` : 'shared Registry Rotations'}
             </p>
-          </div>
-        </div>
-
-        {/* Filter Pills */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleCategoryFilter(null)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !params.slug
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              All
-            </button>
-            {availableCategories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleCategoryFilter(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
-                  params.slug?.toLowerCase() === category.toLowerCase()
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
           </div>
         </div>
 

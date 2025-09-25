@@ -3,10 +3,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { subscribePublicPosts, subscribePublicRotations, getObject } from '@/lib/firebase-services';
 import PostCard from '@/components/PostCard';
 import type { HeldObject, Rotation } from '@/types';
-import { addRotation } from '@/scripts/addRotation';
 import { MobileBottomBar } from '@/components/Navigation';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useRotationCategories } from '@/hooks/useRotationCategories';
 
 function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false);
@@ -200,37 +200,45 @@ export default function TheCollaborativePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const rotationCategoryMap = useRotationCategories(rotations);
 
   // Get all available categories from posts (rotations don't have categories directly)
   const availableCategories = useMemo(() => {
-    const postCategories = new Set<string>();
-    
-    posts.forEach(post => {
+    const categories = new Set<string>();
+
+    posts.forEach((post) => {
       if (post.category) {
-        postCategories.add(post.category);
+        categories.add(post.category);
       }
     });
-    
-    return Array.from(postCategories).sort();
-  }, [posts]);
+
+    rotations.forEach((rotation) => {
+      const rotationCategories = rotationCategoryMap[rotation.id] ?? [];
+      rotationCategories.forEach((category) => categories.add(category));
+    });
+
+    return Array.from(categories).sort((a, b) => a.localeCompare(b));
+  }, [posts, rotations, rotationCategoryMap]);
 
   // Filter content based on selected category
   const filteredContent = useMemo(() => {
     if (!selectedCategory) {
       return { rotations, posts };
     }
-    
-    // For now, only filter posts since rotations don't have categories
-    // TODO: Could potentially filter rotations based on their objects' categories
-    const filteredRotations = rotations; // Show all rotations for now
-    
-    const filteredPosts = posts.filter(post => 
-      post.category?.toLowerCase() === selectedCategory.toLowerCase()
+
+    const targetCategory = selectedCategory.toLowerCase();
+
+    const filteredRotations = rotations.filter((rotation) => {
+      const categories = rotationCategoryMap[rotation.id] ?? [];
+      return categories.some((category) => category.toLowerCase() === targetCategory);
+    });
+
+    const filteredPosts = posts.filter(
+      (post) => post.category?.toLowerCase() === targetCategory
     );
-    
+
     return { rotations: filteredRotations, posts: filteredPosts };
-  }, [rotations, posts, selectedCategory]);
+  }, [rotations, posts, selectedCategory, rotationCategoryMap]);
 
   useEffect(() => {
     const unsubscribePosts = subscribePublicPosts((publicPosts) => {
