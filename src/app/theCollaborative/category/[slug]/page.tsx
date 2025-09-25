@@ -194,50 +194,56 @@ function CollaborativeRotationCard({ rotation, onDelete }: { rotation: Rotation;
   );
 }
 
-export default function TheCollaborativePage() {
+interface TheCollaborativeCategoryPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default function TheCollaborativeCategoryPage({ params }: TheCollaborativeCategoryPageProps) {
   const [rotations, setRotations] = useState<Rotation[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [allRotations, setAllRotations] = useState<Rotation[]>([]);
+  const [allPosts, setAllPosts] = useState<any[]>([]);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Get all available categories from posts (rotations don't have categories directly)
   const availableCategories = useMemo(() => {
     const postCategories = new Set<string>();
     
-    posts.forEach(post => {
+    allPosts.forEach(post => {
       if (post.category) {
         postCategories.add(post.category);
       }
     });
     
     return Array.from(postCategories).sort();
-  }, [posts]);
+  }, [allPosts]);
 
-  // Filter content based on selected category
+  // Filter content based on category
   const filteredContent = useMemo(() => {
-    if (!selectedCategory) {
-      return { rotations, posts };
-    }
+    const category = params.slug;
     
     // For now, only filter posts since rotations don't have categories
     // TODO: Could potentially filter rotations based on their objects' categories
-    const filteredRotations = rotations; // Show all rotations for now
+    const filteredRotations = allRotations; // Show all rotations for now
     
-    const filteredPosts = posts.filter(post => 
-      post.category?.toLowerCase() === selectedCategory.toLowerCase()
+    const filteredPosts = allPosts.filter(post => 
+      post.category?.toLowerCase() === category.toLowerCase()
     );
     
     return { rotations: filteredRotations, posts: filteredPosts };
-  }, [rotations, posts, selectedCategory]);
+  }, [allRotations, allPosts, params.slug]);
 
   useEffect(() => {
     const unsubscribePosts = subscribePublicPosts((publicPosts) => {
       const collaborativePosts = publicPosts.filter(post => post.shareInCollaborative);
+      setAllPosts(collaborativePosts);
       setPosts(collaborativePosts);
     });
     const unsubscribeRotations = subscribePublicRotations((publicRotations) => {
+      setAllRotations(publicRotations);
       setRotations(publicRotations);
     });
     setLoading(false);
@@ -247,13 +253,17 @@ export default function TheCollaborativePage() {
     };
   }, []);
 
+  // Update filtered content when params change
+  useEffect(() => {
+    setRotations(filteredContent.rotations);
+    setPosts(filteredContent.posts);
+  }, [filteredContent]);
+
   const handleCategoryFilter = (category: string | null) => {
-    setSelectedCategory(category);
-    // Update URL without page refresh
     if (category) {
-      router.push(`/theCollaborative/category/${category}`, { scroll: false });
+      router.push(`/theCollaborative/category/${category}`);
     } else {
-      router.push('/theCollaborative', { scroll: false });
+      router.push('/theCollaborative');
     }
   };
 
@@ -265,58 +275,56 @@ export default function TheCollaborativePage() {
           <div>
             <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">theCollaborative</h1>
             <p className="text-gray-600/90 dark:text-gray-300/90">
-              {selectedCategory ? `${selectedCategory} shared content` : 'shared Registry Rotations'}
+              {params.slug ? `${params.slug} shared content` : 'shared Registry Rotations'}
             </p>
           </div>
         </div>
 
         {/* Filter Pills */}
-        {availableCategories.length > 0 && (
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-2">
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleCategoryFilter(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !params.slug
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              All
+            </button>
+            {availableCategories.map((category) => (
               <button
-                onClick={() => handleCategoryFilter(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  !selectedCategory
+                key={category}
+                onClick={() => handleCategoryFilter(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
+                  params.slug?.toLowerCase() === category.toLowerCase()
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                All
+                {category}
               </button>
-              {availableCategories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => handleCategoryFilter(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
-                    selectedCategory === category
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {loading ? (
           <p className="text-center text-gray-500 dark:text-gray-400">Loading…</p>
-        ) : filteredContent.rotations.length === 0 && filteredContent.posts.length === 0 ? (
+        ) : rotations.length === 0 && posts.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">
-            {selectedCategory ? `No ${selectedCategory} content available.` : 'No shared content available.'}
+            {params.slug ? `No ${params.slug} content available.` : 'No shared content available.'}
           </p>
         ) : (
           <div className="space-y-6">
-            {filteredContent.rotations.map((rotation) => (
+            {rotations.map((rotation) => (
               <CollaborativeRotationCard
                 key={rotation.id}
                 rotation={rotation}
                 onDelete={() => setRotations((prev) => prev.filter(r => r.id !== rotation.id))}
               />
             ))}
-            {filteredContent.posts.map((post) => (
+            {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

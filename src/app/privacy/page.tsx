@@ -70,7 +70,7 @@ export default function PrivacyPage() {
           <li>Request correction or deletion of your information</li>
           <li>Withdraw consent or object to certain uses</li>
         </ul>
-        <p className="text-gray-700 dark:text-gray-300 leading-loose">Contact us at <a className="text-blue-700 dark:text-blue-400 underline hover:text-blue-900 dark:hover:text-blue-300" href="mailto:privacy@myheld.link">privacy@myheld.link</a> for requests.</p>
+        <p className="text-gray-700 dark:text-gray-300 leading-loose">Contact us at <a className="text-blue-700 dark:text-blue-400 underline hover:text-blue-900 dark:hover:text-blue-300" href="mailto:info@myheld.link">info@myheld.link</a> for requests.</p>
         
         <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100 mt-5">7. Children's Privacy</h2>
         <p className="text-gray-700 dark:text-gray-300 leading-loose">Our service is not intended for children under 13.<br />
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
         <p className="text-gray-700 dark:text-gray-300 leading-loose">We may update this policy from time to time. If we make significant changes, we will notify you via the website or by email.</p>
         
         <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100 mt-5">9. Contact Us</h2>
-        <p className="text-gray-700 dark:text-gray-300 leading-loose">Questions or requests? Email us at <a className="text-blue-700 dark:text-blue-400 underline hover:text-blue-900 dark:hover:text-blue-300" href="mailto:privacy@myheld.link">privacy@myheld.link</a>.</p>
+        <p className="text-gray-700 dark:text-gray-300 leading-loose">Questions or requests? Email us at <a className="text-blue-700 dark:text-blue-400 underline hover:text-blue-900 dark:hover:text-blue-300" href="mailto:info@myheld.link">info@myheld.link</a>.</p>
 
         <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-900 dark:text-gray-100 mt-5">10. Blockchain Data (Polygon Network)</h2>
         <p className="text-gray-700 dark:text-gray-300 leading-loose">Certain actions you take on myHeld.link may result in data being recorded (“anchored”) on the Polygon blockchain.</p>

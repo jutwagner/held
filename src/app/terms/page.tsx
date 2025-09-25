@@ -128,7 +128,7 @@ export default function TermsPage() {
 
   <h2>17. Contact</h2>
   <p>
-    If you have any questions about these Terms, contact us at <a href="mailto:privacy@myheld.link">privacy@myheld.link</a>.
+    If you have any questions about these Terms, contact us at <a href="mailto:info@myheld.link">info@myheld.link</a>.
   </p>
 
           </section>
