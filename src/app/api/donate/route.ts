@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 });
 
-const ALLOWED_AMOUNTS = [1, 5, 10, 20, 50];
+const ALLOWED_AMOUNTS = [0.01, 1, 5, 10, 20, 50];
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100,
+      amount: Math.round(amount * 100),
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
       receipt_email: email || undefined,
