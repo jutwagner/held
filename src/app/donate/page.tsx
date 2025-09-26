@@ -15,7 +15,6 @@ export default function DonatePage() {
   const elementsOptions = useMemo<StripeElementsOptions>(
     () => ({
       appearance: {
-        theme: 'flat' as StripeElementsOptions['appearance']['theme'],
         variables: {
           colorPrimary: '#000000',
         },
