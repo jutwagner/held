@@ -433,19 +433,19 @@ export default function OwnerTools({
       {/* Anchoring Panel */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-sm text-gray-600">Anchoring Status</div>
+          <div className="text-sm text-gray-600 dark:text-gray-100">Anchoring Status</div>
           {anchored ? (
             <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 inline-flex items-center gap-1 text-emerald-700 text-sm"><AnchorIcon className="h-4 w-4" /> Anchored</span>
           ) : pending ? (
-            <span className="inline-flex items-center gap-1 text-amber-700 text-sm"><Clock className="h-4 w-4" /> Pending</span>
+            <span className="inline-flex items-center gap-1 text-amber-700 text-sm dark:text-gray-100"><Clock className="h-4 w-4" /> Pending</span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-gray-600 text-sm"><Shield className="h-4 w-4" /> Not Anchored</span>
+            <span className="inline-flex items-center gap-1 text-gray-600 text-sm dark:text-gray-100"><Shield className="h-4 w-4" /> Not Anchored</span>
           )}
         </div>
         {object.anchoring?.txHash && (
-          <div className="text-xs text-gray-600 mb-3">
+          <div className="text-xs text-gray-600 mb-3 dark:text-gray-100">
             Tx:&nbsp;
-            <a href={getPolygonExplorerURL(object.anchoring.txHash)} target="_blank" rel="noopener noreferrer" className="text-black underline">
+            <a href={getPolygonExplorerURL(object.anchoring.txHash)} target="_blank" rel="noopener noreferrer" className="text-black underline dark:text-gray-100">
               {object.anchoring.txHash.slice(0, 8)}...{object.anchoring.txHash.slice(-6)}
             </a>
           </div>
@@ -479,7 +479,7 @@ export default function OwnerTools({
       {/* For Sale toggle with Held+ gating */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-sm text-gray-600">Marketplace</div>
+          <div className="text-sm text-gray-600 dark:text-gray-100">Marketplace</div>
           {(object as any).openToSale && <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Open to sale</span>}
         </div>
         <div className="flex items-center gap-3">
@@ -673,8 +673,8 @@ export default function OwnerTools({
 
       {/* Activity */}
       <div>
-        <div className="text-sm text-gray-600 mb-2">Activity</div>
-        <div className="text-xs text-gray-700 space-y-1">
+        <div className="text-sm text-gray-600 mb-2 dark:text-gray-100">Activity</div>
+        <div className="text-xs text-gray-700 space-y-1 dark:text-gray-100">
           <div>Created: {formatMaybeDate(object.createdAt)}</div>
           <div>Updated: {formatMaybeDate(object.updatedAt)}</div>
           {object.anchoring?.version && <div>Last Anchor Version: {object.anchoring.version}</div>}

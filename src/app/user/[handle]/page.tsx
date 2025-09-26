@@ -145,13 +145,13 @@ export default function ProfilePage() {
               href="/"
               className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 non-dark-invert" />
               Back
             </Link>
             {isOwnProfile && (
               <Link href="/settings">
                 <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
+                  <Settings className="h-4 w-4 mr-2  non-dark-invert" />
                   Settings
                 </Button>
               </Link>
@@ -173,7 +173,7 @@ export default function ProfilePage() {
                       src={profileUser.coverImage}
                       alt="Cover"
                       fill
-                      className="object-cover"
+                      className="object-cover "
                     />
                     {/* Gradient shadow overlay for text readability */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                           @{profileUser.handle}
                         </p>
                         {profileUser.bio && (
-                          <p className="mt-2 max-w-md mx-auto sm:mx-0 text-black">
+                          <p className="mt-2 max-w-md mx-auto sm:mx-0 text-black dark:text-gray-100">
                             {profileUser.bio}
                           </p>
                         )}
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                       {isOwnProfile && (
                         <div className="flex items-center gap-2">
                           {isPublicProfile ? (
-                            <Globe className="h-4 w-4 text-green-500" />
+                            <Globe className="h-4 w-4 text-green-500 non-dark-invert" />
                           ) : (
                             <Lock className="h-4 w-4 text-gray-400" />
                           )}
@@ -291,18 +291,18 @@ export default function ProfilePage() {
                     {/* Stats */}
                     <div className="flex gap-6 mt-4 justify-center sm:justify-start">
                       <div className="text-center">
-                        <div className="text-xl font-semibold text-black">
+                        <div className="text-xl font-semibold text-black dark:text-gray-100">
                           {objects.length}
                         </div>
-                        <div className="text-sm text-black">
+                        <div className="text-sm text-black dark:text-gray-100">
                           Objects
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-semibold text-black">
+                        <div className="text-xl font-semibold text-black dark:text-gray-100">
                           {rotations.length}
                         </div>
-                        <div className="text-sm text-black">
+                        <div className="text-sm text-black dark:text-gray-100">
                           Rotations
                         </div>
                       </div>

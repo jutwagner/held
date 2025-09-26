@@ -24,7 +24,7 @@ export default function Navigation() {
   ) : user ? (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black-700 transition-all">
+        <Button size="sm" className="bg-black text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-black/80 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 transition-all">
           <span className="flex items-center gap-2">Add</span>
         </Button>
       </DialogTrigger>
@@ -63,7 +63,7 @@ export default function Navigation() {
       </DialogContent>
     </Dialog>
   ) : (
-    <Link href="/auth/signin" className="bg-blue-600 dark:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 dark:hover:bg-blue-600 transition-all">
+    <Link href="/auth/signin" className="bg-blue-600 dark:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-700 dark:hover:bg-blue-400 transition-all">
       Sign In
     </Link>
   );
@@ -104,7 +104,7 @@ export default function Navigation() {
 
   return (
     <>
-          <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+          <nav className="bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors">
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
@@ -117,8 +117,8 @@ export default function Navigation() {
               <Link href="/rotations" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Rotations</Link>
               <Link href="/theCollaborative" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">theCollaborative</Link>
               {/*user && (
-                <Link href="/settings/messages" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">
-                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-500">
+                <Link href="/settings/messages" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-500 dark:text-gray-400">
                     <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
                   </svg>
                   Messages
@@ -155,8 +155,8 @@ export default function Navigation() {
                       <NotificationBadge count={unreadCount} />
                     </button>
                   ) : (
-                    <Link href="/auth/signin" className="rounded-full border-2 border-gray-200 shadow-sm w-10 h-10 overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center">
-                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-gray-500">
+                    <Link href="/auth/signin" className="rounded-full border-2 border-gray-200 dark:border-gray-700 shadow-sm w-10 h-10 overflow-hidden bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-gray-500 dark:text-gray-400">
                         <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" strokeWidth="2"/>
                       </svg>
                     </Link>

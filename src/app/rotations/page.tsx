@@ -311,7 +311,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
         <div className={`p-6 ${!rotation.coverImage ? 'pt-8' : ''}`}>
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <h3 className="font-semibold text-xl text-gray-900 leading-tight">{rotation.name}</h3>
+            <h3 className="font-semibold text-xl text-gray-900 dark:text-gray-100 leading-tight">{rotation.name}</h3>
             <div className="flex items-center space-x-2">
               {!rotation.coverImage && (
                 <div className="flex items-center space-x-1">
@@ -348,7 +348,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           
           {/* Description */}
           {rotation.description && (
-            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{rotation.description}</p>
+            <p className="text-gray-600 dark:text-gray-300 text-sm mb-6 line-clamp-2 leading-relaxed">{rotation.description}</p>
           )}
           
           {/* Objects Preview - Enhanced with better visual weight */}

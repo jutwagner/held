@@ -29,7 +29,7 @@ export default function AppearanceSection({
   const isLoaded = theme !== undefined && typeTitleSerif !== undefined && typeMetaMono !== undefined && density !== undefined && typeof onChange === 'function';
   return (
     <section aria-labelledby="appearance-header" className="mb-8">
-      <h2 id="appearance-header" className="font-serif text-xl mb-4 mt-10">Appearance</h2>
+      <h2 id="appearance-header" className="font-serif text-xl mb-4 mt-10 text-gray-900 dark:text-gray-100">Appearance</h2>
       {isLoaded ? (
         <>
           <ThemeRadioCards theme={theme} setTheme={(t: Theme) => onChange({ theme: t })} />

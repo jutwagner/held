@@ -93,24 +93,24 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
 
   return (
     <section aria-labelledby="danger-header" className="mb-8">
-      <h2 id="danger-header" className="font-serif text-xl mb-4 text-black">Delete Account</h2>
+      <h2 id="danger-header" className="font-serif text-xl mb-4 text-gray-900 dark:text-gray-100">Delete Account</h2>
       {isLoading ? (
         <div className="text-gray-400 text-sm">Loading danger zone…</div>
       ) : (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-6 transition-colors">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 rounded-md">
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
           
           {!showConfirmation ? (
             <div>
               <div className="mb-4">
-                <p className="text-sm text-red-600 mb-4">
+                <p className="text-sm text-red-600 dark:text-red-300 mb-4">
                   This action cannot be undone. This will permanently delete your account and remove all your data including:
                 </p>
-                <ul className="text-sm text-red-600 list-disc list-inside mb-4 space-y-1">
+                <ul className="text-sm text-red-600 dark:text-red-300 list-disc list-inside mb-4 space-y-1">
                   <li>Your profile and all personal information</li>
                   <li>All objects in your registry</li>
                   <li>All rotations you've created</li>
@@ -122,7 +122,7 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
               <Button
                 variant="outline"
                 onClick={() => setShowConfirmation(true)}
-                className="border-red-300 text-red-700 hover:bg-red-50"
+                className="border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
                 I understand, delete my account
               </Button>
@@ -130,15 +130,15 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
           ) : (
             <div>
               <div className="mb-4">
-                <h3 className="font-semibold text-red-700 mb-2">Confirm Account Deletion</h3>
-                <p className="text-sm text-red-600 mb-4">
+                <h3 className="font-semibold text-red-700 dark:text-red-300 mb-2">Confirm Account Deletion</h3>
+                <p className="text-sm text-red-600 dark:text-red-300 mb-4">
                   To confirm permanent deletion of your account, type "delete" below.
                 </p>
               </div>
               
               {!needsPassword ? (
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-red-700 mb-2">
+                  <label className="block text-sm font-medium text-red-700 dark:text-red-300 mb-2">
                     Type "delete" to confirm
                   </label>
                   <input
@@ -146,19 +146,19 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
                     placeholder="Type delete to confirm"
                     value={confirmDelete}
                     onChange={(e) => setConfirmDelete(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center font-mono text-lg"
+                    className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center font-mono text-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                     autoFocus
                   />
                   {confirmDelete && confirmDelete !== 'delete' && (
-                    <p className="mt-2 text-sm text-red-500">Please type exactly "delete"</p>
+                    <p className="mt-2 text-sm text-red-500 dark:text-red-300">Please type exactly "delete"</p>
                   )}
                   {confirmDelete === 'delete' && (
-                    <p className="mt-2 text-sm text-green-600">✓ Confirmation word entered correctly</p>
+                    <p className="mt-2 text-sm text-green-600 dark:text-green-400">✓ Confirmation word entered correctly</p>
                   )}
                 </div>
               ) : (
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-red-700 mb-2">
+                  <label className="block text-sm font-medium text-red-700 dark:text-red-300 mb-2">
                     Enter your password to complete deletion
                   </label>
                   <input
@@ -166,10 +166,10 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
                     placeholder="Your account password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                     autoFocus
                   />
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                     This ensures your Firebase Auth account is completely removed.
                   </p>
                 </div>
@@ -186,7 +186,7 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
                     setError('');
                   }}
                   disabled={deleting}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </Button>
@@ -194,7 +194,7 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
                 <Button
                   onClick={needsPassword ? handlePasswordReauth : handleDeleteAccount}
                   disabled={needsPassword ? (!password || deleting) : (!isConfirmationValid || deleting)}
-                  className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+                  className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-500 dark:hover:bg-red-400 disabled:opacity-50"
                 >
                   {deleting ? (
                     <div className="flex items-center">

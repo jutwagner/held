@@ -97,7 +97,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl space-y-6 md:space-y-8">
+    <div className="bg-gradient-to-br from-slate-50 to-gray-50 transparent-bg rounded-xl space-y-6 md:space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-600 dark:from-gray-600 dark:to-gray-800 rounded-full flex items-center justify-center shadow-lg">
@@ -120,7 +120,11 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           {/* Identity & Documentation */}
           <div
             data-provenance-section="identity"
-            className={`rounded-lg shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border bg-white border-transparent hover:border-gray-200 dark:hover:border-gray-600 p-4' : ''}`}
+            className={`rounded-lg shadow-sm border ${
+              editable
+                ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
+          }`}
           >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -255,7 +259,15 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             )}
           </div>
 
-          <div data-provenance-section="certificate" className={`${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border bg-white border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
+          <div
+            data-provenance-section="certificate"
+            className={`border rounded-lg shadow-sm ${
+              editable
+                ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
+            }`}
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 mt-2 md:mb-4 flex items-center gap-2">
               <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Certificate of Authenticity
@@ -380,7 +392,11 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           {/* Chain of Custody */}
           <div
             data-provenance-section="chain"
-            className={`shadow-sm ${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border bg-white border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`}
+            className={`shadow-sm border rounded-lg ${
+              editable
+                ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
+            }`}
             onClick={!editable ? onRequestEdit : undefined}
           >
             <div className="flex items-center justify-between mb-3 md:mb-4">
@@ -498,7 +514,14 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Associated Documents */}
-          <div className={`${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors bg-white border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
+          <div
+            className={`${
+              editable
+                ? 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg p-4'
+                : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
+          }`}
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Associated Documents
@@ -553,7 +576,7 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             ) : (
               <div className="space-y-3">
                 {(Array.isArray(data.associatedDocuments) ? data.associatedDocuments : []).map((doc, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors">
+                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0">
                       <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                     </div>
@@ -585,7 +608,14 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
           </div>
 
           {/* Provenance Notes */}
-          <div className={`${!editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border bg-white border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg p-4' : ''}`} onClick={!editable ? onRequestEdit : undefined}>
+          <div
+            className={`${
+              editable
+                ? 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg p-4'
+                : 'border border-transparent bg-white dark:bg-gray-900 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors hover:border-gray-200 dark:hover:border-gray-600'
+            }`}
+            onClick={!editable ? onRequestEdit : undefined}
+          >
             <h3 className="font-serif text-xl text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Provenance Notes

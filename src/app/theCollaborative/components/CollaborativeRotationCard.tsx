@@ -57,10 +57,10 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
       <div className="relative h-64 bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-        <div className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md pad-top-rotation opacity-80">
-          <Image src="/img/rotations.svg" alt="Rotation" width={24} height={24} className="h-6 w-6" />
+        <div className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 shadow-md pad-top-rotation opacity-90">
+          <Image src="/img/rotations.svg" alt="Rotation" width={24} height={24} className="h-6 w-6 dark:invert" />
         </div>
         {rotation.coverImage && (
           <Image
@@ -82,7 +82,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
               {rotationObjects.slice(0, 6).map((obj, index) => (
                 <div key={obj.id} className="relative flex-shrink-0">
                   <div
-                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white shadow-xl bg-gray-200 hover:scale-105 transition-transform duration-200 flex-shrink-0"
+                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white shadow-xl bg-gray-200 dark:bg-gray-800 hover:scale-105 transition-transform duration-200 flex-shrink-0"
                     style={{
                       aspectRatio: '1',
                       marginLeft: index > 0 ? '-8px' : '0',
@@ -99,7 +99,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
                         style={{ aspectRatio: '1' }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-300 flex items-center justify-center" style={{ aspectRatio: '1' }}>
+                      <div className="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center" style={{ aspectRatio: '1' }}>
                         <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-gray-500">
                           <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
                           <path d="M9 9h6v6H9z" stroke="currentColor" strokeWidth="2" />
@@ -116,8 +116,8 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
               ))}
             </div>
           ) : (
-            <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
-              <svg width="64" height="64" fill="none" viewBox="0 0 32 32" className="text-gray-400">
+            <div className="w-32 h-32 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
+              <svg width="64" height="64" fill="none" viewBox="0 0 32 32" className="text-gray-400 dark:text-gray-500">
                 <rect x="3" y="3" width="26" height="26" rx="4" stroke="currentColor" strokeWidth="2" />
                 <path d="M12 12h8v8h-8z" stroke="currentColor" strokeWidth="2" />
               </svg>

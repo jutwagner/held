@@ -332,8 +332,8 @@ export default function RegistryItemPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Not found'}</p>
-          <Button asChild>
-            <Link href="/registry">Back to Registry</Link>
+          <Button asChild >
+            <Link href="/registry" >Back to Registry</Link>
           </Button>
         </div>
       </div>
@@ -358,13 +358,13 @@ export default function RegistryItemPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" asChild className="p-0 h-auto text-black dark:text-gray-100 hover:bg-transparent">
-            <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
-              <ArrowLeft className="h-4 w-4" /> Registry
+            <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase text-current">
+              <ArrowLeft className="h-4 w-4 text-current" /> Registry
             </Link>
           </Button>
           <div className="flex items-center gap-2">
             {item.isPublic && (
-              <Button asChild variant="outline" className="text-black dark:text-gray-100 p-0 border-0">
+              <Button asChild variant="ghost" className="text-black dark:text-gray-100 p-0">
                 <Link href={`/passport/${item.slug || item.id}`} target="_blank" className="p-0">
                   <Image src={passportSvg} alt="Passport" width={39} height={39} className="hidden md:inline-block opacity-100 float-left" />
               </Link> 
@@ -372,11 +372,19 @@ export default function RegistryItemPage() {
             )}
             {user && item.userId === user.uid && (
               <>
-                <Button variant="outline" className="border-black dark:border-gray-300 text-black dark:text-gray-100" onClick={() => setEditing(v => !v)}>
-                  <Edit className="h-4 w-4 text-current" /> {editing ? 'Cancel' : ''}
+                <Button
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 dark:border-gray-500 dark:text-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => setEditing(v => !v)}
+                >
+                  <Edit className="h-4 w-4 text-current  non-dark-invert" /> {editing ? 'Cancel' : ''}
                 </Button>
-                <Button variant="outline" className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-300" onClick={() => setConfirmOpen(true)}>
-                  <Trash2 className="h-4 w-4 text-current" />
+                <Button
+                  variant="outline"
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 "
+                  onClick={() => setConfirmOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4 text-current  non-dark-invert" />
                 </Button>
               </>
             )}

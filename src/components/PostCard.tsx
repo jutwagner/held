@@ -312,9 +312,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg shadow overflow-hidden transition-colors">
       {/* User Header */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -331,10 +331,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               )}
             </div>
             <div>
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-gray-900 dark:text-gray-100">
                 {postUser?.displayName || 'Anonymous'}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 @{postUser?.handle || 'anonymous'}
               </div>
             </div>
@@ -345,7 +345,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               onClick={handleDM}
               disabled={!user}
               className={`flex items-center space-x-1 transition-colors ${
-                !user ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-600 hover:text-blue-600 cursor-pointer'
+                !user ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer'
               }`}
               title={!user ? 'Sign in to send messages' : 'Send a message'}
             >
@@ -358,7 +358,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
       {/* Image */}
       {post.images && post.images.length > 0 && (
-        <div className="w-full relative overflow-hidden flex items-center justify-center" style={{ background: '#f3f4f6'}}>
+        <div className="w-full relative overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-900">
           <Image
             src={post.images[0]}
             alt={post.title}
@@ -374,14 +374,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
       {/* Content */}
       <div className="p-4">
-        <h2 className="text-lg font-medium mb-2">{post.title}</h2>
+        <h2 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">{post.title}</h2>
         {/* {post.maker && <p className="text-sm text-gray-600 mb-1">by {post.maker}</p>}
         {post.year && <p className="text-sm text-gray-600 mb-1">{post.year}</p>} */}
         {/* <p className="text-sm text-gray-600 mb-2 capitalize">{post.condition}</p> */}
         {post.description && (
-          <p className="text-sm text-gray-700 mb-3 whitespace-pre-line">{post.description}</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 whitespace-pre-line">{post.description}</p>
         )}
-        {post.notes && <p className="text-sm text-gray-700 mb-3">{post.notes}</p>}
+        {post.notes && <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{post.notes}</p>}
         
         {/* Tags 
         {post.tags && post.tags.length > 0 && (

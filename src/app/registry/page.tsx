@@ -277,28 +277,43 @@ export default function RegistryPage() {
                     {objects.length} object{objects.length !== 1 ? 's' : ''} in your collection
                   </p>
                 </div>
-                <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                  <Button
-                    variant={view === 'grid' ? 'default' : 'outline'}
+                <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                  <button
+                    type="button"
                     onClick={() => handleViewChange('grid')}
                     title="Grid view"
-                    className={view === 'grid' ? 'bg-gray-600 dark:bg-gray-400 text-white hover:bg-gray-700 dark:hover:bg-gray-300 border-transparent' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}
+                    className={`grid-view flex h-12 w-12 items-center justify-center rounded-xl border transition-colors ${
+                      view === 'grid'
+                        ? 'bg-gray-900 text-white border-transparent shadow-lg dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-transparent border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800'
+                    }`}
+                    aria-pressed={view === 'grid'}
                   >
-                    <Columns className="h-4 w-3 text-current" />
-                  </Button>
-                  <Button 
-                  variant={view === 'table' ? 'default' : 'outline'} 
-                  onClick={() => handleViewChange('table')} 
-                  title="Table view"
-                  className={view === 'table' ? 'bg-gray-600 dark:bg-gray-400 text-white hover:bg-gray-700 dark:hover:bg-gray-300 border-transparent' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}
+                    <Columns className="h-5 w-5 text-current" />
+                    <span className="sr-only">Grid view</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleViewChange('table')}
+                    title="Table view"
+                    className={`list-view flex h-12 w-12 items-center justify-center rounded-xl border transition-colors ${
+                      view === 'table'
+                        ? 'bg-gray-900 text-white border-transparent shadow-lg dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-transparent border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800'
+                    }`}
+                    aria-pressed={view === 'table'}
                   >
-                    <List className="h-4 w-3 text-current" />
-                  </Button>
-                  <Button asChild className="shadow-lg">
-                    <Link href="/registry/new">
-                      <Plus className="h-4 w-4 text-current" />
-                    </Link>
-                  </Button>
+                    <List className="h-5 w-5 text-current" />
+                    <span className="sr-only">Table view</span>
+                  </button>
+                  <Link
+                    href="/registry/new"
+                    className="add-cta flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    title="Add object"
+                  >
+                    <Plus className="h-5 w-5" />
+                    <span className="sr-only">Add object</span>
+                  </Link>
                 </div>
               </div>
 
@@ -351,12 +366,12 @@ export default function RegistryPage() {
                       <StatusCard label="Anchored" value={anchored} icon={AnchorIcon} />
                       <StatusCard label="Pending" value={pending} icon={Clock} />
                       <StatusCard label="Not Anchored" value={not} icon={Shield} />
-                       <div className="border border-gray-200 p-4 bg-white flex items-center justify-between">
+                       <div className="border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900 flex items-center justify-between">
                         <div>
-                          <div className="text-sm text-gray-600">Anchoring Queue</div>
-                          <div className="text-xs text-gray-500">Run worker to finalize pending</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">Anchoring Queue</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Run worker to finalize pending</div>
                         </div>
-                        <Button variant="outline" onClick={runWorker}>Run Now</Button>
+                        <Button variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800" onClick={runWorker}>Run Now</Button>
                       </div>
                     </>
                   );
@@ -431,7 +446,7 @@ export default function RegistryPage() {
                       {/* Pagination removed - showing all objects */}
                     </>
                   ) : (
-                    <div className="overflow-hidden rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
+                    <div className="overflow-hidden rounded-md bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-b border-gray-200/50 dark:border-gray-600/50">

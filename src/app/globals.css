@@ -610,3 +610,29 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 .pad-top-rotation{
   padding-top: 2px;
 }
+
+
+.grid-view svg, 
+.list-view svg,
+.add-cta svg, 
+.non-dark-invert{
+  filter: none !important;
+}
+
+.dark-invert{
+  filter: invert(1) !important;
+}
+
+
+
+/*dark:text-gray-100*/
+
+.dark .transparent-bg{
+  background:transparent !important;
+}
+
+
+.dark .inputforce {
+    --tw-bg-opacity: 1;
+    background-color: rgb(17 24 39 / var(--tw-bg-opacity, 1))!important;
+}
