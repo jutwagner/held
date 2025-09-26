@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
 import DonateForm, { AmountPicker } from '@/components/donate/DonateForm';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -12,10 +12,10 @@ export default function DonatePage() {
   const [selectedAmount, setSelectedAmount] = useState(10);
   const [processing, setProcessing] = useState(false);
 
-  const elementsOptions = useMemo(
+  const elementsOptions = useMemo<StripeElementsOptions>(
     () => ({
       appearance: {
-        theme: 'flat',
+        theme: 'flat' as StripeElementsOptions['appearance']['theme'],
         variables: {
           colorPrimary: '#000000',
         },
