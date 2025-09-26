@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
 import { subscribeObjects, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
-import { Plus, Search, Eye, EyeOff, List, Columns, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown, Globe, Lock } from 'lucide-react';
+import { Plus, Search, Eye, EyeOff, List, Columns, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import AnchorIcon from '@/components/AnchorIcon';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -36,7 +36,7 @@ export default function RegistryPage() {
   const [showPublicOnly, setShowPublicOnly] = useState(false);
   // Removed pagination - show all objects
   const [view, setView] = useState<'grid' | 'table'>('grid');
-  const [sortField, setSortField] = useState<'title' | 'category' | 'isPublic' | 'updatedAt' | 'provenance'>('updatedAt');
+  const [sortField, setSortField] = useState<'title' | 'category' | 'isPublic' | 'updatedAt' | 'provenance' | 'anchoring'>('updatedAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [anchoringFilter, setAnchoringFilter] = useState<'all' | 'anchored' | 'pending' | 'not'>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -155,6 +155,12 @@ export default function RegistryPage() {
         case 'isPublic':
           aVal = a.isPublic ? 1 : 0;
           bVal = b.isPublic ? 1 : 0;
+          break;
+        case 'anchoring':
+          const aAnchoringState = a.anchoring?.isAnchored ? 2 : a.anchoring?.txHash ? 1 : 0;
+          const bAnchoringState = b.anchoring?.isAnchored ? 2 : b.anchoring?.txHash ? 1 : 0;
+          aVal = aAnchoringState;
+          bVal = bAnchoringState;
           break;
         case 'updatedAt':
           aVal = a.updatedAt ? (typeof a.updatedAt === 'object' && 'seconds' in a.updatedAt ? a.updatedAt.seconds : new Date(a.updatedAt).getTime()) : 0;
@@ -317,7 +323,7 @@ export default function RegistryPage() {
                   }`}
                   title={showPublicOnly ? 'Show All Objects' : 'Show Public Only'}
                 >
-                  <Globe className="h-5 w-5" />
+                  <Image src="/img/Globe.svg" alt="Public" width={20} height={20} className="h-5 w-5" />
                 </Button>
                 </div>
                 {/*
@@ -469,8 +475,18 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-200">
-                                Anchoring
+                              <th className="px-6 py-4 text-left">
+                                <button
+                                  onClick={() => handleSort('anchoring')}
+                                  className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                >
+                                  Anchoring
+                                  {sortField === 'anchoring' && (
+                                    sortDirection === 'asc'
+                                      ? <ChevronUp className="h-4 w-4" />
+                                      : <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </button>
                               </th>
                               <th className="px-6 py-4 text-left">
                                 <button
@@ -571,39 +587,30 @@ export default function RegistryPage() {
                                   </td>
                                   <td className="px-6 py-4">
                                     <div className="flex items-center justify-center">
-                                      {obj.isPublic ? (
-                                        <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                      ) : (
-                                        <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                                      {!obj.isPublic && (
+                                        <Image
+                                          src="/img/lock.svg"
+                                          alt="Private"
+                                          width={20}
+                                          height={20}
+                                          className="h-5 w-5"
+                                        />
                                       )}
                                     </div>
                                   </td>
                                   <td className="px-6 py-4">
                                     <div className="flex items-center justify-center">
-                                      {anchored ? (
-                                        <AnchorIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                      ) : pending ? (
+                                      {anchored && <AnchorIcon className="h-4 w-4 text-black-300" />}
+                                      {!anchored && pending && (
                                         <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                                      ) : (
-                                        <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                       )}
                                     </div>
                                   </td>
                                   <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                      <div className={`h-2 w-16 rounded-full overflow-hidden ${
-                                        prov >= 75 ? 'bg-green-200 dark:bg-green-900' :
-                                        prov >= 50 ? 'bg-yellow-200 dark:bg-yellow-900' :
-                                        prov >= 25 ? 'bg-orange-200 dark:bg-orange-900' :
-                                        'bg-red-200 dark:bg-red-900'
-                                      }`}>
+                                      <div className="h-2 w-16 rounded-full overflow-hidden bg-[#EEEEEE] dark:bg-gray-800">
                                         <div 
-                                          className={`h-full transition-all duration-300 ${
-                                            prov >= 75 ? 'bg-green-500' :
-                                            prov >= 50 ? 'bg-yellow-500' :
-                                            prov >= 25 ? 'bg-orange-500' :
-                                            'bg-red-500'
-                                          }`}
+                                          className="h-full transition-all duration-300 bg-black dark:bg-gray-100"
                                           style={{ width: `${prov}%` }}
                                         />
                                       </div>

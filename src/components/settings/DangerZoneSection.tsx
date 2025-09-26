@@ -93,7 +93,7 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
 
   return (
     <section aria-labelledby="danger-header" className="mb-8">
-      <h2 id="danger-header" className="font-serif text-xl mb-4 text-red-700">Danger Zone</h2>
+      <h2 id="danger-header" className="font-serif text-xl mb-4 text-black">Delete Account</h2>
       {isLoading ? (
         <div className="text-gray-400 text-sm">Loading danger zone…</div>
       ) : (
@@ -107,7 +107,6 @@ export default function DangerZoneSection({ user }: { user?: UserDoc }) {
           {!showConfirmation ? (
             <div>
               <div className="mb-4">
-                <h3 className="font-semibold text-red-700 mb-2">Delete Account</h3>
                 <p className="text-sm text-red-600 mb-4">
                   This action cannot be undone. This will permanently delete your account and remove all your data including:
                 </p>

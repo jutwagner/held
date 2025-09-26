@@ -257,8 +257,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <img src="/held-logomark.svg" alt="Held" className="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity" />
                 
                   <div className="flex items-center gap-6 text-sm">
-                  <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
-                  <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+                    <a href="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
+                    <a href="/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+                    <a href="/donate" className="text-gray-600 hover:text-gray-900">Donate</a>
                   </div>
                 </div>
               </footer>

@@ -215,14 +215,15 @@ export default function PassportClient() {
               <div className="space-y-4">
                 {object.images.length === 1 ? (
                   <div
-                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[420px] max-h-[80vh]"
+                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[520px]"
                   >
                     <Image
                       src={object.images[0]}
                       alt={object.title}
                       width={1600}
                       height={1600}
-                      className="w-auto max-w-full h-auto max-h-[80vh] object-contain"
+                      className="w-full h-full object-cover"
+                      sizes="(min-width: 1024px) 50vw, 100vw"
                     />
                   </div>
                 ) : (
@@ -230,14 +231,15 @@ export default function PassportClient() {
                     {object.images.map((image, index) => (
                       <div
                         key={index}
-                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[420px] max-h-[80vh]"
+                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[520px]"
                       >
                         <Image
                           src={image}
                           alt={`${object.title} - Image ${index + 1}`}
                           width={1600}
                           height={1600}
-                          className="w-auto max-w-full h-auto max-h-[80vh] object-contain"
+                          className="w-full h-full object-cover"
+                          sizes="(min-width: 1024px) 50vw, 100vw"
                         />
                       </div>
                     ))}

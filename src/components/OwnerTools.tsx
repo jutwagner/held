@@ -40,6 +40,10 @@ type Props = {
   setForm?: (updater: (prev: any) => any) => void;
   onSaveInline?: () => void;
   onCancelInline?: () => void;
+  onProvenanceShortcut?: (
+    section: 'identity' | 'certificate' | 'chain',
+    field?: 'serialNumber' | 'acquisitionDate' | 'certificateDetails' | 'chain-owner'
+  ) => void;
 };
 
 function getProvenanceScore(o: HeldObject): number {
@@ -52,7 +56,15 @@ function getProvenanceScore(o: HeldObject): number {
   return Math.round((score / total) * 100);
 }
 
-export default function OwnerTools({ object, editing, form, setForm, onSaveInline, onCancelInline }: Props) {
+export default function OwnerTools({
+  object,
+  editing,
+  form,
+  setForm,
+  onSaveInline,
+  onCancelInline,
+  onProvenanceShortcut,
+}: Props) {
   const { user } = useAuth();
   const heldPlus = isHeldPlus(user);
   const [busy, setBusy] = useState(false);
@@ -535,7 +547,7 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
               </div>
               <div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">Provenance</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Documentation Progress</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Progress</div>
               </div>
             </div>
           </div>
@@ -545,39 +557,56 @@ export default function OwnerTools({ object, editing, form, setForm, onSaveInlin
             <ProvenanceStep 
               completed={!!object.serialNumber}
               title="Add Serial Number"
-              description="Unique identifier or serial number"
+              description="Unique identifier or serial"
               onClick={() => {
-                const element = document.querySelector('[data-provenance-section="identity"]');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            />
-            <ProvenanceStep 
-              completed={!!object.certificateOfAuthenticity || (!!object.associatedDocuments && object.associatedDocuments.length > 0)}
-              title="Attach Documents"
-              description="Certificates, receipts, or references"
-              onClick={() => {
-                const element = document.querySelector('[data-provenance-section="certificate"]');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            />
-            <ProvenanceStep 
-              completed={Array.isArray(object.chain) && object.chain.length > 0}
-              title="Add Ownership History"
-              description="Track previous owners and transfers"
-              onClick={() => {
-                const element = document.querySelector('[data-provenance-section="chain"]');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (onProvenanceShortcut) {
+                  onProvenanceShortcut('identity', 'serialNumber');
+                } else {
+                  const element = document.querySelector('[data-provenance-section="identity"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }}
             />
             <ProvenanceStep 
               completed={!!object.acquisitionDate}
               title="Add Acquisition Date"
-              description="When you acquired this item"
+              description="When it became part of your collection"
               onClick={() => {
-                const element = document.querySelector('[data-provenance-section="identity"]');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (onProvenanceShortcut) {
+                  onProvenanceShortcut('identity', 'acquisitionDate');
+                } else {
+                  const element = document.querySelector('[data-provenance-section="identity"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }}
             />
+            <ProvenanceStep 
+              completed={!!object.certificateOfAuthenticity || (!!object.associatedDocuments && object.associatedDocuments.length > 0)}
+              title="Attach Documents"
+              description="Proof, papers, references that travel with it"
+              onClick={() => {
+                if (onProvenanceShortcut) {
+                  onProvenanceShortcut('certificate', 'certificateDetails');
+                } else {
+                  const element = document.querySelector('[data-provenance-section="certificate"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+            />
+            <ProvenanceStep 
+              completed={Array.isArray(object.chain) && object.chain.length > 0}
+              title="Add Ownership History"
+              description="The chain of hands it’s passed through"
+              onClick={() => {
+                if (onProvenanceShortcut) {
+                  onProvenanceShortcut('chain', 'chain-owner');
+                } else {
+                  const element = document.querySelector('[data-provenance-section="chain"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+            />
+            
           </div>
         </div>
       ) : (
@@ -674,17 +703,14 @@ function ProvenanceStep({ completed, title, description, onClick }: { completed:
       }`}
       onClick={onClick}
     >
-      {/* Checkmark or circle */}
-      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
-        completed 
-          ? 'bg-green-500 text-white' 
-          : 'bg-gray-200 dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500'
-      }`}>
-        {completed ? (
-          <AnchorIcon className="h-4 w-4" />
-        ) : (
-          <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full" />
-        )}
+      {/* Checkmark or icon */}
+      <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center transition-all duration-200">
+        <img
+          src={completed ? '/img/held-seal-plus.svg' : '/img/held-seal-plus.svg'}
+          alt="Held Seal"
+          className={`h-12 w-12 ${completed ? '' : 'opacity-60'}`}
+          aria-hidden="true"
+        />
       </div>
       
       {/* Content */}

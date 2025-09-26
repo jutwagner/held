@@ -78,8 +78,7 @@ export default function RotationsPage() {
           </div>
           <Button asChild className="mt-4 sm:mt-0">
             <Link href="/rotations/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Rotation
+              <Plus className="h-4 w-4" />
             </Link>
           </Button>
         </div>

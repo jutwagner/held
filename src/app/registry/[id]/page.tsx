@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -29,6 +29,9 @@ export default function RegistryItemPage() {
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
 
+  type ProvenanceSectionKey = 'identity' | 'certificate' | 'chain';
+  type ProvenanceFieldKey = 'serialNumber' | 'acquisitionDate' | 'certificateDetails' | 'chain-owner';
+
   type FormState = {
     title: string;
     category: string;
@@ -56,6 +59,70 @@ export default function RegistryItemPage() {
     chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
   };
   const [form, setForm] = useState<FormState | null>(null);
+
+  const handleProvenanceShortcut = useCallback(
+    (section: ProvenanceSectionKey, field?: ProvenanceFieldKey) => {
+      const sectionSelectors: Record<ProvenanceSectionKey, string> = {
+        identity: '[data-provenance-section="identity"]',
+        certificate: '[data-provenance-section="certificate"]',
+        chain: '[data-provenance-section="chain"]',
+      };
+
+      const fieldSelectors: Record<ProvenanceFieldKey, string> = {
+        serialNumber: '[data-provenance-field="serialNumber"]',
+        acquisitionDate: '[data-provenance-field="acquisitionDate"]',
+        certificateDetails: '[data-provenance-field="certificateDetails"]',
+        'chain-owner': '[data-provenance-field="chain-owner"]',
+      };
+
+      const focusTarget = () => {
+        const fieldSelector = field ? fieldSelectors[field] : undefined;
+        let fieldElement = fieldSelector ? (document.querySelector(fieldSelector) as HTMLElement | null) : null;
+        if (!fieldElement && section === 'chain') {
+          fieldElement = document.querySelector('[data-provenance-action="add-owner"]') as HTMLElement | null;
+        }
+        const sectionElement = document.querySelector(sectionSelectors[section]) as HTMLElement | null;
+        const target = fieldElement || sectionElement;
+        if (!target) return;
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if (fieldElement && typeof fieldElement.focus === 'function') {
+          try {
+            (fieldElement as HTMLElement).focus({ preventScroll: true } as any);
+          } catch {
+            fieldElement.focus();
+          }
+        }
+      };
+
+      if (section === 'chain') {
+        setForm(prev => {
+          if (!prev) return prev;
+          const existingChain = Array.isArray(prev.chain) ? prev.chain : [];
+          if (existingChain.length > 0) {
+            return prev;
+          }
+          return {
+            ...prev,
+            chain: [...existingChain, { owner: '', acquiredAt: '', notes: '' }],
+          };
+        });
+      }
+
+      if (!editing) {
+        setEditing(true);
+        setTimeout(() => {
+          requestAnimationFrame(focusTarget);
+        }, 220);
+      } else {
+        setTimeout(() => {
+          requestAnimationFrame(focusTarget);
+        }, 120);
+      }
+    },
+    [editing]
+  );
 
   useEffect(() => {
     let active = true;
@@ -364,6 +431,7 @@ export default function RegistryItemPage() {
                 handleInlineSave(fake);
               }}
               onCancelInline={() => setEditing(false)}
+              onProvenanceShortcut={handleProvenanceShortcut}
             />
           </div>
         </div>

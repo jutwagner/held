@@ -594,3 +594,19 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   }
 }
 
+.mt-25{
+  margin-top: 6rem;
+}
+.mt-30{
+  margin-top: 7rem;
+}
+.mb-25{
+  margin-bottom: 6rem;
+}
+.mb-30{
+  margin-bottom: 7rem;
+} 
+
+.pad-top-rotation{
+  padding-top: 2px;
+}
