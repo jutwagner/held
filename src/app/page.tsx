@@ -41,7 +41,7 @@ export default function HomePage() {
                 src={heroImg}
                 alt="Hero"
                 width={512}
-                className="dark-invert"
+                className="dark-invert-hero"
                 height={256}
                 style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '0.75rem' }}
                 priority

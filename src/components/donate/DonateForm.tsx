@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 
-const DONATION_AMOUNTS = [0.01, 1, 5, 10, 20, 50];
+const DONATION_AMOUNTS = [0.50, 1, 5, 10, 20, 50];
 
 interface DonateFormProps {
   amount: number;
