@@ -262,11 +262,7 @@ export default function RegistryPage() {
         <MobileBottomBar />
         <div className="held-container held-container-wide py-10">
           {loading || !user ? (
-            <div className="py-24">
-                <div className="text-center">
-                <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-              </div>
-            </div>
+            <RegistrySkeleton />
           ) : (
             <>
               {/* Header */}
@@ -797,6 +793,44 @@ function ObjectCard({ object }: { object: HeldObject }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+function RegistrySkeleton() {
+  return (
+    <div className="py-10 animate-pulse space-y-10">
+      <div className="flex flex-col sm:flex-row justify-between gap-6">
+        <div className="space-y-3">
+          <div className="h-10 w-48 rounded-lg bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-700" />
+          <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-700" />
+          <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-700" />
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 h-12 rounded-xl bg-gray-200 dark:bg-gray-700" />
+        <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-700" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, idx) => (
+          <div
+            key={idx}
+            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-6 space-y-4"
+          >
+            <div className="h-40 rounded-xl bg-gray-200 dark:bg-gray-800" />
+            <div className="h-6 w-3/4 rounded bg-gray-200 dark:bg-gray-800" />
+            <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800" />
+            <div className="h-4 w-2/3 rounded bg-gray-200 dark:bg-gray-800" />
+            <div className="h-10 w-full rounded-lg bg-gray-200 dark:bg-gray-800" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

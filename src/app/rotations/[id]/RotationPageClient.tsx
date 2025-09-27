@@ -282,7 +282,7 @@ function RotationPageClient({ id }: { id: string }) {
             </div>
 
             {/* Stats and Actions Bar */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -379,9 +379,9 @@ function RotationPageClient({ id }: { id: string }) {
       )}
 
       {/* Enhanced Object Navigation */}
-      <nav className="sticky top-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 py-4 shadow-sm">
+      <nav className="sticky top-4rem z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 py-4 shadow-sm">
         <div className="held-container held-container-wide">
-          <div className="flex items-center justify-center overflow-hidden px-4">
+          <div className="flex items-center justify-center  px-4">
             {objects.map((object, idx) => (
               <button
                 key={idx}
@@ -389,7 +389,7 @@ function RotationPageClient({ id }: { id: string }) {
                   const el = document.getElementById(`object-${idx}`);
                   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
-                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white dark:border-gray-600 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 bg-white flex-shrink-0"
+                className=" overflow-hidden w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white dark:border-gray-600 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 bg-white flex-shrink-0"
                 style={{ 
                   marginLeft: idx > 0 ? '-8px' : '0',
                   aspectRatio: '1',

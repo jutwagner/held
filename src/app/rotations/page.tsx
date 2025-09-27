@@ -216,7 +216,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           )}
           <div className="mb-6 blur">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-              <div className="flex justify-center items-center overflow-hidden px-2">
+              <div className="flex justify-center items-center px-2">
                 {rotation.objects.slice(0, 5).map((obj: HeldObject, index) => (
                   <div 
                     key={obj.id} 
@@ -354,7 +354,7 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
           {/* Objects Preview - Enhanced with better visual weight */}
           <div className="mb-6">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-              <div className="flex justify-center items-center overflow-hidden px-2">
+              <div className="flex justify-center items-center  px-2">
                 {rotation.objects.slice(0, 5).map((obj: HeldObject, index) => (
                   <div 
                     key={obj.id} 
@@ -376,11 +376,13 @@ function RotationCard({ rotation, disabled = false }: { rotation: RotationWithOb
                     )}
                   </div>
                 ))}
+                {/* Show remaining objects count 
                 {rotation.objects.length > 5 && (
-                  <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-12 md:w-16 md:h-14 bg-gray-900 dark:bg-gray-700 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200 flex items-center justify-center">
                     <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm font-medium">+{rotation.objects.length - 5}</span>
                   </div>
                 )}
+                  */}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-4 text-center font-medium">{rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}</p>
             </div>
