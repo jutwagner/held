@@ -86,6 +86,8 @@ export default function MigratePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="held-container py-8">
+
+        {/*}
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-serif font-medium mb-8">CSV to Firestore Migration</h1>
           
@@ -130,6 +132,7 @@ export default function MigratePage() {
             </div>
           </div>
         </div>
+        */}
       </div>
     </div>
   );

@@ -362,11 +362,11 @@ export default function NewObjectPage() {
             </h1>
           </div>
 
-          {/* Temporary Migration Button - Remove after migration is complete */}
+          {/* Temporary Migration Button - Remove after migration is complete
           <div className="mb-8">
             <MigrationButton />
           </div>
-
+ */}
 
           
         </div>
