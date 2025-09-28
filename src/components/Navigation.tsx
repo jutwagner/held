@@ -109,7 +109,7 @@ export default function Navigation() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <Image src="/held-logo.svg" alt="Held Logo" width={32} height={32} className="h-8 w-8" />
+              <Image src="/held-logo.svg" alt="Held Logo" width={32} height={32} className="h-10 w-14" />
             </Link>
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
