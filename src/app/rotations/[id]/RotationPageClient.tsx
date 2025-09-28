@@ -9,6 +9,20 @@ import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import Switch from '@/components/ui/switch';
 import { HeldObject } from '@/types';
 import type { RotationWithObjects } from '@/types';
+import { RotationSkeleton } from '@/components/skeletons/RotationSkeleton';
+import dynamic from 'next/dynamic';
+
+const RotationEditPanel = dynamic(() => import('./RotationEditPanel'), {
+  loading: () => (
+    <div className="held-container held-container-wide mt-4">
+      <div className="held-card p-6 animate-pulse">
+        <div className="h-6 w-48 rounded bg-gray-200 dark:bg-gray-700 mb-4" />
+        <div className="h-10 w-full rounded bg-gray-200 dark:bg-gray-700" />
+      </div>
+    </div>
+  ),
+  ssr: false,
+});
 
 // Firebase configuration (replace with your actual config)
 const firebaseConfig = {
@@ -97,10 +111,10 @@ function RotationPageClient({ id }: { id: string }) {
 
   // Load all user's objects for adding/removing when editing
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!editing || !user?.uid) return;
     const unsub = subscribeObjects(user.uid, (list) => setAllObjects(list));
     return () => { if (typeof unsub === 'function') unsub(); };
-  }, [user?.uid]);
+  }, [editing, user?.uid]);
 
   const canEdit = !!user && !!rotation && rotation.userId === user.uid && isHeldPlus(user);
 
@@ -133,64 +147,7 @@ function RotationPageClient({ id }: { id: string }) {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 animate-pulse">
-        <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm">
-          <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-4">
-                {[...Array(5)].map((_, idx) => (
-                  <div key={idx} className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 border-2 border-white dark:border-gray-800 shadow" />
-                ))}
-              </div>
-              <div>
-                <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
-                <div className="h-4 w-64 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded" />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono">&nbsp;</span>
-            </div>
-          </div>
-        </header>
-        <nav className="sticky top-25 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800 py-2 flex justify-center overflow-hidden px-4">
-          {[...Array(5)].map((_, idx) => (
-            <div 
-              key={idx} 
-              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-800 shadow flex-shrink-0" 
-              style={{ 
-                marginLeft: idx > 0 ? '-8px' : '0',
-                aspectRatio: '1'
-              }}
-            />
-          ))}
-        </nav>
-        <main className="held-container held-container-wide py-12">
-          <div className="flex flex-col gap-16">
-            {[...Array(2)].map((_, index) => (
-              <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b border-gray-200 dark:border-gray-700 pb-16 scroll-mt-32">
-                <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
-                    <div className="w-full max-w-3xl h-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded-xl" />
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col justify-center items-start w-full">
-                  <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
-                  <div className="h-4 w-32 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-1" />
-                  <div className="h-4 w-24 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-2" />
-                  <div className="h-4 w-80 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mt-2" />
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {[...Array(4)].map((_, i) => (
-                      <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono shadow">&nbsp;</span>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            ))}
-          </div>
-        </main>
-      </div>
-    );
+    return <RotationSkeleton />;
   }
 
   if (error) {
@@ -227,6 +184,7 @@ function RotationPageClient({ id }: { id: string }) {
               src={rotation.coverImage}
               alt="Rotation cover"
               fill
+              sizes="100vw"
               className="object-cover"
               priority
             />
@@ -332,50 +290,12 @@ function RotationPageClient({ id }: { id: string }) {
 
       {/* Editing: Select Objects to include */}
       {editing && canEdit && (
-        <div className="held-container held-container-wide mt-4">
-          <div className="held-card p-6">
-            <div className="flex items-baseline justify-between mb-2">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">Select Objects</h2>
-              <span className="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400">{form.objectIds.length}/7 selected</span>
-            </div>
-            {selectionError && (
-              <div className="p-2 mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">{selectionError}</div>
-            )}
-            {allObjects.length === 0 ? (
-              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">You have no registry items yet. Add some in your registry.</p>
-            ) : (
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {allObjects.map(obj => {
-                  const selected = form.objectIds.includes(obj.id);
-                  return (
-                    <button
-                      key={obj.id}
-                      type="button"
-                      onClick={() => toggleObject(obj.id)}
-                      className={`w-full text-left p-3 rounded border transition-colors flex items-center gap-3 ${selected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
-                    >
-                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                        {obj.images?.[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={obj.images[0]} alt={obj.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">?</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{obj.title}</div>
-                        {obj.maker && <div className="text-xs text-gray-500 truncate">{obj.maker}</div>}
-                      </div>
-                      {selected && (
-                        <span className="text-xs px-2 py-1 rounded bg-gray-900 text-white">Selected</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+        <RotationEditPanel
+          allObjects={allObjects}
+          selectedIds={form.objectIds}
+          onToggle={toggleObject}
+          selectionError={selectionError}
+        />
       )}
 
       {/* Enhanced Object Navigation */}
@@ -397,12 +317,13 @@ function RotationPageClient({ id }: { id: string }) {
                 }}
                 title={object.title}
               >
-                <Image 
-                  src={object.images?.[0] || '/img/placeholder.svg'} 
-                  alt={object.title} 
-                  width={80} 
-                  height={80} 
-                  className="w-full h-full object-cover" 
+                <Image
+                  src={object.images?.[0] || '/img/placeholder.svg'}
+                  alt={object.title}
+                  width={80}
+                  height={80}
+                  sizes="(max-width: 768px) 48px, 80px"
+                  className="w-full h-full object-cover"
                 />
               </button>
             ))}
@@ -422,6 +343,7 @@ function RotationPageClient({ id }: { id: string }) {
                     alt={object.title}
                     width={640}
                     height={480}
+                    sizes="(max-width: 768px) 90vw, 50vw"
                     className="w-full max-w-3xl rounded-xl object-contain"
                   />
                 </div>

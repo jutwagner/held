@@ -1,5 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth, initializeAuth, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence, indexedDBLocalPersistence, browserPopupRedirectResolver } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -25,7 +25,7 @@ if (missingVars.length > 0) {
 
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Debug Firebase configuration
 console.log('[DEBUG] Firebase config:', {
@@ -34,8 +34,29 @@ console.log('[DEBUG] Firebase config:', {
   storageBucket: firebaseConfig.storageBucket
 });
 
-// Initialize Firebase services
-export const auth = getAuth(app);
+// Initialize Firebase Auth with layered persistence
+let authInstance;
+if (typeof window === 'undefined') {
+  authInstance = getAuth(app);
+} else {
+  try {
+    authInstance = initializeAuth(app, {
+      persistence: [
+        indexedDBLocalPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+        inMemoryPersistence,
+      ],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+    console.log('[Auth] initializeAuth with layered persistence succeeded');
+  } catch (error) {
+    console.warn('[Auth] initializeAuth failed, falling back to getAuth', error);
+    authInstance = getAuth(app);
+  }
+}
+
+export const auth = authInstance;
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 

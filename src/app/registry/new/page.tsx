@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Switch from '@/components/ui/switch';
-import { createObject, updateObjectAnchoring, subscribeObjects } from '@/lib/firebase-services';
+import { createObject, updateObjectAnchoring, subscribeObjects, FREE_REGISTRY_OBJECT_LIMIT } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
 import { CreateObjectData } from '@/types';
 import { ArrowLeft, Upload, X, Plus, Sparkles, Camera, Heart, Zap, ChevronRight, ChevronLeft, Check, Music2, Image as ImageIcon, Palette, Package, Lamp, Cpu, Guitar, Clock3, Book, Shapes, Tag, Archive } from 'lucide-react';
@@ -24,6 +24,13 @@ export default function NewObjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [objectCount, setObjectCount] = useState(0);
+  const [limitMessage, setLimitMessage] = useState<string | null>(null);
+  const [initialCountResolved, setInitialCountResolved] = useState(false);
+  const isPlusMember = isHeldPlus(user);
+  const LIMIT_MESSAGE = `Upgrade to Held+ to add more than ${FREE_REGISTRY_OBJECT_LIMIT} registry items.`;
+  const shouldBlockForLimit = !isPlusMember && initialCountResolved && objectCount >= FREE_REGISTRY_OBJECT_LIMIT;
+  const isCheckingLimit = !isPlusMember && !initialCountResolved;
 
   // Get contextual label for brand/maker field based on category
   const getBrandLabel = (category: string) => {
@@ -185,6 +192,11 @@ export default function NewObjectPage() {
     e.preventDefault();
     if (!user || typeof user.uid !== 'string') return;
 
+    if (!isPlusMember && objectCount >= FREE_REGISTRY_OBJECT_LIMIT) {
+      setLimitMessage(LIMIT_MESSAGE);
+      return;
+    }
+
     if (!formData.category || !formData.maker) {
       return;
     }
@@ -215,7 +227,12 @@ export default function NewObjectPage() {
       router.push('/registry');
     } catch (err) {
       console.error('Error creating object:', err);
-      alert('Failed to create object. See console for details.');
+      const errorCode = typeof err === 'object' && err && 'code' in err ? (err as { code?: string }).code : undefined;
+      if (errorCode === 'REGISTRY_FREE_LIMIT_REACHED' || (err instanceof Error && err.message === 'REGISTRY_FREE_LIMIT_REACHED')) {
+        setLimitMessage(LIMIT_MESSAGE);
+      } else {
+        alert('Failed to create object. See console for details.');
+      }
     } finally {
       setLoading(false);
     }
@@ -331,15 +348,78 @@ export default function NewObjectPage() {
     return () => clearTimeout(t);
   }, []);
   
-  // Count current user's for-sale items to hint limits
+  // Count current user's items for plan limits and sale hints
   useEffect(() => {
     if (!user?.uid) return;
     const unsub = subscribeObjects(user.uid, (list) => {
+      setObjectCount(list.length);
+      setInitialCountResolved(true);
+      if (!isPlusMember && list.length >= FREE_REGISTRY_OBJECT_LIMIT) {
+        setLimitMessage(LIMIT_MESSAGE);
+      } else if (isPlusMember || list.length < FREE_REGISTRY_OBJECT_LIMIT) {
+        setLimitMessage(null);
+      }
       const count = list.filter(o => (o as any).openToSale === true).length;
       setForSaleCount(count);
     });
     return () => { try { unsub(); } catch {} };
-  }, [user?.uid]);
+  }, [user?.uid, isPlusMember]);
+
+  useEffect(() => {
+    if (shouldBlockForLimit) {
+      setLimitMessage(LIMIT_MESSAGE);
+    }
+  }, [shouldBlockForLimit]);
+
+  if (isCheckingLimit) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400 text-sm">Checking your registry...</div>
+      </div>
+    );
+  }
+
+  if (shouldBlockForLimit) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="held-container held-container-wide py-8">
+          <div className="max-w-none mx-auto">
+            <div className="flex items-center justify-between mb-16">
+              <Button variant="ghost" asChild className="p-2 h-auto text-black dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
+                  <ArrowLeft className="h-4 w-4" />
+                  Registry
+                </Link>
+              </Button>
+            </div>
+
+            <div className="mb-10">
+              <h1 className="text-4xl md:text-5xl font-light text-black dark:text-gray-100 mb-2 tracking-tighter leading-none">
+                Add New
+              </h1>
+            </div>
+
+            <div className="max-w-2xl">
+              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center dark:border-amber-500/40 dark:bg-amber-900/20">
+                <h2 className="text-2xl md:text-3xl font-serif text-gray-900 dark:text-gray-50 mb-4">Registry limit reached</h2>
+                <p className="text-gray-700 dark:text-gray-200 text-base leading-relaxed">
+                  Free Held accounts can manage up to {FREE_REGISTRY_OBJECT_LIMIT} registry items. Upgrade to Held+ for unlimited space and premium provenance tools.
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button asChild className="bg-black text-white hover:bg-black/80 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
+                    <Link href="/settings/premium">Upgrade to Held+</Link>
+                  </Button>
+                  <Button asChild variant="ghost" className="text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-50">
+                    <Link href="/registry">Back to registry</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -366,10 +446,18 @@ export default function NewObjectPage() {
           <div className="mb-8">
             <MigrationButton />
           </div>
- */}
+*/}
 
-          
+        
         </div>
+
+        {limitMessage && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-900/20 dark:text-amber-200">
+              {limitMessage}
+            </div>
+          </div>
+        )}
 
         {/* Progress Indicator */}
         <div className="max-w-sm mx-auto mb-12 md:mb-5">

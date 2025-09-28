@@ -23,7 +23,7 @@ export default function SettingsTopNav({ section }: SettingsTopNavProps) {
     }
   };
 
-  const sections = [
+  const baseSections = [
     { key: 'profile', label: 'Profile' },
     { key: 'messages', label: 'Messages' },
     { key: 'premium', label: 'Held+' },
@@ -31,6 +31,19 @@ export default function SettingsTopNav({ section }: SettingsTopNavProps) {
     // { key: 'data', label: 'Data' },
     // { key: 'notifications', label: 'Notifications' },
     { key: 'danger', label: 'Danger' },
+  ];
+
+  const navItems = [
+    ...baseSections.map((sectionDef) => ({
+      type: 'link' as const,
+      ...sectionDef,
+      href: `/settings/${sectionDef.key === 'profile' ? '' : sectionDef.key}`,
+    })),
+    {
+      type: 'action' as const,
+      key: 'signout',
+      label: 'Sign Out',
+    },
   ];
 
   const scroll = (direction: 'left' | 'right') => {
@@ -66,36 +79,42 @@ export default function SettingsTopNav({ section }: SettingsTopNavProps) {
             Back
           </Link>
 
-          {/* Sign Out button - right aligned */}
-          <button
-            onClick={handleSignOut}
-            className="absolute right-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
-          
           {/* Centered Horizontal Carousel Navigation */}
-          <div className="relative max-w-4xl mx-auto px-16">
+          <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-16">
             <div 
               ref={scrollContainerRef}
               className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
             >
-              {sections.map((s) => (
-                <Link
-                  key={s.key}
-                  href={`/settings/${s.key === 'profile' ? '' : s.key}`}
-                className={`flex-shrink-0 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
-                  section === s.key 
-                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-                >
-                  {s.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                if (item.type === 'action') {
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={handleSignOut}
+                      className="flex-shrink-0 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {item.label}
+                    </button>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                      section === item.key
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
+                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
             
             {/* Scroll Buttons */}

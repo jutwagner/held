@@ -104,12 +104,12 @@ export default function Navigation() {
 
   return (
     <>
-          <nav className="bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors">
+          <nav className="bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav">
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <Image src="/held-logo.svg" alt="Held Logo" width={32} height={32} className="h-8 w-auto" />
+              <Image src="/held-logo.svg" alt="Held Logo" width={32} height={32} className="h-8 w-8" />
             </Link>
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
@@ -189,19 +189,19 @@ export function MobileBottomBar() {
       className="mobileNav md:hidden fixed bottom-0 left-0 right-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md shadow-lg z-50 flex justify-around items-center"
       style={{ minHeight: 66, paddingBottom: 'calc(env(safe-area-inset-bottom) + 2px)' }}
     >
-      <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
+     <Link href="/registry" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
         <span className={`flex items-center justify-center h-10 w-10 ${isActive('/registry') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-          <Image src="/img/registry.svg" alt="Registry" width={22} height={22} />
+          <Image src="/img/registry.svg" alt="Registry" width={22} height={22} className="w-6 h-auto" />
         </span>
       </Link>
       <Link href="/rotations" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
         <span className={`flex items-center justify-center h-10 w-10 ${isActive('/rotations') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-          <Image src="/img/rotations.svg" alt="Rotations" width={22} height={22} />
+          <Image src="/img/rotations.svg" alt="Rotations" width={22} height={22} className="w-6 h-auto" />
         </span>
       </Link>
       <Link href="/theCollaborative" className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
         <span className={`flex items-center justify-center h-10 w-10 ${isActive('/theCollaborative') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
-          <Image src="/img/theCollaborative.svg" alt="theCollaborative" width={22} height={22} />
+          <Image src="/img/theCollaborative.svg" alt="theCollaborative" width={22} height={22} className="w-6 h-auto" />
         </span>
       </Link>
       

@@ -179,7 +179,11 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
     .safe-area-right {
       padding-right: env(safe-area-inset-right);
     }
-    
+
+    .safe-area-nav {
+      padding-top: env(safe-area-inset-top);
+    }
+
     .safe-area-all {
       padding-top: max(env(safe-area-inset-top), 20px);
       padding-bottom: env(safe-area-inset-bottom);
@@ -197,6 +201,10 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
   @supports not (padding: env(safe-area-inset-top)) {
     .sticky-header-safe {
       top: 0;
+    }
+
+    .safe-area-nav {
+      padding-top: 0;
     }
   }
   

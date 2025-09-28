@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { createRotation, subscribeObjects, subscribeRotations } from '@/lib/firebase-services';
+import { createRotation, subscribeObjects, subscribeRotations, FREE_REGISTRY_OBJECT_LIMIT } from '@/lib/firebase-services';
 import { CreateRotationData, HeldObject } from '@/types';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ export default function NewRotationPage() {
   const [objects, setObjects] = useState<HeldObject[]>([]);
   const [selectedObjects, setSelectedObjects] = useState<string[]>([]);
   const [rotationCount, setRotationCount] = useState<number>(0);
+  const [objectCount, setObjectCount] = useState<number>(0);
 
     const [formData, setFormData] = useState<CreateRotationData>({
       name: '',
@@ -37,6 +38,10 @@ const handleAddNewItem = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!user || typeof user.uid !== 'string') return;
   if (!newItemData.title.trim() || !newItemData.category) return;
+  if (registryLimitReached) {
+    setError(`Upgrade to Held+ to add more than ${FREE_REGISTRY_OBJECT_LIMIT} registry items.`);
+    return;
+  }
   setAddingItem(true);
   try {
     const { createObject } = await import('@/lib/firebase-services');
@@ -51,7 +56,12 @@ const handleAddNewItem = async (e: React.FormEvent) => {
     setShowAddModal(false);
     setNewItemData({ title: '', category: '', image: null });
   } catch (err) {
-    alert('Failed to add item');
+    const errorCode = typeof err === 'object' && err && 'code' in err ? (err as { code?: string }).code : undefined;
+    if (errorCode === 'REGISTRY_FREE_LIMIT_REACHED' || (err instanceof Error && err.message === 'REGISTRY_FREE_LIMIT_REACHED')) {
+      setError(`Upgrade to Held+ to add more than ${FREE_REGISTRY_OBJECT_LIMIT} registry items.`);
+    } else {
+      alert('Failed to add item');
+    }
   } finally {
     setAddingItem(false);
   }
@@ -63,6 +73,7 @@ const handleAddNewItem = async (e: React.FormEvent) => {
     // Subscribe to user's objects
     const unsubscribeObjects = subscribeObjects(user.uid, (objs) => {
       setObjects(objs);
+      setObjectCount(objs.length);
     });
     // Subscribe to user's rotations
     const unsubscribeRotations = subscribeRotations(user.uid, (rots) => {
@@ -74,9 +85,10 @@ const handleAddNewItem = async (e: React.FormEvent) => {
     };
   }, [user]);
 
-  const isHeldPlus = !!user?.premium?.active;
+  const plusMember = isHeldPlus(user);
   const maxFreeRotations = 3;
-  const reachedLimit = !isHeldPlus && rotationCount >= maxFreeRotations;
+  const reachedLimit = !plusMember && rotationCount >= maxFreeRotations;
+  const registryLimitReached = !plusMember && objectCount >= FREE_REGISTRY_OBJECT_LIMIT;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

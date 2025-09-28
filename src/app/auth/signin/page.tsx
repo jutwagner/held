@@ -49,8 +49,12 @@ export default function SignInPage() {
     setLoading(true);
     setError('');
     try {
-      await signInWithGoogle();
-      router.push('/registry');
+      const mode = await signInWithGoogle();
+      if (mode === 'popup') {
+        router.push('/registry');
+      }
+      // In redirect mode, navigation is handled by Firebase
+      return;
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message || 'Google sign-in failed');
@@ -64,7 +68,7 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mt-8">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg p-8 mt-8">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Sign In</h2>
         {info && (
           <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">

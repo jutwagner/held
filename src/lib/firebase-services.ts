@@ -17,6 +17,7 @@ import {
   QuerySnapshot,
   DocumentSnapshot,
   DocumentData,
+  getCountFromServer,
 } from 'firebase/firestore';
 import {
   ref,
@@ -38,6 +39,12 @@ import {
   Message
 } from '@/types';
 import { generateSlug } from './utils';
+
+export const FREE_REGISTRY_OBJECT_LIMIT = 2;
+
+function isUserHeldPlus(user: UserDoc | null | undefined): boolean {
+  return !!user && !!user.premium && user.premium.active === true && (user.premium.plan === 'plus' || user.premium.plan === 'heldplus');
+}
 
 // Utility: Convert image File to WebP using browser canvas
 async function convertImageToWebP(file: File): Promise<File> {
@@ -316,6 +323,21 @@ export const deleteUserAccount = async (userId: string): Promise<void> => {
 };
 
 export const createObject = async (userId: string, data: CreateObjectData): Promise<HeldObject> => {
+  const userProfile = await getUser(userId);
+  const isPlusMember = isUserHeldPlus(userProfile);
+
+  if (!isPlusMember) {
+    const ownedObjectsQuery = query(collection(db, 'objects'), where('userId', '==', userId));
+    const countSnapshot = await getCountFromServer(ownedObjectsQuery);
+    const currentCount = Number(countSnapshot.data().count ?? 0);
+
+    if (currentCount >= FREE_REGISTRY_OBJECT_LIMIT) {
+      const limitError = new Error('REGISTRY_FREE_LIMIT_REACHED');
+      (limitError as Error & { code?: string }).code = 'REGISTRY_FREE_LIMIT_REACHED';
+      throw limitError;
+    }
+  }
+
   // Process images: if string, use as is; if File, upload as WebP
   const imageUrls: string[] = [];
   for (const img of data.images) {

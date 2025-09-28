@@ -21,7 +21,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<'redirect' | 'popup'>;
   setUser: Dispatch<SetStateAction<UserDoc | null>>;
 }
 
@@ -46,22 +46,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [presenceCleanup, setPresenceCleanup] = useState<(() => void) | null>(null);
-  
+
     // Google Sign-In - use redirect for mobile compatibility
-  const signInWithGoogle = async (): Promise<void> => {
+  const signInWithGoogle = async (): Promise<'redirect' | 'popup'> => {
     const provider = new GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    // Prefer redirect for iOS Safari to avoid popup/COOP issues
+    // Prefer redirect for iOS and hybrid environments to avoid popup issues
     const ua = typeof window !== 'undefined' ? window.navigator.userAgent || '' : '';
-    const isIOSSafari = /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
+    const isiOSSafariStandalone = typeof window !== 'undefined' && (window.navigator as any)?.standalone === true;
+    const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
+    const isCapacitor = typeof window !== 'undefined' && Boolean((window as any).Capacitor);
+    const isStandalonePWA = isiOSSafariStandalone || (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches);
+    const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitor;
     try {
-      if (isIOSSafari) {
+      if (shouldUseRedirect) {
+        console.log('[Auth] Using signInWithRedirect flow');
         await signInWithRedirect(auth, provider);
-        return;
+        return 'redirect';
       }
+
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
         const userData = await getUser(result.user.uid);
@@ -74,6 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       }
+      return 'popup';
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       const message = String(error?.message || '');
@@ -82,11 +89,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const shouldRedirect =
         code === 'auth/popup-blocked' ||
         code === 'auth/cancelled-popup-request' ||
+        code === 'auth/operation-not-supported-in-this-environment' ||
         message.includes('redirect_uri_mismatch') ||
         message.includes('Access blocked: This app’s request is invalid');
       if (shouldRedirect) {
+        console.log('[Auth] Falling back to redirect because of error code/message', { code, message });
         await signInWithRedirect(auth, provider);
-        return;
+        return 'redirect';
       }
       if (code === 'auth/popup-closed-by-user') {
         throw new Error('Sign-in was cancelled.');
@@ -96,14 +105,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Handle Google OAuth redirect result
-    const handleRedirectResult = async () => {
+    let unsubscribe: (() => void) | undefined;
+
+    const init = async () => {
       try {
         const result = await getRedirectResult(auth);
+        console.log('[Auth] getRedirectResult returned', result?.user ? 'user' : result === null ? 'null' : 'no user');
         if (result?.user) {
-          // Create user in DB if not exists
-          const userData = await getUser(result.user.uid);
-          if (!userData) {
+          const existing = await getUser(result.user.uid);
+          if (!existing) {
             await createUser({
               uid: result.user.uid,
               email: result.user.email!,
@@ -115,50 +125,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Google redirect sign-in error:', error);
       }
-    };
 
-    handleRedirectResult();
-
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setFirebaseUser(firebaseUser);
-      if (firebaseUser) {
-        let userData = await getUser(firebaseUser.uid);
+      const existingAuthUser = auth.currentUser;
+      if (existingAuthUser) {
+        console.log('[Auth] Found currentUser after redirect');
+        let userData = await getUser(existingAuthUser.uid);
         if (!userData) {
           userData = await createUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email!,
-            displayName: firebaseUser.displayName || '',
-            avatarUrl: firebaseUser.photoURL || '',
+            uid: existingAuthUser.uid,
+            email: existingAuthUser.email || '',
+            displayName: existingAuthUser.displayName || '',
+            avatarUrl: existingAuthUser.photoURL || '',
           });
         }
-        console.log('[DEBUG] AuthContext setUser called with:', userData);
-        console.log('[DEBUG] User premium status:', userData?.premium);
         setUser(userData);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('held_user', JSON.stringify(userData));
-        }
-        
-        // Initialize presence tracking with delay to ensure user is fully set up
-        setTimeout(() => {
-          const cleanup = initializePresence(firebaseUser.uid);
-          setPresenceCleanup(() => cleanup);
-        }, 2000);
-      } else {
-        console.log('[DEBUG] AuthContext setUser called with: null');
-        setUser(null);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('held_user');
-        }
-        
-        // Clean up presence tracking
-        if (presenceCleanup) {
-          presenceCleanup();
-          setPresenceCleanup(null);
-        }
+        setFirebaseUser(existingAuthUser);
+        setLoading(false);
       }
-      setLoading(false);
-    });
-    return unsubscribe;
+
+      unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        setFirebaseUser(firebaseUser);
+        if (firebaseUser) {
+          let userData = await getUser(firebaseUser.uid);
+          if (!userData) {
+            userData = await createUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email!,
+              displayName: firebaseUser.displayName || '',
+              avatarUrl: firebaseUser.photoURL || '',
+            });
+          }
+          console.log('[DEBUG] AuthContext setUser called with:', userData);
+          console.log('[DEBUG] User premium status:', userData?.premium);
+          setUser(userData);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('held_user', JSON.stringify(userData));
+          }
+
+          setTimeout(() => {
+            const cleanup = initializePresence(firebaseUser.uid);
+            setPresenceCleanup(() => cleanup);
+          }, 2000);
+        } else {
+          console.log('[DEBUG] AuthContext setUser called with: null');
+          setUser(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('held_user');
+          }
+
+          if (presenceCleanup) {
+            presenceCleanup();
+            setPresenceCleanup(null);
+          }
+        }
+        setLoading(false);
+      });
+    };
+
+    init();
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

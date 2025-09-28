@@ -14,6 +14,7 @@ import Toast from '@/components/Toast';
 import { updateUser, getUser } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Theme, Density } from '@/types';
+import { SettingsSkeleton } from '@/components/skeletons/SettingsSkeleton';
 
 interface SettingsPageProps {
   initialSection?: SectionKey;
@@ -95,6 +96,15 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
     setTimeout(() => setToast(null), 3000);
   };
 
+  if (!hydrated || (loading && !user)) {
+    return (
+      <div>
+        {toast && <Toast message={toast.message} type={toast.type} />}
+        <SettingsSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div>
       {toast && <Toast message={toast.message} type={toast.type} />}
@@ -111,57 +121,44 @@ export default function SettingsPage({ initialSection }: SettingsPageProps) {
           </div>
         )}
         <main className="w-full flex-1 p-4 md:p-8 max-w-none md:max-w-2xl md:mx-auto pb-16 md:pb-8">
-          {!hydrated ? (
-            <div className="flex items-center justify-center h-full">
-              <span className="text-gray-500 dark:text-gray-400 text-lg">Loading…</span>
-            </div>
-          ) : loading && !user ? (
-            <div className="flex items-center justify-center h-full">
-              <span className="text-gray-500 dark:text-gray-400 text-lg">Loading user…</span>
-            </div>
-          ) : (
-            <>
-              {/*<h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>*/}
-              
-              {section === 'profile' && (
-                <ProfileSection
-                  user={user ?? undefined}
-                  setUser={setUser}
-                  displayName={displayName}
-                  setDisplayName={val => { setDisplayName(val); markDirty(); }}
-                  handle={handle}
-                  setHandle={val => { setHandle(val); markDirty(); }}
-                  bio={bio}
-                  setBio={val => { setBio(val); markDirty(); }}
-                  avatarUrl={avatarUrl}
-                  setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }}
-                  theme={theme}
-                  typeTitleSerif={typeTitleSerif}
-                  typeMetaMono={typeMetaMono}
-                  density={density}
-                  isPublicProfile={isPublicProfile}
-                  setIsPublicProfile={val => { setIsPublicProfile(val); markDirty(); }}
-                  onAppearanceChange={changes => {
-                    if (changes.theme !== undefined) setTheme(changes.theme as Theme);
-                    if (changes.density !== undefined) setDensity(changes.density as Density);
-                    if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
-                    if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
-                    markDirty();
-                  }}
-                />
-             )}
-              {section === 'account' && <AccountSection user={user ?? undefined} />}
-              {/*section === 'data' && <DataSection user={user ?? undefined} />*/}
-              {section === 'messages' && <MessagesSection />}
-              {/*section === 'notifications' && <NotificationsSection user={user ?? undefined} />*/}
-              {section === 'premium' && <PremiumSection user={user ?? undefined} />}
-              {section === 'danger' && <DangerZoneSection user={user ?? undefined} />}
-            </>
+          {/*<h1 className="text-3xl font-serif font-bold mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>Settings</h1>*/}
+
+          {section === 'profile' && (
+            <ProfileSection
+              user={user ?? undefined}
+              setUser={setUser}
+              displayName={displayName}
+              setDisplayName={val => { setDisplayName(val); markDirty(); }}
+              handle={handle}
+              setHandle={val => { setHandle(val); markDirty(); }}
+              bio={bio}
+              setBio={val => { setBio(val); markDirty(); }}
+              avatarUrl={avatarUrl}
+              setAvatarUrl={val => { setAvatarUrl(val); markDirty(); }}
+              theme={theme}
+              typeTitleSerif={typeTitleSerif}
+              typeMetaMono={typeMetaMono}
+              density={density}
+              isPublicProfile={isPublicProfile}
+              setIsPublicProfile={val => { setIsPublicProfile(val); markDirty(); }}
+              onAppearanceChange={changes => {
+                if (changes.theme !== undefined) setTheme(changes.theme as Theme);
+                if (changes.density !== undefined) setDensity(changes.density as Density);
+                if (changes.typeTitleSerif !== undefined) setTypeTitleSerif(changes.typeTitleSerif);
+                if (changes.typeMetaMono !== undefined) setTypeMetaMono(changes.typeMetaMono);
+                markDirty();
+              }}
+            />
           )}
+          {section === 'account' && <AccountSection user={user ?? undefined} />}
+          {/*section === 'data' && <DataSection user={user ?? undefined} />*/}
+          {section === 'messages' && <MessagesSection />}
+          {/*section === 'notifications' && <NotificationsSection user={user ?? undefined} />*/}
+          {section === 'premium' && <PremiumSection user={user ?? undefined} />}
+          {section === 'danger' && <DangerZoneSection user={user ?? undefined} />}
         </main>
         {/* SaveBar removed; explicit Edit/Save controls are used */}
       </div>
     </div>
   );
 }
-

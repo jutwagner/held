@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/Badge';
+import { ProfileSkeleton } from '@/components/skeletons/ProfileSkeleton';
 import { ChevronLeft, ChevronRight, Settings, Globe, Lock } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -103,11 +104,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading profile...</div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!profileUser) {

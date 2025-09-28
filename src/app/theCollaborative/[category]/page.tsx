@@ -10,3 +10,4 @@ interface TheCollaborativeCategoryRouteProps {
 export default function TheCollaborativeCategoryRoute({ params }: TheCollaborativeCategoryRouteProps) {
   return <TheCollaborativeCategoryPage params={{ slug: params.category }} />;
 }
+

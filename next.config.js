@@ -49,6 +49,22 @@ const nextConfig = {
     }
     return config;
   },
+  async rewrites() {
+    const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN;
+    if (!authDomain) {
+      return [];
+    }
+    return [
+      {
+        source: '/__/firebase/init.json',
+        destination: `https://${authDomain}/__/firebase/init.json`,
+      },
+      {
+        source: '/__/auth/handler',
+        destination: `https://${authDomain}/__/auth/handler`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
