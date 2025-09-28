@@ -51,17 +51,23 @@ const nextConfig = {
   },
   async rewrites() {
     const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN;
-    if (!authDomain) {
+    const proxyDomain =
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_PROXY_DOMAIN ||
+      process.env.FIREBASE_AUTH_PROXY_DOMAIN ||
+      authDomain;
+
+    if (!proxyDomain) {
       return [];
     }
+
     return [
       {
         source: '/__/firebase/init.json',
-        destination: `https://${authDomain}/__/firebase/init.json`,
+        destination: `https://${proxyDomain}/__/firebase/init.json`,
       },
       {
-        source: '/__/auth/handler',
-        destination: `https://${authDomain}/__/auth/handler`,
+        source: '/__/auth/:path*',
+        destination: `https://${proxyDomain}/__/auth/:path*`,
       },
     ];
   },

@@ -58,9 +58,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const ua = typeof window !== 'undefined' ? window.navigator.userAgent || '' : '';
     const isiOSSafariStandalone = typeof window !== 'undefined' && (window.navigator as any)?.standalone === true;
     const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
-    const isCapacitor = typeof window !== 'undefined' && Boolean((window as any).Capacitor);
+    const capacitor = typeof window !== 'undefined' ? (window as any).Capacitor : undefined;
+    const isCapacitorNative = Boolean(capacitor?.isNativePlatform?.());
     const isStandalonePWA = isiOSSafariStandalone || (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches);
-    const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitor;
+    const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitorNative;
     try {
       if (shouldUseRedirect) {
         console.log('[Auth] Using signInWithRedirect flow');
@@ -111,6 +112,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const result = await getRedirectResult(auth);
         console.log('[Auth] getRedirectResult returned', result?.user ? 'user' : result === null ? 'null' : 'no user');
+        if (typeof window !== 'undefined') {
+          const redirectStorageKey = `firebase:redirectEvent:${auth.app.options.apiKey}:${auth.app.name}`;
+          const sessionValue = window.sessionStorage.getItem(redirectStorageKey);
+          const localValue = window.localStorage.getItem(redirectStorageKey);
+          console.log('[Auth] Redirect storage key contents:', redirectStorageKey, {
+            session: sessionValue,
+            local: localValue,
+          });
+          console.log('[Auth] Current location after redirect:', window.location.href);
+        }
         if (result?.user) {
           const existing = await getUser(result.user.uid);
           if (!existing) {

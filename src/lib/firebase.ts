@@ -3,13 +3,32 @@ import { getAuth, initializeAuth, browserLocalPersistence, browserSessionPersist
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+const envApiKey = process.env.FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const envProjectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const envStorageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+const envMessagingSenderId =
+  process.env.FIREBASE_MESSAGING_SENDER_ID || process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
+const envAppId = process.env.FIREBASE_APP_ID || process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
+
+const envAuthDomain = process.env.FIREBASE_AUTH_DOMAIN || process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+const proxyAuthDomain =
+  process.env.FIREBASE_AUTH_PROXY_DOMAIN || process.env.NEXT_PUBLIC_FIREBASE_AUTH_PROXY_DOMAIN;
+
+const localAuthDomain =
+  process.env.FIREBASE_AUTH_LOCAL_DOMAIN ||
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_LOCAL_DOMAIN ||
+  proxyAuthDomain;
+
+const isProduction = process.env.NODE_ENV === 'production';
+const resolvedAuthDomain = (isProduction ? envAuthDomain : localAuthDomain) || envAuthDomain || proxyAuthDomain;
+
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID || process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: envApiKey,
+  authDomain: resolvedAuthDomain,
+  projectId: envProjectId,
+  storageBucket: envStorageBucket,
+  messagingSenderId: envMessagingSenderId,
+  appId: envAppId,
 };
 
 // Runtime check for missing env vars
@@ -42,9 +61,9 @@ if (typeof window === 'undefined') {
   try {
     authInstance = initializeAuth(app, {
       persistence: [
-        indexedDBLocalPersistence,
         browserLocalPersistence,
         browserSessionPersistence,
+        indexedDBLocalPersistence,
         inMemoryPersistence,
       ],
       popupRedirectResolver: browserPopupRedirectResolver,

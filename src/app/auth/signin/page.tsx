@@ -67,7 +67,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center">
+    <div className="min-h-screen signin  bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg p-8 mt-8">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Sign In</h2>
         {info && (
