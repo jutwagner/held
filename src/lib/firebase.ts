@@ -11,8 +11,12 @@ const envMessagingSenderId =
 const envAppId = process.env.FIREBASE_APP_ID || process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 
 const envAuthDomain = process.env.FIREBASE_AUTH_DOMAIN || process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+const defaultProjectDomain = envProjectId ? `${envProjectId}.firebaseapp.com` : undefined;
 const proxyAuthDomain =
-  process.env.FIREBASE_AUTH_PROXY_DOMAIN || process.env.NEXT_PUBLIC_FIREBASE_AUTH_PROXY_DOMAIN;
+  process.env.FIREBASE_AUTH_PROXY_DOMAIN ||
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_PROXY_DOMAIN ||
+  (envAuthDomain && envAuthDomain.endsWith('firebaseapp.com') ? envAuthDomain : undefined) ||
+  defaultProjectDomain;
 
 const localAuthDomain =
   process.env.FIREBASE_AUTH_LOCAL_DOMAIN ||

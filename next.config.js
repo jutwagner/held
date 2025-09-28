@@ -51,12 +51,15 @@ const nextConfig = {
   },
   async rewrites() {
     const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
+    const defaultProxy = projectId ? `${projectId}.firebaseapp.com` : undefined;
     const proxyDomain =
       process.env.NEXT_PUBLIC_FIREBASE_AUTH_PROXY_DOMAIN ||
       process.env.FIREBASE_AUTH_PROXY_DOMAIN ||
-      authDomain;
+      (authDomain && authDomain.endsWith('firebaseapp.com') ? authDomain : undefined) ||
+      defaultProxy;
 
-    if (!proxyDomain) {
+    if (!proxyDomain || proxyDomain === authDomain) {
       return [];
     }
 
