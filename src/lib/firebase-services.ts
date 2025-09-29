@@ -40,7 +40,7 @@ import {
 } from '@/types';
 import { generateSlug } from './utils';
 
-export const FREE_REGISTRY_OBJECT_LIMIT = 2;
+export const FREE_REGISTRY_OBJECT_LIMIT = 10;
 
 function isUserHeldPlus(user: UserDoc | null | undefined): boolean {
   return !!user && !!user.premium && user.premium.active === true && (user.premium.plan === 'plus' || user.premium.plan === 'heldplus');

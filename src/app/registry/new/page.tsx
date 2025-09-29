@@ -381,37 +381,52 @@ export default function NewObjectPage() {
 
   if (shouldBlockForLimit) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="held-container held-container-wide py-8">
-          <div className="max-w-none mx-auto">
-            <div className="flex items-center justify-between mb-16">
-              <Button variant="ghost" asChild className="p-2 h-auto text-black dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-                <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
-                  <ArrowLeft className="h-4 w-4" />
-                  Registry
-                </Link>
-              </Button>
-            </div>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900">
+        <div className="flex min-h-screen flex-col">
+          <div className="held-container held-container-wide pt-8">
+            <Button
+              variant="ghost"
+              asChild
+              className="p-2 h-auto text-black dark:text-gray-100 hover:bg-gray-100/70 dark:hover:bg-gray-800/80 rounded-xl"
+            >
+              <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
+                <ArrowLeft className="h-4 w-4" />
+                Registry
+              </Link>
+            </Button>
+          </div>
 
-            <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-light text-black dark:text-gray-100 mb-2 tracking-tighter leading-none">
-                Add New
-              </h1>
-            </div>
-
-            <div className="max-w-2xl">
-              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center dark:border-amber-500/40 dark:bg-amber-900/20">
-                <h2 className="text-2xl md:text-3xl font-serif text-gray-900 dark:text-gray-50 mb-4">Registry limit reached</h2>
-                <p className="text-gray-700 dark:text-gray-200 text-base leading-relaxed">
-                  Free Held accounts can manage up to {FREE_REGISTRY_OBJECT_LIMIT} registry items. Upgrade to Held+ for unlimited space and premium provenance tools.
-                </p>
-                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Button asChild className="bg-black text-white hover:bg-black/80 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
-                    <Link href="/settings/premium">Upgrade to Held+</Link>
-                  </Button>
-                  <Button asChild variant="ghost" className="text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-50">
-                    <Link href="/registry">Back to registry</Link>
-                  </Button>
+          <div className="flex flex-1 items-center justify-center px-6 pb-16 pt-10">
+            <div className="w-full max-w-2xl">
+              <div className="relative overflow-hidden rounded-[2.75rem] border border-gray-200/70 bg-white/90 p-12 text-center shadow-2xl backdrop-blur-sm dark:border-gray-700/60 dark:bg-gray-900/80">
+                <div className="absolute inset-x-12 -top-32 h-56 bg-gradient-to-br from-black/10 via-gray-500/10 to-transparent blur-3xl dark:from-gray-100/10" aria-hidden="true" />
+                <div className="relative">
+                  <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full text-white">
+                    <Image src="/img/registry.svg" alt="Registry" width={32} height={32} className="h-8 w-8" />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-gray-50 tracking-tight">
+                    Registry limit reached
+                  </h2>
+                  <p className="mt-4 text-lg leading-relaxed text-gray-600 dark:text-gray-200">
+                    Free Held accounts can manage up to{' '}
+                    <span className="font-semibold text-gray-900 dark:text-gray-50">{FREE_REGISTRY_OBJECT_LIMIT}</span>{' '}
+                    registry items. Upgrade to Held+ for unlimited space, premium provenance tools, and the ability to share more of your collection.
+                  </p>
+                  <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                    <Button
+                      asChild
+                      className="w-full sm:w-auto rounded-full bg-black px-7 py-3 text-base font-medium text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-black/85 focus-visible:outline-none dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    >
+                      <Link href="/settings/premium">Upgrade to Held+</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="w-full sm:w-auto rounded-full border border-transparent px-7 py-3 text-base font-medium text-gray-700 transition hover:border-black/40 hover:text-black dark:text-gray-200 dark:hover:border-gray-200/60 dark:hover:text-gray-50"
+                    >
+                      <Link href="/registry">Back to registry</Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

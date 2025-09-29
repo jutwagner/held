@@ -4,20 +4,19 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import type { SectionKey } from './SectionNav';
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
-import { auth } from '@/lib/firebase';
 
 interface SettingsTopNavProps {
   section: SectionKey;
 }
 
 export default function SettingsTopNav({ section }: SettingsTopNavProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
     try {
-      await auth.signOut();
+      await logout();
     } catch (error) {
       console.error('Error signing out:', error);
     }

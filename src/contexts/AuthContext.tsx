@@ -7,7 +7,16 @@ export function isHeldPlus(user: UserDoc | null | undefined): boolean {
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 // import type { Dispatch, SetStateAction } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithPopup } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithPopup,
+} from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser, initializePresence } from '@/lib/firebase-services';
@@ -61,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const capacitor = typeof window !== 'undefined' ? (window as any).Capacitor : undefined;
     const isCapacitorNative = Boolean(capacitor?.isNativePlatform?.());
     const isStandalonePWA = isiOSSafariStandalone || (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches);
-    const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitorNative;
+    const shouldUseRedirect = isCapacitorNative;
     try {
       if (shouldUseRedirect) {
         console.log('[Auth] Using signInWithRedirect flow');
@@ -91,7 +100,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         code === 'auth/popup-blocked' ||
         code === 'auth/cancelled-popup-request' ||
         code === 'auth/operation-not-supported-in-this-environment' ||
-        message.includes('redirect_uri_mismatch') ||
+        message.includes('A popup was blocked') ||
+        message.includes('Cookies are blocked') ||
         message.includes('Access blocked: This app’s request is invalid');
       if (shouldRedirect) {
         console.log('[Auth] Falling back to redirect because of error code/message', { code, message });
@@ -245,7 +255,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } finally {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    }
   };
 
   const value: AuthContextType = {

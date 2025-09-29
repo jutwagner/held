@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import NotificationBadge from './NotificationBadge';
 import { subscribeToUnreadMessages } from '@/lib/firebase-services';
 export default function Navigation() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
