@@ -197,7 +197,7 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
     }
   }
   
-  /* Fallback for non-iOS (web browsers) */
+  /* Fallback for non-iOS (web browsers) * /
   @supports not (padding: env(safe-area-inset-top)) {
     .sticky-header-safe {
       top: 0;
@@ -207,6 +207,7 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
       padding-top: 0;
     }
   }
+  */
   
   .held-card {
     @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200;
@@ -450,7 +451,7 @@ nav .held-container{
 
 /* ===== CAPACITOR iOS NATIVE APP STYLING ===== */
 
-/* iOS safe area handling - ONLY for Capacitor */
+/* iOS safe area handling - ONLY for Capacitor   * /
 body.capacitor-ios {
   background: #ffffff !important;
   padding-top: env(safe-area-inset-top, 0px) !important;
@@ -659,3 +660,17 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
       min-height: calc(100vh - 170px);
 }
 }
+
+
+.status-bar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top); /* matches notch area */
+  background: rgba(255, 255, 255, 0.8); /* 80% opaque */
+  backdrop-filter: blur(10px);          /* blur content underneath */
+  -webkit-backdrop-filter: blur(10px);  /* Safari support */
+  pointer-events: none; /* so it doesn’t block taps */
+  z-index: 9999;
+} 
