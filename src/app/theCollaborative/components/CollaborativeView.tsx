@@ -111,35 +111,41 @@ export default function CollaborativeView({
 
         {showFilters && availableCategories.length > 0 && (
           <div className="mb-8">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => handleCategoryFilter(null)}
-                disabled={!onCategoryChange}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  !selectedCategory
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                } ${!onCategoryChange ? 'opacity-60 cursor-not-allowed' : ''}`}
+            <div className="relative">
+              <div
+                className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide"
+                style={{ WebkitOverflowScrolling: 'touch' }}
               >
-                All
-              </button>
-              {availableCategories.map((category) => {
-                const isActive = selectedCategory && selectedCategory.toLowerCase() === category.toLowerCase();
-                return (
-                  <button
-                    key={category}
-                    onClick={() => handleCategoryFilter(category)}
-                    disabled={!onCategoryChange}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                    } ${!onCategoryChange ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  >
-                    {category}
-                  </button>
-                );
-              })}
+                <button
+                  onClick={() => handleCategoryFilter(null)}
+                  disabled={!onCategoryChange}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    !selectedCategory
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                  } ${!onCategoryChange ? 'opacity-60 cursor-not-allowed' : ''}`}
+                >
+                  All
+                </button>
+                {availableCategories.map((category) => {
+                  const isActive =
+                    selectedCategory && selectedCategory.toLowerCase() === category.toLowerCase();
+                  return (
+                    <button
+                      key={category}
+                      onClick={() => handleCategoryFilter(category)}
+                      disabled={!onCategoryChange}
+                      className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
+                        isActive
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                      } ${!onCategoryChange ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
