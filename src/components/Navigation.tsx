@@ -104,7 +104,7 @@ export default function Navigation() {
 
   return (
     <>
-          <nav className="bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav">
+          <nav className="relative bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav">
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
