@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Force iOS native styling directly in head */}
       </head>
       <body className="font-sans antialiased">
-        <div className="safe-top backdrop-blur-md bg-white/80 opacity-80"></div>
+        <div className="safe-top backdrop-blur-md bg-white/80"></div>
         <AppClientShell>{children}</AppClientShell>
       </body>
     </html>

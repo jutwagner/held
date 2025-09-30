@@ -703,10 +703,14 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top);
   height: constant(safe-area-inset-top);
-  background: #fff;   /* solid white cap */
+  background: rgba(255,255,255,.81);   /* solid white cap */
   z-index: 999;
   top: -60px;
   height: 60px;
+}
+
+.dark .safe-top {
+  background: rgba(0,0,0,.81);   /* solid white cap */
 }
 
 
