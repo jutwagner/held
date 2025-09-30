@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 // Removed avatar dropdown; avatar now routes to settings and morphs Add -> Sign Out
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { useSafeArea } from '@/hooks/useSafeArea';
 import NotificationBadge from './NotificationBadge';
 import { subscribeToUnreadMessages } from '@/lib/firebase-services';
@@ -19,6 +19,11 @@ export default function Navigation() {
   const [isDynamicIsland, setIsDynamicIsland] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
   const { topInset } = useSafeArea();
+  const estimatedSafeArea = topInset > 0 ? topInset : (/iPhone|iPad|iPod/.test(
+    typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  )
+    ? 44
+    : 0);
 
   // Decide what to show in the primary action slot (Add/Sign In)
   const primaryButton = loading ? (
@@ -108,7 +113,7 @@ export default function Navigation() {
     <>
           <nav
             className="relative bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav"
-            style={{ paddingTop: topInset ? Math.max(topInset, 12) : undefined }}
+            style={estimatedSafeArea ? ({ '--safe-area-top': `${estimatedSafeArea}px` } as CSSProperties) : undefined}
           >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">

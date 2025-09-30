@@ -23,6 +23,12 @@ export default function AppClientShell({ children }: AppClientShellProps) {
   const [showIOSOnboarding, setShowIOSOnboarding] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
   const { topInset } = useSafeArea();
+  const estimatedSafeArea = topInset > 0 ? topInset : (/iPhone|iPad|iPod/.test(
+    typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  )
+    ? 44
+    : 0);
+  const mainTopPadding = hideNavigation ? 24 : estimatedSafeArea + 64 + 24;
 
   useEffect(() => {
     // Initialize Web Vitals monitoring
@@ -152,8 +158,8 @@ export default function AppClientShell({ children }: AppClientShellProps) {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {!hideNavigation && <Navigation />}
           <main
-            className="held-container held-container-wide pt-6 pb-6"
-            style={!hideNavigation ? { paddingTop: (topInset ? Math.max(topInset, 12) : 12) + 64 } : undefined}
+            className="held-container held-container-wide pb-6"
+            style={{ paddingTop: mainTopPadding }}
           >
             <EmailVerificationBanner />
             {children}

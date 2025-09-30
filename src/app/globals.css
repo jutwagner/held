@@ -181,16 +181,16 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
     }
 
     .safe-area-nav {
-      padding-top: env(safe-area-inset-top);
+      padding-top: var(--safe-area-top, env(safe-area-inset-top));
     }
 
     .safe-area-nav::before {
       content: "";
       position: absolute;
-      top: calc(-1 * env(safe-area-inset-top));
+      top: calc(-1 * var(--safe-area-top, env(safe-area-inset-top)));
       left: 0;
       right: 0;
-      height: env(safe-area-inset-top);
+      height: var(--safe-area-top, env(safe-area-inset-top));
       background: inherit;
       backdrop-filter: inherit;
       -webkit-backdrop-filter: inherit;
