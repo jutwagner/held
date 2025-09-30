@@ -20,7 +20,8 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="relative min-h-screen">
+      <div className="full-bleed min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
       <section className="held-container py-8 md:py-22">
         <div className="text-center max-w-3xl mx-auto">
@@ -134,6 +135,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer is site-wide via layout */}
+      </div>
     </div>
   );
 }

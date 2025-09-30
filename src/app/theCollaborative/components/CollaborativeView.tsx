@@ -95,9 +95,9 @@ export default function CollaborativeView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-      <MobileBottomBar />
-      <div className="held-container held-container-wide py-10">
+    <div className="relative min-h-screen">
+      <div className="full-bleed min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="held-container held-container-wide py-10">
         <div className="flex sm:flex-row justify-between items-start sm:items-center mb-10">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">
@@ -170,7 +170,9 @@ export default function CollaborativeView({
             ))}
           </div>
         )}
+        </div>
       </div>
+      <MobileBottomBar />
     </div>
   );
 }

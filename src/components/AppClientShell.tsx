@@ -153,9 +153,7 @@ export default function AppClientShell({ children }: AppClientShellProps) {
       <ThemeBody>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {!hideNavigation && <Navigation />}
-          <main
-            className="held-container held-container-wide pb-6"
-          >
+          <main className="held-container held-container-wide pb-6">
             <EmailVerificationBanner />
             {children}
           </main>

@@ -135,8 +135,8 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 ">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="held-container py-6 held-container-wide align-center" >
+      <div className="full-bleed bg-white dark:bg-gray-800 shadow-sm">
+        <div className="held-container held-container-wide py-6 align-center">
           <div className="flex items-center justify-between">
             <Link
               href="/"
@@ -157,7 +157,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="held-container-wide pt-8 align-center mobile-no-top-padding">
+      <div className="held-container held-container-wide pt-8 align-center mobile-no-top-padding">
         {/* Profile Header */}
         <div className="flex justify-center mb-8">
           <div className="w-full">
@@ -311,26 +311,21 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Registry Carousel */}
-        {objects.length > 0 && (
-          <div className="mb">
-            <div className="flex items-center justify-between mb-4 mobile-padding-left-carousel">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Registry ({objects.length})
-              </h2>
-              {objects.length > 4 && (
-                <Link href="/registry" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                  View all
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Registry Carousel - Bleeds to edge */}
       {objects.length > 0 && (
-        <div className="mb-8">
+        <section className="mb-8">
+          <div className="held-container held-container-wide flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Registry ({objects.length})
+            </h2>
+            {objects.length > 4 && (
+              <Link href="/registry" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                View all
+              </Link>
+            )}
+          </div>
           <HorizontalCarousel>
             {objects.slice(0, 8).map((object) => {
               // Determine the correct URL based on privacy and ownership
@@ -404,13 +399,13 @@ export default function ProfilePage() {
               );
             })}
           </HorizontalCarousel>
-        </div>
+        </section>
       )}
 
       {/* Rotations Carousel - Bleeds to edge */}
       {rotations.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4 mobile-padding-left-carousel" style={{ paddingLeft: 'calc((100vw - 80rem) / 2)' }}>
+        <section className="mb-8">
+          <div className="held-container held-container-wide flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Rotations ({rotations.length})
             </h2>
@@ -481,10 +476,10 @@ export default function ProfilePage() {
               </Link>
             ))}
           </HorizontalCarousel>
-        </div>
+        </section>
       )}
 
-      <div className="held-container-wide">
+      <div className="held-container held-container-wide">
         {/* Empty State */}
         {objects.length === 0 && rotations.length === 0 && (
           <div className="text-center py-12">
@@ -547,11 +542,11 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
     : false;
 
   return (
-    <div className="relative">
+    <div className="relative full-bleed">
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide py-12 pl-4 pr-4 mobile-padding-left-carousel"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingLeft: 'calc((100vw - 80rem) / 2)' }}
+        className="flex gap-4 overflow-x-auto scrollbar-hide py-12 px-4 sm:px-6 lg:px-8"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
       >
         {children}
@@ -561,7 +556,7 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -570,7 +565,7 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <ChevronRight className="h-4 w-4" />
         </button>

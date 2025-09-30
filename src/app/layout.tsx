@@ -43,9 +43,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* iOS app icons */}
         <link rel="apple-touch-icon" sizes="144x144" href="/icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon-167x167.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
 
         <meta name="theme-color" content="#ffffff" />
 
@@ -55,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Force iOS native styling directly in head */}
       </head>
       <body className="font-sans antialiased">
-        <div className="safe-top backdrop-blur-md bg-white/80"></div>
+        <div className="safe-top backdrop-blur-md bg-white/80 opacity-80"></div>
         <AppClientShell>{children}</AppClientShell>
       </body>
     </html>

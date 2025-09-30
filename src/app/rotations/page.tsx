@@ -50,12 +50,15 @@ export default function RotationsPage() {
 
   if (!hydrated || loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="held-container held-container-wide py-24">
-          <div className="text-center">
-            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-300">Loading...</p>
+      <div className="relative min-h-screen">
+        <div className="full-bleed min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+          <div className="held-container held-container-wide py-24">
+            <div className="text-center">
+              <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+            </div>
           </div>
         </div>
+        <MobileBottomBar />
       </div>
     );
   }
@@ -65,8 +68,8 @@ export default function RotationsPage() {
   const maxFreeRotations = 3;
 
   return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <MobileBottomBar />
+    <div className="relative min-h-screen">
+      <div className="full-bleed min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <div className="held-container held-container-wide py-10">
         
               <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
@@ -131,6 +134,8 @@ export default function RotationsPage() {
           </div>
         )}
       </div>
+    </div>
+    <MobileBottomBar />
     </div>
   );
 }

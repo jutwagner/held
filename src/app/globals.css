@@ -746,4 +746,6 @@ body {
   body { padding-top: env(safe-area-inset-top); }
 }
 
-
+.no-padding{
+  padding: 0;
+}
