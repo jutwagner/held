@@ -194,6 +194,7 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
       background: inherit;
       backdrop-filter: inherit;
       -webkit-backdrop-filter: inherit;
+      pointer-events: none;
     }
 
     .safe-area-all {

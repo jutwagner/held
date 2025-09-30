@@ -9,6 +9,7 @@ import IOSOnboarding from '@/components/IOSOnboarding';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { reportWebVitals } from '@/lib/performance';
 import { KeyboardStyle } from '@capacitor/keyboard';
+import { useSafeArea } from '@/hooks/useSafeArea';
 
 interface AppClientShellProps {
   children: React.ReactNode;
@@ -17,8 +18,11 @@ interface AppClientShellProps {
 export default function AppClientShell({ children }: AppClientShellProps) {
   const pathname = usePathname();
   const isPassport = pathname?.startsWith('/passport');
+  const hideNavigation =
+    isPassport || pathname === '/rotations/new' || pathname === '/registry/new';
   const [showIOSOnboarding, setShowIOSOnboarding] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
+  const { topInset } = useSafeArea();
 
   useEffect(() => {
     // Initialize Web Vitals monitoring
@@ -37,14 +41,12 @@ export default function AppClientShell({ children }: AppClientShellProps) {
       let observer: MutationObserver | null = null;
       let touchHandler: ((e: TouchEvent) => void) | null = null;
       const isIOSDevice = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
-      const previousBodyPaddingTop = isIOSDevice ? document.body.style.paddingTop : null;
       const previousBodyBackground = isIOSDevice ? document.body.style.backgroundColor : null;
       const previousHtmlBackground = isIOSDevice ? document.documentElement.style.backgroundColor : null;
 
       if (isIOSDevice) {
         document.body.style.backgroundColor = '#ffffff';
         document.documentElement.style.backgroundColor = '#ffffff';
-        document.body.style.setProperty('padding-top', 'env(safe-area-inset-top)');
       }
 
       const capacitorGlobal = (window as any).Capacitor;
@@ -132,9 +134,6 @@ export default function AppClientShell({ children }: AppClientShellProps) {
           document.removeEventListener('touchstart', touchHandler);
         }
         if (isIOSDevice) {
-          if (previousBodyPaddingTop !== null) {
-            document.body.style.paddingTop = previousBodyPaddingTop;
-          }
           if (previousBodyBackground !== null) {
             document.body.style.backgroundColor = previousBodyBackground;
           }
@@ -151,8 +150,11 @@ export default function AppClientShell({ children }: AppClientShellProps) {
     <AuthProvider>
       <ThemeBody>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          {!isPassport && <Navigation />}
-          <main className="held-container held-container-wide py-6">
+          {!hideNavigation && <Navigation />}
+          <main
+            className="held-container held-container-wide pt-6 pb-6"
+            style={!hideNavigation ? { paddingTop: (topInset ? Math.max(topInset, 12) : 12) + 64 } : undefined}
+          >
             <EmailVerificationBanner />
             {children}
           </main>
