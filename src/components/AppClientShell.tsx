@@ -36,6 +36,16 @@ export default function AppClientShell({ children }: AppClientShellProps) {
     if (typeof window !== 'undefined') {
       let observer: MutationObserver | null = null;
       let touchHandler: ((e: TouchEvent) => void) | null = null;
+      const isIOSDevice = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
+      const previousBodyPaddingTop = isIOSDevice ? document.body.style.paddingTop : null;
+      const previousBodyBackground = isIOSDevice ? document.body.style.backgroundColor : null;
+      const previousHtmlBackground = isIOSDevice ? document.documentElement.style.backgroundColor : null;
+
+      if (isIOSDevice) {
+        document.body.style.backgroundColor = '#ffffff';
+        document.documentElement.style.backgroundColor = '#ffffff';
+        document.body.style.setProperty('padding-top', 'env(safe-area-inset-top)');
+      }
 
       const capacitorGlobal = (window as any).Capacitor;
       const hasCapacitor = Boolean(capacitorGlobal);
@@ -120,6 +130,17 @@ export default function AppClientShell({ children }: AppClientShellProps) {
         }
         if (touchHandler) {
           document.removeEventListener('touchstart', touchHandler);
+        }
+        if (isIOSDevice) {
+          if (previousBodyPaddingTop !== null) {
+            document.body.style.paddingTop = previousBodyPaddingTop;
+          }
+          if (previousBodyBackground !== null) {
+            document.body.style.backgroundColor = previousBodyBackground;
+          }
+          if (previousHtmlBackground !== null) {
+            document.documentElement.style.backgroundColor = previousHtmlBackground;
+          }
         }
       };
     }
