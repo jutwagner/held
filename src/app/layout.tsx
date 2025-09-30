@@ -55,15 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
             /* Capacitor iOS specific overrides */
-            @media screen and (-webkit-min-device-pixel-ratio: 2) {
-              /* Force body padding for Dynamic Island devices */
-              @media screen and (device-width: 393px) and (device-height: 852px),
-                     screen and (device-width: 430px) and (device-height: 932px),
-                     screen and (device-width: 428px) and (device-height: 926px) {
-                body {
-                  padding-top: 60px !important;
-                }
-              }
+            
 
               /* Dynamic Island sticky navigation with extended blur */
               @media screen and (device-width: 393px) and (device-height: 852px),
@@ -71,8 +63,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                      screen and (device-width: 428px) and (device-height: 926px) {
                 nav[class*="sticky"] {
                   top: 0px !important;
-                  padding-top: 60px !important;
-                  margin-top: -60px !important;
                 }
               }
             }
