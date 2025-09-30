@@ -8,6 +8,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogTitle } from '
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 // Removed avatar dropdown; avatar now routes to settings and morphs Add -> Sign Out
 import { useState, useEffect } from 'react';
+import { useSafeArea } from '@/hooks/useSafeArea';
 import NotificationBadge from './NotificationBadge';
 import { subscribeToUnreadMessages } from '@/lib/firebase-services';
 export default function Navigation() {
@@ -17,6 +18,7 @@ export default function Navigation() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isDynamicIsland, setIsDynamicIsland] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
+  const { topInset } = useSafeArea();
 
   // Decide what to show in the primary action slot (Add/Sign In)
   const primaryButton = loading ? (
@@ -104,7 +106,10 @@ export default function Navigation() {
 
   return (
     <>
-          <nav className="relative bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav">
+          <nav
+            className="relative bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav"
+            style={{ paddingTop: topInset ? Math.max(topInset, 12) : undefined }}
+          >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
