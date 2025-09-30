@@ -23,12 +23,8 @@ export default function AppClientShell({ children }: AppClientShellProps) {
   const [showIOSOnboarding, setShowIOSOnboarding] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
   const { topInset } = useSafeArea();
-  const estimatedSafeArea = topInset > 0 ? topInset : (/iPhone|iPad|iPod/.test(
-    typeof navigator !== 'undefined' ? navigator.userAgent : ''
-  )
-    ? 44
-    : 0);
-  const mainTopPadding = hideNavigation ? 24 : estimatedSafeArea + 64 + 24;
+  const navHeight = 64;
+  const mainTopPadding = topInset + (hideNavigation ? 0 : navHeight);
 
   useEffect(() => {
     // Initialize Web Vitals monitoring

@@ -1,45 +1,62 @@
 import { useEffect, useState } from 'react';
 
 const isIOSDevice = () =>
-  typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+const isStandalone = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any)?.standalone === true);
+
+function getFallbackTopInset(): number {
+  if (!isIOSDevice()) return 0;
+  if (typeof window === 'undefined') return 44;
+
+  const portrait = window.innerHeight >= window.innerWidth;
+  if (!portrait) return 0;
+
+  const screenHeight = window.screen.height;
+  const dynamicIslandHeights = [852, 932];
+  if (dynamicIslandHeights.includes(screenHeight)) return 59;
+
+  const standardNotchHeights = [812, 844, 896, 926, 780, 800];
+  if (standardNotchHeights.includes(screenHeight)) return 44;
+
+  return 44;
+}
 
 export function useSafeArea() {
-  const [topInset, setTopInset] = useState(0);
+  const [topInset, setTopInset] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    return getFallbackTopInset();
+  });
 
   useEffect(() => {
     const updateInset = () => {
-      let computed = 0;
+      let measured = 0;
 
       if (typeof document !== 'undefined') {
-        const test = document.createElement('div');
-        test.style.position = 'fixed';
-        test.style.top = '0';
-        test.style.left = '0';
-        test.style.right = '0';
-        test.style.height = 'constant(safe-area-inset-top)';
-        test.style.height = 'env(safe-area-inset-top)';
-        test.style.visibility = 'hidden';
-        test.style.pointerEvents = 'none';
-        document.body.appendChild(test);
-        computed = parseFloat(window.getComputedStyle(test).height) || 0;
-        document.body.removeChild(test);
+        const probe = document.createElement('div');
+        probe.style.position = 'fixed';
+        probe.style.top = '0';
+        probe.style.left = '0';
+        probe.style.right = '0';
+        probe.style.height = 'constant(safe-area-inset-top)';
+        probe.style.height = 'env(safe-area-inset-top)';
+        probe.style.visibility = 'hidden';
+        probe.style.pointerEvents = 'none';
+        document.body.appendChild(probe);
+        measured = parseFloat(window.getComputedStyle(probe).height) || 0;
+        document.body.removeChild(probe);
       }
 
-      if (computed < 10 && isIOSDevice()) {
-        // Fallback values for iOS notch devices when env() reports zero (e.g., standalone mode)
-        const portrait = typeof window !== 'undefined' && window.innerHeight >= window.innerWidth;
-        if (portrait) {
-          // Dynamic Island devices use a slightly larger inset (~59px), others ~44px
-          const dynamicIslandSizes = [852, 932];
-          const screenHeight = typeof window !== 'undefined' ? window.screen.height : 0;
-          const hasDynamicIsland = dynamicIslandSizes.includes(screenHeight);
-          computed = hasDynamicIsland ? 59 : 44;
-        } else {
-          computed = 0;
-        }
+      if (measured < 2 && (isStandalone() || isIOSDevice())) {
+        measured = getFallbackTopInset();
       }
 
-      setTopInset(computed);
+      setTopInset(measured);
+      if (typeof document !== 'undefined') {
+        document.documentElement.style.setProperty('--safe-area-top', `${measured}px`);
+      }
     };
 
     updateInset();

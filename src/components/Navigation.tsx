@@ -19,11 +19,7 @@ export default function Navigation() {
   const [isDynamicIsland, setIsDynamicIsland] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
   const { topInset } = useSafeArea();
-  const estimatedSafeArea = topInset > 0 ? topInset : (/iPhone|iPad|iPod/.test(
-    typeof navigator !== 'undefined' ? navigator.userAgent : ''
-  )
-    ? 44
-    : 0);
+  const navSafeAreaStyle = { '--safe-area-top': `${topInset}px` } as CSSProperties;
 
   // Decide what to show in the primary action slot (Add/Sign In)
   const primaryButton = loading ? (
@@ -113,7 +109,7 @@ export default function Navigation() {
     <>
           <nav
             className="relative bg-white/80 dark:bg-gray-950/85 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 text-gray-800 dark:text-gray-100 transition-colors safe-area-nav"
-            style={estimatedSafeArea ? ({ '--safe-area-top': `${estimatedSafeArea}px` } as CSSProperties) : undefined}
+            style={navSafeAreaStyle}
           >
         <div className="held-container">
           <div className="flex h-16 items-center justify-between">
