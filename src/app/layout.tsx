@@ -53,64 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
 
         {/* Force iOS native styling directly in head */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-            /* Capacitor iOS specific overrides */
-            
-
-              /* Dynamic Island sticky navigation with extended blur */
-              @media screen and (device-width: 393px) and (device-height: 852px),
-                     screen and (device-width: 430px) and (device-height: 932px),
-                     screen and (device-width: 428px) and (device-height: 926px) {
-                nav[class*="sticky"] {
-                  top: 0px !important;
-                }
-              }
-            }
-body {
-  /* reserve room for the iOS status bar when in standalone */
-  padding-top: env(safe-area-inset-top);
-  /* older iOS fallback */
-  padding-top: constant(safe-area-inset-top);
-}
-
-/* If you have a fixed header, include the inset in its height/padding */
-.header {
-  padding-top: calc(env(safe-area-inset-top) + 12px);   /* adjust 12px to your design */
-  /* fallback */
-  padding-top: calc(constant(safe-area-inset-top) + 12px);
-}
-
-/* If a full-height container is collapsing under the status bar, prefer dynamic viewport units */
-.app {
-  min-height: 100dvh;              /* iOS 16+ */
-  min-height: -webkit-fill-available; /* fallback for older iOS */
-}@supports(-webkit-touch-callout: none) {
-  /* iOS only */
-  body { padding-top: env(safe-area-inset-top); }
-}
-
-
-.safe-top {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: env(safe-area-inset-top);
-  height: constant(safe-area-inset-top);
-  background: #fff;   /* solid white cap */
-  z-index: 999;
-  top: -60px;
-  height: 60px;
-}
-
-
-
-          `,
-          }}
-        />
       </head>
       <body className="font-sans antialiased">
-        <div class="safe-top backdrop-blur-md bg-white/80"></div>
+        <div className="safe-top backdrop-blur-md bg-white/80"></div>
         <AppClientShell>{children}</AppClientShell>
       </body>
     </html>
