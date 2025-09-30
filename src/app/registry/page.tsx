@@ -258,9 +258,13 @@ export default function RegistryPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="relative min-h-screen">
+        <div
+          className="full-bleed absolute inset-0 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
+          aria-hidden="true"
+        />
         <MobileBottomBar />
-        <div className="held-container held-container-wide py-10">
+        <div className="relative z-10 held-container held-container-wide py-10">
           {loading || !user ? (
             <RegistrySkeleton />
           ) : (

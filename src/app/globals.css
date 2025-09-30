@@ -276,6 +276,12 @@ h1, h2, h3, h4, h5, h6, .font-serif, [class*="font-serif"] {
   display: none;  /* Safari and Chrome */
 }
 
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
 /* Line clamp utilities for text truncation */
 .line-clamp-1 {
   overflow: hidden;
@@ -739,6 +745,5 @@ body {
   /* iOS only */
   body { padding-top: env(safe-area-inset-top); }
 }
-
 
 

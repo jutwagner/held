@@ -155,7 +155,6 @@ export default function AppClientShell({ children }: AppClientShellProps) {
           {!hideNavigation && <Navigation />}
           <main
             className="held-container held-container-wide pb-6"
-            style={{ paddingTop: mainTopPadding }}
           >
             <EmailVerificationBanner />
             {children}
