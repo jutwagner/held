@@ -324,27 +324,35 @@ export default function RegistryItemPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center text-gray-900 dark:text-gray-100">Loading…</div>;
+    return (
+      <div className="relative min-h-screen">
+        <div className="full-bleed min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-900 dark:text-gray-100">
+          Loading…
+        </div>
+      </div>
+    );
   }
 
   if (error || !item) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Not found'}</p>
-          <Button asChild >
-            <Link href="/registry" >Back to Registry</Link>
-          </Button>
+      <div className="relative min-h-screen">
+        <div className="full-bleed min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Not found'}</p>
+            <Button asChild>
+              <Link href="/registry">Back to Registry</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900">
+    <div className="relative min-h-screen">
       {editing && (
         <div className="sticky top-0 z-50 w-full">
-          <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between">
+          <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between full-bleed">
             <div className="text-sm font-medium tracking-wide uppercase">Editing</div>
             <div className="flex items-center gap-2">
               <Button onClick={() => setEditing(false)} className="bg-black dark:bg-gray-800 border border-white/70 text-white">Cancel</Button>
@@ -354,7 +362,8 @@ export default function RegistryItemPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10">
+      <div className="full-bleed min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="held-container held-container-wide py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" asChild className="p-0 h-auto text-black dark:text-gray-100 hover:bg-transparent">
@@ -366,7 +375,7 @@ export default function RegistryItemPage() {
             {item.isPublic && (
               <Button asChild variant="ghost" className="text-black dark:text-gray-100 p-0">
                 <Link href={`/passport/${item.slug || item.id}`} target="_blank" className="p-0">
-                  <Image src={passportSvg} alt="Passport" width={39} height={39} className="hidden md:inline-block opacity-100 float-left" />
+                  <Image src={passportSvg} alt="Passport" width={39} height={39} className=" opacity-100 float-left" />
               </Link> 
               </Button>
             )}
@@ -486,6 +495,7 @@ export default function RegistryItemPage() {
           ) : (
             <ProvenanceUpsell />
           )}
+        </div>
         </div>
       </div>
 

@@ -79,10 +79,12 @@ export default function PassportClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border border-black border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
-          <p className="text-black text-lg font-light tracking-wide">Loading</p>
+      <div className="relative min-h-screen">
+        <div className="full-bleed min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border border-black border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+            <p className="text-black text-lg font-light tracking-wide">Loading</p>
+          </div>
         </div>
       </div>
     );
@@ -90,14 +92,16 @@ export default function PassportClient() {
 
   if (error || !object) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-4xl font-light text-black mb-8 tracking-wide">Not Found</h1>
-          <p className="text-black mb-12 text-lg font-light">The passport you're looking for doesn't exist or has been made private.</p>
-          <Link href="/" className="inline-flex items-center gap-4 text-black hover:text-gray-600 text-lg font-light tracking-wide border-b border-black hover:border-gray-600 pb-1 transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-            Return
-          </Link>
+      <div className="relative min-h-screen">
+        <div className="full-bleed min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto px-4">
+            <h1 className="text-4xl font-light text-black mb-8 tracking-wide">Not Found</h1>
+            <p className="text-black mb-12 text-lg font-light">The passport you're looking for doesn't exist or has been made private.</p>
+            <Link href="/" className="inline-flex items-center gap-4 text-black hover:text-gray-600 text-lg font-light tracking-wide border-b border-black hover:border-gray-600 pb-1 transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+              Return
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -107,10 +111,11 @@ export default function PassportClient() {
   const hasProvenance = isPremiumUser && (object.serialNumber || object.acquisitionDate || object.certificateOfAuthenticity || object.chain?.length);
 
   return (
-    <div className="min-h-screen bg-white light-mode-only">
-      {/* Header */}
-      <header className="w-full bg-white border-b border-gray-200 overflow-visible">
-        <div className="w-full px-5 sm:px-10 py-6">
+    <div className="relative min-h-screen light-mode-only">
+      <div className="full-bleed min-h-screen bg-white">
+        {/* Header */}
+        <header className="full-bleed bg-white border-b border-gray-200 overflow-visible">
+          <div className="held-container held-container-wide py-6">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <Link
               href={user ? "/registry" : "/"}
@@ -143,10 +148,10 @@ export default function PassportClient() {
               </button>
             </div>
           </div>
-        </div>
-      </header>
+          </div>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+        <main className="held-container held-container-wide py-8 sm:py-12">
                 <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-5 mt-5" />
         {/* Passport Header */}
         <div className="mb-10 sm:mb-16">
@@ -399,12 +404,12 @@ export default function PassportClient() {
             </p>
           </div>
         </footer>
-      </main>
+        </main>
 
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-12 max-w-md w-full mx-4">
+        {/* Share Modal */}
+        {showShareModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-12 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-12">
               <h3 className="text-2xl font-light text-black tracking-wide">Share</h3>
               <button
@@ -443,9 +448,10 @@ export default function PassportClient() {
                 <div className="text-sm text-gray-600 font-light">Post to your timeline</div>
               </button>
             </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

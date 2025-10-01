@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -519,7 +519,46 @@ export default function ProfilePage() {
 // Horizontal Carousel Component
 function HorizontalCarousel({ children }: { children: React.ReactNode }) {
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [metrics, setMetrics] = useState({ left: 0, right: 0, width: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const updateMetrics = useCallback(() => {
+    if (!innerRef.current) return;
+    const rect = innerRef.current.getBoundingClientRect();
+    const style = window.getComputedStyle(innerRef.current);
+    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+    const paddingRight = parseFloat(style.paddingRight) || 0;
+
+    const contentLeft = rect.left + paddingLeft;
+    const contentRight = rect.right - paddingRight;
+    const contentWidth = rect.width - paddingLeft - paddingRight;
+
+    setMetrics({
+      left: contentLeft,
+      right: window.innerWidth - contentRight,
+      width: contentWidth,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateMetrics();
+    window.addEventListener('resize', updateMetrics);
+    return () => window.removeEventListener('resize', updateMetrics);
+  }, [updateMetrics]);
+
+  useEffect(() => {
+    updateMetrics();
+  }, [children, updateMetrics]);
+
+  useEffect(() => {
+    if (!innerRef.current || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => updateMetrics());
+    observer.observe(innerRef.current);
+    return () => observer.disconnect();
+  }, [updateMetrics]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -534,29 +573,54 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       behavior: 'smooth'
     });
     setScrollPosition(newPosition);
+    setIsScrolled(newPosition > 4);
   };
 
   const canScrollLeft = scrollPosition > 0;
   const canScrollRight = scrollContainerRef.current 
-    ? scrollPosition < (scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth)
+    ? scrollPosition < (scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth - 1)
     : false;
+
+  const wrapperStyle: { width?: number; transform?: string } = {};
+  if (metrics.width) {
+    wrapperStyle.width = metrics.width + metrics.right + (isScrolled ? metrics.left : 0);
+    wrapperStyle.transform = isScrolled ? `translateX(-${metrics.left}px)` : 'translateX(0)';
+  }
+
+  const leftArrowStyle = metrics.left
+    ? { left: isScrolled ? 16 : Math.max(metrics.left - 32, 16) }
+    : undefined;
+  const rightArrowStyle = metrics.right
+    ? { right: Math.max(metrics.right + 16, 16) }
+    : undefined;
 
   return (
     <div className="relative full-bleed">
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide py-12 px-4 sm:px-6 lg:px-8"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
-      >
-        {children}
+      <div ref={containerRef} className="held-container held-container-wide px-0">
+        <div ref={innerRef} className="pl-4 sm:pl-6 lg:pl-8">
+          <div className="relative transition-all duration-300" style={wrapperStyle}>
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide py-12 pr-4 sm:pr-6 lg:pr-8"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            onScroll={(e) => {
+              const currentScroll = e.currentTarget.scrollLeft;
+              setScrollPosition(currentScroll);
+              setIsScrolled(currentScroll > 4);
+            }}
+          >
+            {children}
+          </div>
+          </div>
+        </div>
       </div>
 
       {/* Scroll Buttons */}
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          style={leftArrowStyle}
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -565,7 +629,8 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          style={rightArrowStyle}
         >
           <ChevronRight className="h-4 w-4" />
         </button>

@@ -714,7 +714,10 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 }
 
 
-
+.transparent{
+  background-color: transparent;
+  background: transparent;
+}
 
   /* Dynamic Island sticky navigation with extended blur */
   @media screen and (device-width: 393px) and (device-height: 852px),

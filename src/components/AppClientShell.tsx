@@ -157,7 +157,9 @@ export default function AppClientShell({ children }: AppClientShellProps) {
             <EmailVerificationBanner />
             {children}
           </main>
-          {!isPassport && <MobileBottomBar />}
+          {!isPassport && (
+            <MobileBottomBar showProfileIcon={hideNavigation && isCapacitor} />
+          )}
         </div>
         {isCapacitor && showIOSOnboarding && (
           <IOSOnboarding

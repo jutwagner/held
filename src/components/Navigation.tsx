@@ -178,7 +178,11 @@ export default function Navigation() {
   );
 }
 
-export function MobileBottomBar() {
+type MobileBottomBarProps = {
+  showProfileIcon?: boolean;
+};
+
+export function MobileBottomBar({ showProfileIcon = false }: MobileBottomBarProps) {
   const { user } = useAuth();
   const pathname = usePathname();
   const [isCapacitor, setIsCapacitor] = useState(false);
@@ -212,7 +216,7 @@ export function MobileBottomBar() {
       </Link>
       
       {/* Profile icon - Show only on iOS when user is logged in */}
-      {isCapacitor && user && (
+      {showProfileIcon && isCapacitor && user && (
         <Link href={`/user/${user.handle}`} className="flex flex-col items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 h-full">
           <span className={`flex items-center justify-center h-10 w-10 ${isActive('/user/') || isActive('/settings') ? 'bg-gray-200 dark:bg-gray-700 rounded-full' : ''}`}>
             {user.avatarUrl ? (
@@ -226,9 +230,9 @@ export function MobileBottomBar() {
           </span>
         </Link>
       )}
-      
+
       {/* Debug info for iOS - shows why profile icon isn't appearing */}
-      {isCapacitor && !user && (
+      {showProfileIcon && isCapacitor && !user && (
         <div className="flex flex-col items-center justify-center text-gray-400 h-full text-xs">
           <span>Login</span>
         </div>

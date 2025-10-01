@@ -15,7 +15,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const { signIn, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading, signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,6 +26,12 @@ export default function SignInPage() {
       setInfo(decodeURIComponent(message));
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/registry');
+    }
+  }, [authLoading, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

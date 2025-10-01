@@ -2,41 +2,11 @@
 import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
-import { getFirestore } from 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
 import { getObject, getRotation, subscribeRotations, updateRotation, subscribeObjects } from '@/lib/firebase-services';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import Switch from '@/components/ui/switch';
 import { HeldObject } from '@/types';
 import type { RotationWithObjects } from '@/types';
-import { RotationSkeleton } from '@/components/skeletons/RotationSkeleton';
-import dynamic from 'next/dynamic';
-
-const RotationEditPanel = dynamic(() => import('./RotationEditPanel'), {
-  loading: () => (
-    <div className="held-container held-container-wide mt-4">
-      <div className="held-card p-6 animate-pulse">
-        <div className="h-6 w-48 rounded bg-gray-200 dark:bg-gray-700 mb-4" />
-        <div className="h-10 w-full rounded bg-gray-200 dark:bg-gray-700" />
-      </div>
-    </div>
-  ),
-  ssr: false,
-});
-
-// Firebase configuration (replace with your actual config)
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-// db is not used
 
 function RotationPageClient({ id }: { id: string }) {
   const [rotation, setRotation] = useState<RotationWithObjects | null>(null);
@@ -111,10 +81,10 @@ function RotationPageClient({ id }: { id: string }) {
 
   // Load all user's objects for adding/removing when editing
   useEffect(() => {
-    if (!editing || !user?.uid) return;
+    if (!user?.uid) return;
     const unsub = subscribeObjects(user.uid, (list) => setAllObjects(list));
     return () => { if (typeof unsub === 'function') unsub(); };
-  }, [editing, user?.uid]);
+  }, [user?.uid]);
 
   const canEdit = !!user && !!rotation && rotation.userId === user.uid && isHeldPlus(user);
 
@@ -147,7 +117,64 @@ function RotationPageClient({ id }: { id: string }) {
   }
 
   if (loading) {
-    return <RotationSkeleton />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 animate-pulse">
+        <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm">
+          <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-4">
+                {[...Array(5)].map((_, idx) => (
+                  <div key={idx} className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 border-2 border-white dark:border-gray-800 shadow" />
+                ))}
+              </div>
+              <div>
+                <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
+                <div className="h-4 w-64 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono">&nbsp;</span>
+            </div>
+          </div>
+        </header>
+        <nav className="sticky top-25 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800 py-2 flex justify-center overflow-hidden px-4">
+          {[...Array(5)].map((_, idx) => (
+            <div 
+              key={idx} 
+              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-800 shadow flex-shrink-0" 
+              style={{ 
+                marginLeft: idx > 0 ? '-8px' : '0',
+                aspectRatio: '1'
+              }}
+            />
+          ))}
+        </nav>
+        <main className="held-container held-container-wide py-12">
+          <div className="flex flex-col gap-16">
+            {[...Array(2)].map((_, index) => (
+              <section key={index} className="flex flex-col md:flex-row gap-8 items-center border-b border-gray-200 dark:border-gray-700 pb-16 scroll-mt-32">
+                <div className="flex-shrink-0 w-full md:w-2/3 lg:w-1/2">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
+                    <div className="w-full max-w-3xl h-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded-xl" />
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col justify-center items-start w-full">
+                  <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-4 w-32 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-1" />
+                  <div className="h-4 w-24 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mb-2" />
+                  <div className="h-4 w-80 bg-gray-100 dark:bg-gray-600 dark:bg-gray-600 rounded mt-2" />
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {[...Array(4)].map((_, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-xs font-mono shadow">&nbsp;</span>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (error) {
@@ -158,10 +185,23 @@ function RotationPageClient({ id }: { id: string }) {
     return <p>No rotation data available</p>;
   }
 
+  const hasCoverImage = Boolean(rotation.coverImage);
+  const headerClassName = [
+    'top-0 z-30 relative full-bleed',
+    hasCoverImage ? 'bg-transparent shadow-none' : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm'
+  ].join(' ');
+
+  const navClassName = [
+    'full-bleed sticky top-4rem z-20 py-4 transition-colors duration-200 border-b',
+    hasCoverImage
+      ? 'bg-white/30 dark:bg-gray-900/45 backdrop-blur border-transparent shadow-sm'
+      : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm'
+  ].join(' ');
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Sticky Group Header */}
-      <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm relative overflow-hidden">
+      <header className={headerClassName}>
         {editing && (
           <div className="sticky top-0 z-40">
             <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between">
@@ -178,17 +218,16 @@ function RotationPageClient({ id }: { id: string }) {
 
 
         {/* Cover Image Background - Integrated into header */}
-        {rotation.coverImage && (
+        {hasCoverImage && (
           <div className="absolute inset-0 z-0">
             <Image
               src={rotation.coverImage}
               alt="Rotation cover"
               fill
-              sizes="100vw"
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-white/20 dark:bg-gray-900/60 backdrop-blur-sm" />
           </div>
         )}
 
@@ -288,18 +327,8 @@ function RotationPageClient({ id }: { id: string }) {
         </div>
       </header>
 
-      {/* Editing: Select Objects to include */}
-      {editing && canEdit && (
-        <RotationEditPanel
-          allObjects={allObjects}
-          selectedIds={form.objectIds}
-          onToggle={toggleObject}
-          selectionError={selectionError}
-        />
-      )}
-
       {/* Enhanced Object Navigation */}
-      <nav className="sticky top-4rem z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 py-4 shadow-sm">
+      <nav className={navClassName}>
         <div className="held-container held-container-wide">
           <div className="flex items-center justify-center  px-4">
             {objects.map((object, idx) => (
@@ -317,13 +346,12 @@ function RotationPageClient({ id }: { id: string }) {
                 }}
                 title={object.title}
               >
-                <Image
-                  src={object.images?.[0] || '/img/placeholder.svg'}
-                  alt={object.title}
-                  width={80}
-                  height={80}
-                  sizes="(max-width: 768px) 48px, 80px"
-                  className="w-full h-full object-cover"
+                <Image 
+                  src={object.images?.[0] || '/img/placeholder.svg'} 
+                  alt={object.title} 
+                  width={80} 
+                  height={80} 
+                  className="w-full h-full object-cover" 
                 />
               </button>
             ))}
@@ -331,7 +359,60 @@ function RotationPageClient({ id }: { id: string }) {
         </div>
       </nav>
 
-      <main className="held-container held-container-wide py-12">
+      <main className="held-container held-container-wide py-12 bg-transparent">
+        {editing && canEdit && (
+          <div className="mb-12">
+            <div className="rounded-2xl border border-white/50 dark:border-gray-700/60 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm shadow-sm px-6 py-5">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Select Objects</h2>
+                <span className="text-xs text-gray-600 dark:text-gray-400">{form.objectIds.length}/7 selected</span>
+              </div>
+              {selectionError && (
+                <div className="p-2 mb-3 bg-red-50/70 dark:bg-red-900/30 border border-red-200/70 dark:border-red-800/70 rounded text-sm text-red-700 dark:text-red-400">
+                  {selectionError}
+                </div>
+              )}
+              {allObjects.length === 0 ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  You have no registry items yet. Add some in your registry.
+                </p>
+              ) : (
+                <div className="space-y-2 pr-1">
+                  {allObjects.map(obj => {
+                    const selected = form.objectIds.includes(obj.id);
+                    return (
+                      <button
+                        key={obj.id}
+                        type="button"
+                        onClick={() => toggleObject(obj.id)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border flex items-center gap-3 transition-all duration-150 ${selected ? 'border-gray-900/80 bg-gray-900/5 dark:border-gray-100/70 dark:bg-gray-100/10 shadow-sm' : 'border-white/60 dark:border-gray-700/60 bg-white/30 dark:bg-gray-900/30 hover:border-white dark:hover:border-gray-500/70'}`}
+                      >
+                        <div className="w-12 h-12 bg-white/40 dark:bg-gray-800/60 rounded-lg overflow-hidden flex-shrink-0">
+                          {obj.images?.[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={obj.images[0]} alt={obj.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">?</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{obj.title}</div>
+                          {obj.maker && <div className="text-xs text-gray-600 dark:text-gray-400 truncate">{obj.maker}</div>}
+                        </div>
+                        {selected && (
+                          <span className="text-xs px-3 py-1 rounded-full bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900">
+                            Selected
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Deep dive into each object */}
         <div className="flex flex-col gap-16">
           {objects.map((object, index) => (
@@ -343,7 +424,6 @@ function RotationPageClient({ id }: { id: string }) {
                     alt={object.title}
                     width={640}
                     height={480}
-                    sizes="(max-width: 768px) 90vw, 50vw"
                     className="w-full max-w-3xl rounded-xl object-contain"
                   />
                 </div>

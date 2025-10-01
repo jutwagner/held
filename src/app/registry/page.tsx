@@ -282,7 +282,7 @@ export default function RegistryPage() {
                     type="button"
                     onClick={() => handleViewChange('grid')}
                     title="Grid view"
-                    className={`grid-view flex h-12 w-12 items-center justify-center rounded-xl border transition-colors ${
+                    className={`grid-view flex h-12 w-12 items-center justify-center rounded-lg border transition-colors ${
                       view === 'grid'
                         ? 'bg-gray-900 text-white border-transparent shadow-lg dark:bg-gray-100 dark:text-gray-900'
                         : 'bg-transparent border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800'
@@ -296,7 +296,7 @@ export default function RegistryPage() {
                     type="button"
                     onClick={() => handleViewChange('table')}
                     title="Table view"
-                    className={`list-view flex h-12 w-12 items-center justify-center rounded-xl border transition-colors ${
+                    className={`list-view flex h-12 w-12 items-center justify-center rounded-lg border transition-colors ${
                       view === 'table'
                         ? 'bg-gray-900 text-white border-transparent shadow-lg dark:bg-gray-100 dark:text-gray-900'
                         : 'bg-transparent border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800'
@@ -308,7 +308,7 @@ export default function RegistryPage() {
                   </button>
                   <Link
                     href="/registry/new"
-                    className="add-cta flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="add-cta flex h-12 w-12 items-center justify-center rounded-lg border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     title="Add object"
                   >
                     <Plus className="h-5 w-5" />
@@ -328,6 +328,7 @@ export default function RegistryPage() {
                     className="pl-4 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
                   />
                 </div>
+                {/*
                 <Button
                   variant={showPublicOnly ? "default" : "outline"}
                   onClick={() => setShowPublicOnly(!showPublicOnly)}
@@ -340,6 +341,7 @@ export default function RegistryPage() {
                 >
                   <Image src="/img/Globe.svg" alt="Public" width={20} height={20} className="h-5 w-5" />
                 </Button>
+                */}
                 </div>
                 {/*
                 <select
@@ -446,12 +448,13 @@ export default function RegistryPage() {
                       {/* Pagination removed - showing all objects */}
                     </>
                   ) : (
-                    <div className="overflow-hidden rounded-md bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-b border-gray-200/50 dark:border-gray-600/50">
+                    <div className="relative">
+                      <div className="overflow-x-auto -mr-4 pr-4 sm:-mr-6 sm:pr-6 lg:-mr-8 lg:pr-8 xl:mr-0 xl:pr-0 border-none">
+                        <div className="min-w-[1024px]  backdrop-blur-xl ">
+                          <table className="w-full">
+                            <thead className="">
                             <tr>
-                              <th className="px-6 py-4 text-left">
+                              <th className="py-4 text-left">
                                 <button
                                   onClick={() => handleSort('title')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -529,7 +532,7 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-200">
+                              <th className="py-4 text-left font-semibold text-gray-700 dark:text-gray-200">
                                 
                               </th>
                           </tr>
@@ -541,7 +544,7 @@ export default function RegistryPage() {
                             const prov = getProvenanceScore(obj);
                             return (
                                 <tr key={`${obj.id}-${sortField}-${sortDirection}-${index}`} className="hover:bg-white/70 dark:hover:bg-gray-700/50 transition-colors">
-                                  <td className="px-6 py-4">
+                                  <td className="py-4">
                                   {editingId === obj.id ? (
                                     <div className="flex items-center gap-2">
                                         <input 
@@ -567,13 +570,13 @@ export default function RegistryPage() {
                                     ) : (
                                       <Link href={`/registry/${obj.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                                         {/* Thumbnail Image */}
-                                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                                        <div className="w-14 h-14 shadow-lg rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                                           {obj.images && obj.images.length > 0 ? (
                                             <Image
                                               src={obj.images[0]}
                                               alt={obj.title}
-                                              width={40}
-                                              height={40}
+                                              width={50}
+                                              height={50}
                                               className="w-full h-full object-cover"
                                               loading="lazy"
                                               onError={(e) => {
@@ -637,7 +640,7 @@ export default function RegistryPage() {
                                   <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                     {obj.updatedAt ? new Date((obj.updatedAt as any).seconds ? (obj.updatedAt as any).seconds * 1000 : obj.updatedAt).toLocaleDateString() : '-'}
                                 </td>
-                                  <td className="px-6 py-4">
+                                  <td className="py-4">
                                     <Link 
                                       href={`/registry/${obj.id}`} 
                                       className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -649,7 +652,8 @@ export default function RegistryPage() {
                             );
                           })}
                         </tbody>
-                      </table>
+                        </table>
+                        </div>
                       </div>
                     </div>
                   )}
