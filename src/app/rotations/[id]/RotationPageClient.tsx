@@ -191,6 +191,8 @@ function RotationPageClient({ id }: { id: string }) {
     hasCoverImage ? 'bg-transparent shadow-none' : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm'
   ].join(' ');
 
+  const coverImageSrc = rotation.coverImage ?? '/img/placeholder.svg';
+
   const navClassName = [
     'full-bleed sticky top-4rem z-20 py-4 transition-colors duration-200 border-b',
     hasCoverImage
@@ -221,7 +223,7 @@ function RotationPageClient({ id }: { id: string }) {
         {hasCoverImage && (
           <div className="absolute inset-0 z-0">
             <Image
-              src={rotation.coverImage}
+              src={coverImageSrc}
               alt="Rotation cover"
               fill
               className="object-cover"
