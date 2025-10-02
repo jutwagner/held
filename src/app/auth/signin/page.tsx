@@ -15,7 +15,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const { user, loading: authLoading, signIn, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading, signIn, signInWithGoogle, signInWithApple } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -66,6 +66,26 @@ export default function SignInPage() {
         setError(error.message || 'Google sign-in failed');
       } else {
         setError('Google sign-in failed');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const mode = await signInWithApple();
+      if (mode === 'popup') {
+        router.push('/registry');
+      }
+      return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Apple sign-in failed');
+      } else {
+        setError('Apple sign-in failed');
       }
     } finally {
       setLoading(false);
@@ -130,6 +150,15 @@ export default function SignInPage() {
         >
           <Image src="/img/Google.svg" alt="Google" width={20} height={20} />
           Sign in or up with Google
+        </Button>
+        <Button
+          type="button"
+          className="w-full mt-4 bg-black text-white hover:bg-black/90 flex items-center justify-center gap-2"
+          onClick={handleAppleSignIn}
+          disabled={loading}
+        >
+          <Image src="/img/Apple.svg" alt="Apple" width={18} height={20} />
+          Sign in or up with Apple
         </Button>
         <div className="mt-6 text-center text-sm text-gray-500">
           Don&apos;t have an account?{' '}

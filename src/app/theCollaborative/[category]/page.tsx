@@ -11,3 +11,4 @@ export default function TheCollaborativeCategoryRoute({ params }: TheCollaborati
   return <TheCollaborativeCategoryPage params={{ slug: params.category }} />;
 }
 
+

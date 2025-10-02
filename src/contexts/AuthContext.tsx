@@ -7,7 +7,17 @@ export function isHeldPlus(user: UserDoc | null | undefined): boolean {
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 // import type { Dispatch, SetStateAction } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithPopup } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithPopup,
+} from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser, initializePresence } from '@/lib/firebase-services';
@@ -22,6 +32,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
   signInWithGoogle: () => Promise<'redirect' | 'popup'>;
+  signInWithApple: () => Promise<'redirect' | 'popup'>;
   setUser: Dispatch<SetStateAction<UserDoc | null>>;
 }
 
@@ -102,6 +113,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Sign-in was cancelled.');
       }
       throw new Error('Google sign-in failed. Please try again.');
+    }
+  };
+
+  const signInWithApple = async (): Promise<'redirect' | 'popup'> => {
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    if (typeof navigator !== 'undefined') {
+      provider.setCustomParameters({ locale: navigator.language || 'en_US' });
+    }
+
+    const ua = typeof window !== 'undefined' ? window.navigator.userAgent || '' : '';
+    const isiOSSafariStandalone = typeof window !== 'undefined' && (window.navigator as any)?.standalone === true;
+    const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
+    const capacitor = typeof window !== 'undefined' ? (window as any).Capacitor : undefined;
+    const isCapacitorNative = Boolean(capacitor?.isNativePlatform?.());
+    const isStandalonePWA = isiOSSafariStandalone || (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches);
+    const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitorNative;
+
+    try {
+      if (shouldUseRedirect) {
+        console.log('[Auth] Using Apple signInWithRedirect flow');
+        await signInWithRedirect(auth, provider);
+        return 'redirect';
+      }
+
+      const result = await signInWithPopup(auth, provider);
+      if (result?.user) {
+        const profile = (result.additionalUserInfo?.profile ?? {}) as Record<string, unknown>;
+        const givenName = typeof profile.given_name === 'string' ? profile.given_name : '';
+        const familyName = typeof profile.family_name === 'string' ? profile.family_name : '';
+        const fallbackName = `${givenName} ${familyName}`.trim();
+        const resolvedDisplayName = result.user.displayName || fallbackName;
+        const resolvedEmail = result.user.email || (typeof profile.email === 'string' ? profile.email : '');
+
+        const userData = await getUser(result.user.uid);
+        if (!userData) {
+          await createUser({
+            uid: result.user.uid,
+            email: resolvedEmail,
+            displayName: resolvedDisplayName,
+            avatarUrl: result.user.photoURL || '',
+          });
+        }
+      }
+      return 'popup';
+    } catch (error: any) {
+      console.error('Apple sign-in error:', error);
+      const message = String(error?.message || '');
+      const code = String(error?.code || '');
+      const shouldRedirect =
+        code === 'auth/popup-blocked' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/operation-not-supported-in-this-environment' ||
+        message.includes('redirect_uri_mismatch');
+      if (shouldRedirect) {
+        console.log('[Auth] Falling back to redirect because of Apple error code/message', { code, message });
+        await signInWithRedirect(auth, provider);
+        return 'redirect';
+      }
+      if (code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled.');
+      }
+      throw new Error('Apple sign-in failed. Please try again.');
     }
   };
 
@@ -262,6 +337,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     logout,
     signInWithGoogle,
+    signInWithApple,
     setUser,
   };
 
