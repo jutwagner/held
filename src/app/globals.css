@@ -636,6 +636,11 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   margin-bottom: 7rem;
 } 
 
+
+.mb-15{
+      margin-bottom: 3rem;
+} 
+
 .pad-top-rotation{
   padding-top: 2px;
 }
@@ -685,6 +690,10 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 }
 }
 
+
+.active {
+  filter:invert(1);
+}
 
 
 .status-bar-overlay {

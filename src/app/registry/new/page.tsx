@@ -441,7 +441,7 @@ export default function NewObjectPage() {
       <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="max-w-none mx-auto">
-          <div className="flex items-center justify-between mb-16">
+          <div className="flex items-center justify-between mb-15">
             <Button variant="ghost" asChild className="p-2 h-auto text-black dark:text-gray-100 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
               <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
                 <ArrowLeft className="h-4 w-4" />

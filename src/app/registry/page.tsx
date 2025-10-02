@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { HeldObject } from '@/types';
 import { subscribeObjects, updateObjectAnchoring } from '@/lib/firebase-services';
 import { anchorPassport, generatePassportURI } from '@/lib/blockchain-services';
-import { Plus, Search, Eye, EyeOff, List, Columns, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Search, Eye, EyeOff, List, Clock, Shield, Edit2, Save, X as XIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import AnchorIcon from '@/components/AnchorIcon';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -289,7 +289,12 @@ export default function RegistryPage() {
                     }`}
                     aria-pressed={view === 'grid'}
                   >
-                    <Columns className="h-5 w-5 text-current" />
+                    <Image src="/grid.svg" alt="Grid" width={20} height={20} className={`h-5 w-5 ${
+                      view === 'grid'
+                        ? 'active'
+                        : 'not-active'
+                    }`}
+                    />
                     <span className="sr-only">Grid view</span>
                   </button>
                   <button
@@ -303,7 +308,13 @@ export default function RegistryPage() {
                     }`}
                     aria-pressed={view === 'table'}
                   >
-                    <List className="h-5 w-5 text-current" />
+                    
+                    <Image src="/list.svg" alt="Grid" width={20} height={20} className={`h-5 w-5 ${
+                      view === 'table'
+                        ? 'active'
+                        : 'not-active'
+                    }`}
+                    />
                     <span className="sr-only">Table view</span>
                   </button>
                   <Link

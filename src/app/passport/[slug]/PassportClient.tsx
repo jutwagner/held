@@ -152,7 +152,7 @@ export default function PassportClient() {
         </header>
 
         <main className="held-container held-container-wide py-8 sm:py-12">
-                <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-5 mt-5" />
+                <Image src={passportSvg} alt="Passport" width={40} height={40} className="hidden md:inline-block opacity-100 float-left mr-3" />
         {/* Passport Header */}
         <div className="mb-10 sm:mb-16">
           <div className="flex flex-col md:flex-row items-stretch md:items-baseline justify-between gap-4 md:gap-0">
@@ -219,15 +219,13 @@ export default function PassportClient() {
             {object.images && object.images.length > 0 && (
               <div className="space-y-4">
                 {object.images.length === 1 ? (
-                  <div
-                    className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[520px]"
-                  >
+                  <div className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg">
                     <Image
                       src={object.images[0]}
                       alt={object.title}
                       width={1600}
                       height={1600}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto object-contain"
                       sizes="(min-width: 1024px) 50vw, 100vw"
                     />
                   </div>
@@ -236,14 +234,14 @@ export default function PassportClient() {
                     {object.images.map((image, index) => (
                       <div
                         key={index}
-                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[520px]"
+                        className="w-full bg-white border border-gray-200 overflow-hidden rounded-lg"
                       >
                         <Image
                           src={image}
                           alt={`${object.title} - Image ${index + 1}`}
                           width={1600}
                           height={1600}
-                          className="w-full h-full object-cover"
+                          className="w-full h-auto object-contain"
                           sizes="(min-width: 1024px) 50vw, 100vw"
                         />
                       </div>
