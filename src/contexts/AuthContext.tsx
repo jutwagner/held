@@ -17,6 +17,7 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signInWithPopup,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -141,7 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
-        const profile = (result.additionalUserInfo?.profile ?? {}) as Record<string, unknown>;
+        const additional = getAdditionalUserInfo(result);
+        const profile = (additional?.profile ?? {}) as Record<string, unknown>;
         const givenName = typeof profile.given_name === 'string' ? profile.given_name : '';
         const familyName = typeof profile.family_name === 'string' ? profile.family_name : '';
         const fallbackName = `${givenName} ${familyName}`.trim();
