@@ -605,11 +605,12 @@ export default function NewObjectPage() {
             </h1>
           </div>
 
-          {/* Temporary Migration Button - Remove after migration is complete
+          {/* Temporary Migration Button - Remove after migration is complete */}
+          {/*
           <div className="mb-8">
             <MigrationButton />
           </div>
-*/}
+          */}
 
         
         </div>
@@ -823,56 +824,6 @@ export default function NewObjectPage() {
                         )}
 
                         {/* Image Preview */}
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const fallback = target.nextElementSibling as HTMLElement;
-                                      if (fallback) fallback.style.display = 'flex';
-                                    }}
-                                  />
-                                  {/* Fallback for failed image loads (HEIC, etc.) */}
-                                  <div className="w-full h-56 md:h-64 bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center" style={{ display: 'none' }}>
-                                    <div className="text-center">
-                                      <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mb-3 mx-auto">
-                                        <ImageIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-                                      </div>
-                                      <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                        {image.name.toLowerCase().endsWith('.heic') || image.name.toLowerCase().endsWith('.heif') 
-                                          ? 'HEIC Image' 
-                                          : 'Image Preview'
-                                        }
-                                      </p>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{image.name}</p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeImage(index)}
-                                    className="absolute top-3 right-3 bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </button>
-                                  {index === 0 ? (
-                                    <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded text-gray-900 dark:text-gray-100">Cover</span>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setFormData(prev => {
-                                          const imgs = [...prev.images];
-                                          const [picked] = imgs.splice(index, 1);
-                                          return { ...prev, images: [picked, ...imgs] };
-                                        });
-                                      }}
-                                      className="absolute bottom-3 left-3 text-[10px] uppercase tracking-widest bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-900 dark:text-gray-100"
-                                    >
-                                      Make cover
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
 
                         {formData.images.length > 0 && (
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
