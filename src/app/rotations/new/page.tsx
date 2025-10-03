@@ -133,7 +133,7 @@ export default function NewRotationPage() {
         } else {
           next[index] = createPendingItem({
             title: titleFromFile,
-            category: keepExistingCategory && existing ? existing.category : '',
+            category: existing?.category || '',
             image: file,
             previewUrl,
           });
