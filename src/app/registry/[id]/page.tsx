@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { HeldObject } from '@/types';
@@ -15,6 +15,14 @@ import ProvenanceSection from '@/components/ProvenanceSection';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 import DeleteDialog from '@/components/DeleteDialog';
 import passportSvg from '@/img/passport.svg';
+import ImageEditorModal from '@/components/images/ImageEditorModal';
+
+type EditableImage = {
+  id: string;
+  preview: string;
+  file?: File;
+  originalUrl?: string;
+};
 
 export default function RegistryItemPage() {
   const params = useParams();
@@ -28,6 +36,27 @@ export default function RegistryItemPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [images, setImages] = useState<EditableImage[]>([]);
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [editorFiles, setEditorFiles] = useState<File[]>([]);
+  const [editorIndex, setEditorIndex] = useState(0);
+  const [editorReplaceId, setEditorReplaceId] = useState<string | null>(null);
+
+  const imagesRef = useRef<EditableImage[]>([]);
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach(image => {
+        if (image.file && image.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(image.preview);
+        }
+      });
+    };
+  }, []);
 
   type ProvenanceSectionKey = 'identity' | 'certificate' | 'chain';
   type ProvenanceFieldKey = 'serialNumber' | 'acquisitionDate' | 'certificateDetails' | 'chain-owner';
@@ -59,6 +88,16 @@ export default function RegistryItemPage() {
     chain?: Array<{ owner: string; acquiredAt?: string; notes?: string }>;
   };
   const [form, setForm] = useState<FormState | null>(null);
+
+  const syncFormImages = useCallback((list: EditableImage[]) => {
+    setForm(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        images: list.map(image => image.file ?? image.originalUrl ?? image.preview),
+      };
+    });
+  }, [setForm]);
 
   const handleProvenanceShortcut = useCallback(
     (section: ProvenanceSectionKey, field?: ProvenanceFieldKey) => {
@@ -184,6 +223,20 @@ export default function RegistryItemPage() {
                 }))
               : [],
           });
+          setImages(prev => {
+            prev.forEach(image => {
+              if (image.file && image.preview.startsWith('blob:')) {
+                URL.revokeObjectURL(image.preview);
+              }
+            });
+            const next = (obj.images || []).map((url, index) => ({
+              id: `${obj.id || 'image'}-${index}`,
+              preview: url,
+              originalUrl: url,
+            }));
+            syncFormImages(next);
+            return next;
+          });
         }
       } catch (e) {
         setError('Failed to load object');
@@ -216,6 +269,109 @@ export default function RegistryItemPage() {
       setConfirmOpen(false);
     }
   }
+
+  const resetEditorState = () => {
+    setImageEditorOpen(false);
+    setEditorFiles([]);
+    setEditorIndex(0);
+    setEditorReplaceId(null);
+  };
+
+  const openImageEditor = (files: File[], replaceId: string | null = null) => {
+    if (!files.length) return;
+    setEditorFiles(files);
+    setEditorIndex(0);
+    setEditorReplaceId(replaceId);
+    setImageEditorOpen(true);
+  };
+
+  const advanceEditorQueue = () => {
+    if (editorReplaceId) {
+      resetEditorState();
+      return;
+    }
+    const nextIndex = editorIndex + 1;
+    if (nextIndex < editorFiles.length) {
+      setEditorIndex(nextIndex);
+    } else {
+      resetEditorState();
+    }
+  };
+
+  const upsertImage = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setImages(prev => {
+      let next: EditableImage[];
+      if (editorReplaceId) {
+        next = prev.map(image => {
+          if (image.id !== editorReplaceId) return image;
+          if (image.file && image.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(image.preview);
+          }
+          return {
+            ...image,
+            file,
+            preview: previewUrl,
+          };
+        });
+      } else {
+        const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `image-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        next = [...prev, { id, file, preview: previewUrl }];
+      }
+      syncFormImages(next);
+      return next;
+    });
+  };
+
+  const handleEditorApply = (file: File) => {
+    upsertImage(file);
+    advanceEditorQueue();
+  };
+
+  const handleEditorUseOriginal = (file: File) => {
+    upsertImage(file);
+    advanceEditorQueue();
+  };
+
+  const handleAddImages = (files: File[]) => {
+    if (!files.length) return;
+    setUploadError(null);
+    openImageEditor(files, null);
+  };
+
+  const handleEditImage = async (imageId: string) => {
+    const target = images.find(image => image.id === imageId);
+    if (!target) return;
+    setUploadError(null);
+    if (target.file) {
+      openImageEditor([target.file], imageId);
+      return;
+    }
+    if (target.originalUrl) {
+      try {
+        const response = await fetch(target.originalUrl);
+        const blob = await response.blob();
+        const extension = blob.type && blob.type.includes('/') ? blob.type.split('/')[1] : 'jpg';
+        const file = new File([blob], `image-${imageId}.${extension}`, { type: blob.type || 'image/jpeg' });
+        openImageEditor([file], imageId);
+      } catch (err) {
+        console.error('Failed to load image for editing', err);
+        setUploadError('Unable to load image for editing. Please try again.');
+      }
+    }
+  };
+
+  const handleRemoveImage = (imageId: string) => {
+    setImages(prev => {
+      const target = prev.find(image => image.id === imageId);
+      if (target && target.file && target.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(target.preview);
+      }
+      const next = prev.filter(image => image.id !== imageId);
+      syncFormImages(next);
+      return next;
+    });
+  };
 
   async function handleInlineSave(e: React.FormEvent) {
     e.preventDefault();
@@ -319,9 +475,25 @@ export default function RegistryItemPage() {
             }))
           : [],
       });
+      setImages(prev => {
+        prev.forEach(image => {
+          if (image.file && image.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(image.preview);
+          }
+        });
+        const next = (updated.images || []).map((url, index) => ({
+          id: `${updated.id || 'image'}-${index}`,
+          preview: url,
+          originalUrl: url,
+        }));
+        syncFormImages(next);
+        return next;
+      });
     }
     setEditing(false);
   }
+
+  const activeEditorFile = editorFiles[editorIndex] ?? null;
 
   if (loading) {
     return (
@@ -350,6 +522,14 @@ export default function RegistryItemPage() {
 
   return (
     <div className="relative min-h-screen">
+      <ImageEditorModal
+        open={imageEditorOpen}
+        file={activeEditorFile}
+        fileName={activeEditorFile?.name}
+        onClose={resetEditorState}
+        onApply={handleEditorApply}
+        onUseOriginal={handleEditorUseOriginal}
+      />
       {editing && (
         <div className="sticky top-0 z-50 w-full">
           <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between full-bleed">
@@ -420,13 +600,75 @@ export default function RegistryItemPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           {/* Left: media + specs + provenance summary */}
           <div className="xl:col-span-2 space-y-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 dark:border-gray-700 rounded-lg">
-              {item.images && item.images.length > 0 ? (
-                <div className="flex items-center justify-center">
-                  <Image src={item.images[0]} alt={item.title} width={1600} height={1200} className="w-auto max-w-full h-auto object-contain rounded-md" />
-                </div>
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+              {!editing ? (
+                item.images && item.images.length > 0 ? (
+                  <div className="flex items-center justify-center">
+                    <Image src={item.images[0]} alt={item.title} width={1600} height={1200} className="w-auto max-w-full h-auto object-contain rounded-md" />
+                  </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">No image</div>
+                )
               ) : (
-                <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">No image</div>
+                <div className="space-y-5">
+                  {images.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {images.map(image => (
+                        <div key={image.id} className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                          <img src={image.preview} alt="Object image" className="w-full h-56 object-contain bg-gray-50" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                          <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button type="button" size="sm" variant="outline" className="h-8 px-3" onClick={() => void handleEditImage(image.id)}>
+                              Edit
+                            </Button>
+                            <Button type="button" size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleRemoveImage(image.id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-40 flex items-center justify-center text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                      No images yet
+                    </div>
+                  )}
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${dragActive ? 'border-black dark:border-gray-300 bg-gray-50 dark:bg-gray-700' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'}`}
+                    onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+                    onDrop={e => {
+                      e.preventDefault();
+                      setDragActive(false);
+                      const files = Array.from(e.dataTransfer?.files || []).filter(file => file.type.startsWith('image/'));
+                      if (files.length) {
+                        handleAddImages(files);
+                      }
+                    }}
+                    onClick={() => document.getElementById('registry-inline-image-input')?.click()}
+                  >
+                    <input
+                      id="registry-inline-image-input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={e => {
+                        const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+                        if (files.length) {
+                          handleAddImages(files);
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                    <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-300">
+                      <Plus className="h-5 w-5" />
+                      <span className="text-sm font-medium">Add or drop photos</span>
+                      <span className="text-xs text-gray-400">JPG, PNG, HEIC up to 10MB</span>
+                    </div>
+                  </div>
+                  {uploadError && <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>}
+                </div>
               )}
             </div>
 

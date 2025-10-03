@@ -12,6 +12,29 @@ import { Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
 import AnchorIcon from '@/components/AnchorIcon';
 import Switch from '@/components/ui/switch';
 
+const CATEGORY_OPTIONS = [
+  'Art',
+  'Auto',
+  'Bicycle',
+  'Books',
+  'Ephemera',
+  'Everyday Carry',
+  'Fashion',
+  'Furniture',
+  'HiFi',
+  'Industrial Design',
+  'Instruments',
+  'Lighting',
+  'Miscellaneous',
+  'Moto',
+  'Movie',
+  'Music',
+  'Photography',
+  'Tech',
+  'Timepieces',
+  'Vintage',
+];
+
 type Props = {
   object: HeldObject;
   // Inline edit wiring from parent
@@ -359,7 +382,7 @@ export default function OwnerTools({
                     onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
                   >
                     <option value="">Select…</option>
-                    {['Audio','Photography','Art','Industrial Design','Furniture','Lighting','Tech','Instruments','Timepieces','Fashion','Books','Miscellaneous'].map(cat => (
+                    {CATEGORY_OPTIONS.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>

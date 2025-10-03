@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import type { HeldObject, Rotation } from '@/types';
-import { getObject } from '@/lib/firebase-services';
+import { getObject, getUser } from '@/lib/firebase-services';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface CollaborativeRotationCardProps {
   rotation: Rotation;
@@ -15,6 +16,8 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rotationObjects, setRotationObjects] = useState<HeldObject[]>([]);
   const [loadingObjects, setLoadingObjects] = useState(true);
+  const [ownerName, setOwnerName] = useState<string | null>(null);
+  const [ownerAvatar, setOwnerAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -42,6 +45,32 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
 
     fetchObjects();
   }, [rotation.objectIds]);
+
+  useEffect(() => {
+    const fetchOwner = async () => {
+      if (!rotation.userId) return;
+      try {
+        const user = await getUser(rotation.userId);
+        if (user) {
+          const name =
+            (user as any).displayName ||
+            (user as any).name ||
+            (user as any).handle ||
+            'Collector';
+          const avatar =
+            (user as any).avatarUrl ||
+            (user as any).photoURL ||
+            null;
+          setOwnerName(name);
+          setOwnerAvatar(typeof avatar === 'string' && avatar.trim().length > 0 ? avatar : null);
+        }
+      } catch (error) {
+        // ignore owner fetch errors
+      }
+    };
+
+    fetchOwner();
+  }, [rotation.userId]);
 
   const handleDelete = async () => {
     setConfirmOpen(false);
@@ -132,6 +161,18 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
       </div>
 
       <div className="p-6">
+        {ownerName && (
+          <div className="flex items-center gap-3 mb-3 text-sm text-gray-600 dark:text-gray-300">
+            <Avatar className="h-8 w-8">
+              {ownerAvatar ? (
+                <AvatarImage src={ownerAvatar} alt={ownerName} />
+              ) : (
+                <AvatarFallback>{ownerName.slice(0, 2).toUpperCase()}</AvatarFallback>
+              )}
+            </Avatar>
+            <span className="font-medium">{ownerName}</span>
+          </div>
+        )}
         <h3 className="font-serif font-bold text-xl mb-3 text-gray-900 dark:text-gray-100">{rotation.name}</h3>
         {rotation.description && (
           <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">{rotation.description}</p>

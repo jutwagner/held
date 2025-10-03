@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import ImageEditorModal from '@/components/images/ImageEditorModal';
 
 type UpdateObjectData = {
   title: string;
@@ -34,6 +35,13 @@ type UpdateObjectData = {
   anchorOnChain?: boolean;
 };
 
+type EditableImage = {
+  id: string;
+  preview: string;
+  file?: File;
+  existingUrl?: string;
+};
+
 export default function EditObjectPage() {
   const { user } = useAuth();
   const params = useSearchParams();
@@ -42,9 +50,18 @@ export default function EditObjectPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<UpdateObjectData | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [coaFile, setCoaFile] = useState<File | null>(null);
+  const [images, setImages] = useState<EditableImage[]>([]);
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [editorFile, setEditorFile] = useState<File | null>(null);
+  const [editorQueue, setEditorQueue] = useState<File[]>([]);
+  const [editorQueueIndex, setEditorQueueIndex] = useState(0);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFormData(prev => prev ? { ...prev, images: images.map(img => img.existingUrl || img.preview) } : prev);
+  }, [images]);
 
   useEffect(() => {
     if (!objectId) return;
@@ -88,23 +105,140 @@ export default function EditObjectPage() {
           transferMethod: obj.transferMethod || '',
           anchorOnChain: obj.anchoring?.isAnchored || false,
         });
+        setImages(prev => {
+          prev.forEach(img => {
+            if (img.file && img.preview.startsWith('blob:')) {
+              URL.revokeObjectURL(img.preview);
+            }
+          });
+          return (obj.images || []).map((url, idx) => ({
+            id: `${obj.id || 'image'}-${idx}`,
+            preview: url,
+            existingUrl: url,
+          }));
+        });
       }
       setLoading(false);
     });
     return () => unsubscribe();
   }, [objectId]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setUploading(true);
-    setUploadError(null);
-    try {
-      setFormData(prev => prev ? { ...prev, images: [...prev.images, ...files.map(f => URL.createObjectURL(f))] } : prev);
-    } catch (err) {
-      setUploadError('Image upload failed');
-    } finally {
-      setUploading(false);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+    if (files.length === 0) {
+      return;
     }
+    setUploadError(null);
+    openEditorWithFiles(files);
+    e.target.value = '';
+  };
+
+  const closeEditor = () => {
+    setImageEditorOpen(false);
+    setEditorFile(null);
+    setEditorQueue([]);
+    setEditorQueueIndex(0);
+    setEditingImageId(null);
+  };
+
+  const advanceQueue = () => {
+    if (editingImageId) {
+      closeEditor();
+      return;
+    }
+    const nextIndex = editorQueueIndex + 1;
+    if (nextIndex < editorQueue.length) {
+      setEditorQueueIndex(nextIndex);
+      setEditorFile(editorQueue[nextIndex]);
+    } else {
+      closeEditor();
+    }
+  };
+
+  const openEditorWithFiles = (files: File[], targetId: string | null = null) => {
+    if (!files.length) {
+      return;
+    }
+    setEditorQueue(files);
+    setEditorQueueIndex(0);
+    setEditorFile(files[0]);
+    setEditingImageId(targetId);
+    setImageEditorOpen(true);
+  };
+
+  const processEditedFile = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setImages(prev => {
+      let replaced = false;
+      const next = prev.map(item => {
+        if (editingImageId && item.id === editingImageId) {
+          if (item.file && item.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(item.preview);
+          }
+          replaced = true;
+          return {
+            ...item,
+            file,
+            preview: previewUrl,
+          };
+        }
+        return item;
+      });
+
+      if (editingImageId && replaced) {
+        return next;
+      }
+
+      const newItem: EditableImage = {
+        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `image-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        file,
+        preview: previewUrl,
+      };
+      return [...next, newItem];
+    });
+
+    advanceQueue();
+  };
+
+  const handleEditorApply = (file: File) => {
+    processEditedFile(file);
+  };
+
+  const handleEditorUseOriginal = (file: File) => {
+    processEditedFile(file);
+  };
+
+  const handleEditImage = async (imageId: string) => {
+    const target = images.find(img => img.id === imageId);
+    if (!target) return;
+    let file = target.file;
+    if (!file && target.existingUrl) {
+      try {
+        const response = await fetch(target.existingUrl);
+        const blob = await response.blob();
+        const extension = blob.type && blob.type.includes('/') ? blob.type.split('/')[1] : 'jpg';
+        file = new File([blob], `image-${imageId}.${extension}`, { type: blob.type || 'image/jpeg' });
+      } catch (error) {
+        console.error('Failed to load image for editing:', error);
+        setUploadError('Unable to load image for editing.');
+        return;
+      }
+    }
+
+    if (file) {
+      openEditorWithFiles([file], imageId);
+    }
+  };
+
+  const removeImage = (imageId: string) => {
+    setImages(prev => {
+      const next = prev.filter(img => img.id !== imageId);
+      const removed = prev.find(img => img.id === imageId);
+      if (removed && removed.file && removed.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(removed.preview);
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,6 +251,20 @@ export default function EditObjectPage() {
         const { uploadCOAImage } = await import('@/lib/firebase-services');
         coaUrl = await uploadCOAImage(coaFile, objectId);
       }
+      const imagesNeedingUpload = images.filter(img => img.file);
+      let uploadedImageUrls: string[] = [];
+      if (imagesNeedingUpload.length > 0 && user?.uid) {
+        const { uploadImages } = await import('@/lib/firebase-services');
+        uploadedImageUrls = await uploadImages(imagesNeedingUpload.map(img => img.file!) , user.uid);
+      }
+      let uploadIndex = 0;
+      const finalImages = images.map(img => {
+        if (img.file) {
+          const url = uploadedImageUrls[uploadIndex++] || img.preview;
+          return url;
+        }
+        return img.existingUrl || img.preview;
+      });
       await import('@/lib/firebase-services').then(mod => mod.updateObject(objectId, {
         ...formData,
         id: objectId,
@@ -131,6 +279,7 @@ export default function EditObjectPage() {
         associatedDocuments: formData.associatedDocuments ?? [],
         provenanceNotes: formData.provenanceNotes,
         anchorOnChain: formData.anchorOnChain,
+        images: finalImages,
       }));
       router.push(`/registry/${objectId}`);
     } catch (err) {
@@ -144,16 +293,25 @@ export default function EditObjectPage() {
   if (!formData) return <div className="held-container py-8">Loading…</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="held-container py-8">
-        <div className="flex items-center mb-8">
-          <Button variant="ghost" asChild className="mr-4">
-            <Link href="/registry">Back to Registry</Link>
-          </Button>
-          <h1 className="text-3xl font-serif font-medium">Edit Object</h1>
-        </div>
-        <div className="max-w-2xl">
-          <div className="held-card p-8">
+    <>
+      <ImageEditorModal
+        open={imageEditorOpen}
+        file={editorFile}
+        fileName={editorFile?.name}
+        onClose={closeEditor}
+        onApply={handleEditorApply}
+        onUseOriginal={handleEditorUseOriginal}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <div className="held-container py-8">
+          <div className="flex items-center mb-8">
+            <Button variant="ghost" asChild className="mr-4">
+              <Link href="/registry">Back to Registry</Link>
+            </Button>
+            <h1 className="text-3xl font-serif font-medium">Edit Object</h1>
+          </div>
+          <div className="max-w-2xl">
+            <div className="held-card p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
@@ -227,11 +385,18 @@ export default function EditObjectPage() {
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Images</label>
                 <div className="space-y-2">
-                  {formData.images.length > 0 ? (
-                    formData.images.map((image, idx) => (
-                      <div key={idx} className="relative w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 180 }}>
-                        <img src={image} alt={`Image ${idx + 1}`} className="w-full rounded-xl" style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }} />
-                        <button type="button" className="absolute top-2 right-2 bg-red-500 text-white rounded px-2 py-1 text-xs shadow hover:bg-red-600" onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== idx) })}>Remove</button>
+                  {images.length > 0 ? (
+                    images.map((image) => (
+                      <div key={image.id} className="relative w-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center" style={{ minHeight: 180 }}>
+                        <img src={image.preview} alt="Object image" className="w-full rounded-xl" style={{ objectFit: 'contain', width: '100%', height: 'auto', maxWidth: '100%', borderRadius: '0.75rem' }} />
+                        <div className="absolute top-2 right-2 flex gap-2">
+                          <button type="button" className="bg-white/90 text-gray-700 rounded px-2 py-1 text-xs shadow hover:bg-white" onClick={() => void handleEditImage(image.id)}>
+                            Edit
+                          </button>
+                          <button type="button" className="bg-red-500 text-white rounded px-2 py-1 text-xs shadow hover:bg-red-600" onClick={() => removeImage(image.id)}>
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -239,14 +404,31 @@ export default function EditObjectPage() {
                       <p className="text-gray-500">No images</p>
                     </div>
                   )}
-                  <div className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
                     onDragOver={e => { e.preventDefault(); setDragActive(true); }}
                     onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
-                    onDrop={e => { e.preventDefault(); setDragActive(false); /* TODO: handle image upload */ }}>
-                    <input type="file" accept="image/*" multiple className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" disabled={uploading} onChange={e => { /* TODO: handle image upload */ }} />
+                    onDrop={e => {
+                      e.preventDefault();
+                      setDragActive(false);
+                      const files = Array.from(e.dataTransfer?.files || []).filter(file => file.type.startsWith('image/'));
+                      if (files.length) {
+                        openEditorWithFiles(files);
+                      }
+                    }}
+                    onClick={() => document.getElementById('edit-image-upload-input')?.click()}
+                  >
+                    <input
+                      id="edit-image-upload-input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
                     <span className="block mt-2 text-gray-500">Drag & drop or select images to upload</span>
                   </div>
-                  {uploading && <p className="text-blue-600 mt-2">Uploading...</p>}
+                  {imageEditorOpen && <p className="text-blue-600 mt-2">Adjusting image…</p>}
                   {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
                 </div>
               </div>
@@ -391,5 +573,6 @@ export default function EditObjectPage() {
         </div>
       </div>
     </div>
+  </>
   );
 }

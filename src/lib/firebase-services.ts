@@ -506,11 +506,21 @@ export const updateObject = async (id: string, data: UpdateObjectData): Promise<
     const object = await getObject(id);
     let newImageUrls: string[] = [];
     if (object) {
+      const ownerId = (() => {
+        if (typeof object.userId === 'string' && object.userId.trim().length > 0) {
+          return object.userId.trim();
+        }
+        const currentUid = auth.currentUser?.uid?.trim();
+        return currentUid && currentUid.length > 0 ? currentUid : null;
+      })();
       if (data.images.length > 0) {
         for (const img of data.images) {
           if (typeof img !== 'string' && img instanceof File) {
             try {
-              const storageRef = ref(storage, `objects/${id}/${img.name}`);
+              const safeName = img.name.replace(/[^a-zA-Z0-9.\-_/]/g, '_');
+              const fileName = `${Date.now()}_${safeName}`;
+              const storagePath = ownerId ? `objects/${ownerId}/${fileName}` : `objects/${id}/${fileName}`;
+              const storageRef = ref(storage, storagePath);
               await uploadBytes(storageRef, img);
               const url = await getDownloadURL(storageRef);
               newImageUrls.push(url);
@@ -664,6 +674,10 @@ export const createRotation = async (userId: string, data: CreateRotationData): 
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+
+  if (rotationData.coverImage === undefined || rotationData.coverImage === '') {
+    delete (rotationData as { coverImage?: string }).coverImage;
+  }
   console.log('[DEBUG] createRotation userId:', userId);
   console.log('[DEBUG] createRotation payload:', rotationData);
   console.log('[DEBUG] createRotation field details:');

@@ -17,8 +17,57 @@ import Link from 'next/link';
 import ProvenanceUpsell from '@/components/ProvenanceUpsell';
 import CascadingSelect from '@/components/CascadingSelect';
 import MigrationButton from '@/components/MigrationButton';
+import ImageEditorModal from '@/components/images/ImageEditorModal';
 
 import ProvenanceSection from '@/components/ProvenanceSection';
+
+function ObjectImagePreview({
+  file,
+  index,
+  onEdit,
+  onRemove,
+}: {
+  file: File;
+  index: number;
+  onEdit: (index: number) => void;
+  onRemove: (index: number) => void;
+}) {
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
+
+  return (
+    <div className="relative group rounded-xl overflow-hidden ring-1 ring-black/5 dark:ring-gray-700/20 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
+      {previewUrl ? (
+        <img src={previewUrl} alt={`Image ${index + 1}`} className="w-full h-56 md:h-64 object-contain bg-gray-900/5" />
+      ) : (
+        <div className="w-full h-56 md:h-64 flex items-center justify-center bg-gray-100 text-gray-400 text-sm">Loading…</div>
+      )}
+      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={() => onEdit(index)}
+          className="px-2 py-1 text-xs rounded-md bg-white/90 text-gray-700 shadow hover:bg-white"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="px-2 py-1 text-xs rounded-md bg-red-500 text-white shadow hover:bg-red-600"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function NewObjectPage() {
   const { user } = useAuth();
@@ -77,6 +126,13 @@ export default function NewObjectPage() {
     error?: string;
     debug?: any;
   } | null>(null);
+  const [analysisTriggered, setAnalysisTriggered] = useState(false);
+
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [editorFile, setEditorFile] = useState<File | null>(null);
+  const [editorQueue, setEditorQueue] = useState<File[]>([]);
+  const [editorQueueIndex, setEditorQueueIndex] = useState(0);
+  const [editorReplaceIndex, setEditorReplaceIndex] = useState<number | null>(null);
 
   const [newTag, setNewTag] = useState('');
   
@@ -117,6 +173,81 @@ export default function NewObjectPage() {
       };
     });
   }, []);
+
+  const closeEditor = () => {
+    setImageEditorOpen(false);
+    setEditorFile(null);
+    setEditorQueue([]);
+    setEditorQueueIndex(0);
+    setEditorReplaceIndex(null);
+  };
+
+  const advanceQueue = () => {
+    if (editorReplaceIndex !== null) {
+      closeEditor();
+      return;
+    }
+    const nextIndex = editorQueueIndex + 1;
+    if (nextIndex < editorQueue.length) {
+      setEditorQueueIndex(nextIndex);
+      setEditorFile(editorQueue[nextIndex]);
+    } else {
+      closeEditor();
+    }
+  };
+
+  const openEditorWithFiles = (files: File[], replaceIndex: number | null = null) => {
+    if (!files.length) {
+      return;
+    }
+    setEditorQueue(files);
+    setEditorQueueIndex(0);
+    setEditorFile(files[0]);
+    setEditorReplaceIndex(replaceIndex);
+    setImageEditorOpen(true);
+  };
+
+  const processEditedFile = async (resultFile: File) => {
+    let shouldAnalyze = false;
+    setFormData(prev => {
+      const nextImages = [...prev.images];
+      if (editorReplaceIndex !== null && nextImages[editorReplaceIndex]) {
+        nextImages[editorReplaceIndex] = resultFile;
+        if (!analysisTriggered && editorReplaceIndex === 0) {
+          shouldAnalyze = true;
+        }
+      } else {
+        nextImages.push(resultFile);
+        if (!analysisTriggered && prev.images.length === 0) {
+          shouldAnalyze = true;
+        }
+      }
+      return {
+        ...prev,
+        images: nextImages,
+      };
+    });
+
+    if (shouldAnalyze) {
+      try {
+        await analyzeFirstImage(resultFile);
+      } catch (error) {
+        console.warn('Automated analysis failed:', error);
+      } finally {
+        setAnalysisTriggered(true);
+      }
+    }
+
+    advanceQueue();
+  };
+
+  const handleEditorApply = async (file: File) => {
+    await processEditedFile(file);
+  };
+
+  const handleEditorUseOriginal = async (file: File) => {
+    await processEditedFile(file);
+  };
 
   // Handle category box selection
   const handleCategorySelect = (category: string) => {
@@ -243,15 +374,11 @@ export default function NewObjectPage() {
       f.type.startsWith('image/') || 
       f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
     );
-    
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...files]
-    }));
 
-    // Analyze the first image with Azure Vision if it's the first image
-    if (files.length > 0 && formData.images.length === 0) {
-      await analyzeFirstImage(files[0]);
+    if (files.length > 0) {
+      openEditorWithFiles(files);
+      // reset input value to allow re-uploading same file after editing
+      e.target.value = '';
     }
   };
 
@@ -317,10 +444,22 @@ export default function NewObjectPage() {
   };
 
   const removeImage = (index: number) => {
+    const nextImages = formData.images.filter((_, i) => i !== index);
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: nextImages,
     }));
+    if (nextImages.length === 0) {
+      setAnalysisTriggered(false);
+      setAnalysisResult(null);
+    }
+  };
+
+  const handleEditImage = (index: number) => {
+    const target = formData.images[index];
+    if (target instanceof File) {
+      openEditorWithFiles([target], index);
+    }
   };
 
   const addTag = () => {
@@ -437,8 +576,17 @@ export default function NewObjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="held-container held-container-wide py-8">
+    <>
+      <ImageEditorModal
+        open={imageEditorOpen}
+        file={editorFile}
+        fileName={editorFile?.name}
+        onClose={closeEditor}
+        onApply={handleEditorApply}
+        onUseOriginal={handleEditorUseOriginal}
+      />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="max-w-none mx-auto">
           <div className="flex items-center justify-between mb-15">
@@ -549,22 +697,14 @@ export default function NewObjectPage() {
                               f.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/)
                             );
                             if (files.length) {
-                              setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
-                              // Analyze the first image if it's the first image
-                              if (formData.images.length === 0) {
-                                await analyzeFirstImage(files[0]);
-                              }
+                              openEditorWithFiles(files);
                             }
                           }}
                           onPaste={async (e) => {
                             const items = Array.from(e.clipboardData?.items || []);
                             const images = items.map(i => i.type?.startsWith('image/') ? i.getAsFile() : null).filter(Boolean) as File[];
                             if (images.length) {
-                              setFormData(prev => ({ ...prev, images: [...prev.images, ...images] }));
-                              // Analyze the first image if it's the first image
-                              if (formData.images.length === 0) {
-                                await analyzeFirstImage(images[0]);
-                              }
+                              openEditorWithFiles(images.filter(Boolean) as File[]);
                             }
                           }}
                         >
@@ -683,21 +823,6 @@ export default function NewObjectPage() {
                         )}
 
                         {/* Image Preview */}
-                        {formData.images.length > 0 && (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
-                            {formData.images.map((image, index) => {
-                              const imageUrl = URL.createObjectURL(image);
-                              
-                              return (
-                                <div key={index} className="relative group rounded-xl overflow-hidden ring-1 ring-black/5 dark:ring-gray-700/20 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                                  <Image
-                                    src={imageUrl}
-                                    alt={`Image ${index + 1}`}
-                                    width={400}
-                                    height={300}
-                                    className="w-full h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                    onError={(e) => {
-                                      // Fallback for unsupported image formats (like HEIC)
                                       const target = e.target as HTMLImageElement;
                                       target.style.display = 'none';
                                       const fallback = target.nextElementSibling as HTMLElement;
@@ -746,6 +871,22 @@ export default function NewObjectPage() {
                                 </div>
                               );
                             })}
+                          </div>
+                        )}
+
+                        {formData.images.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
+                            {formData.images.map((image, index) => (
+                              image instanceof File ? (
+                                <ObjectImagePreview
+                                  key={`${index}-${image.name}`}
+                                  file={image}
+                                  index={index}
+                                  onEdit={handleEditImage}
+                                  onRemove={removeImage}
+                                />
+                              ) : null
+                            ))}
                           </div>
                         )}
                       </div>
@@ -1197,5 +1338,6 @@ export default function NewObjectPage() {
         </div>
       </div>
     </div>
+  </>
   );
 }
