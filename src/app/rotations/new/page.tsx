@@ -131,9 +131,10 @@ export default function NewRotationPage() {
             title: existing.title || titleFromFile,
           };
         } else {
+          const baseCategory = index >= 0 && index < next.length ? next[index]?.category ?? '' : '';
           next[index] = createPendingItem({
             title: titleFromFile,
-            category: existing?.category || '',
+            category: baseCategory,
             image: file,
             previewUrl,
           });
