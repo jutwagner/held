@@ -255,25 +255,25 @@ function RotationPageClient({ id }: { id: string }) {
               ) : (
                 <div className="flex flex-col gap-4 max-w-2xl">
                   <input
-                    className="border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent text-4xl md:text-5xl font-serif font-bold tracking-tight w-full text-gray-900 dark:text-gray-100 pb-2"
+                    className="border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent text-4xl md:text-5xl font-serif font-bold tracking-tight w-full text-gray-100 dark:text-gray-100 pb-2"
                     value={form.name}
                     onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
                     maxLength={80}
                     placeholder="Rotation name"
                   />
                   <textarea
-                    className="border-0 border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent w-full text-lg text-gray-700 dark:text-gray-300 pb-2 resize-none"
+                    className="border-0 border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 outline-none bg-transparent w-full text-lg text-gray-100 dark:text-gray-100 pb-2 resize-none"
                     value={form.description || ''}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     rows={2}
                     placeholder="Add a description..."
                   />
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="text-gray-700 dark:text-gray-300">Visibility:</span>
+                    <span className="text-gray-100 dark:text-gray-100">Visibility:</span>
                     <div className="flex items-center gap-2">
-                      <span className={`${form.isPublic ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100 font-medium'}`}>Private</span>
+                      <span className={`${form.isPublic ? 'text-gray-100' : 'text-gray-100 dark:text-gray-100 font-medium'}`}>Private</span>
                       <Switch checked={form.isPublic} onCheckedChange={(checked) => setForm(prev => ({ ...prev, isPublic: checked }))} />
-                      <span className={`${form.isPublic ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400'}`}>Public</span>
+                      <span className={`${form.isPublic ? 'text-gray-100 dark:text-gray-100 font-medium' : 'text-gray-400'}`}>Public</span>
                     </div>
                   </div>
                 </div>
@@ -285,13 +285,13 @@ function RotationPageClient({ id }: { id: string }) {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-gray-100 dark:text-gray-100">
                     {objects.length} {objects.length === 1 ? 'Object' : 'Objects'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-gray-100 dark:text-gray-100">
                     {rotation.isPublic ? 'Public' : 'Private'}
                   </span>
                 </div>

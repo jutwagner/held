@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navigation, { MobileBottomBar } from '@/components/Navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import ThemeBody from '@/components/ThemeBody';
 import IOSOnboarding from '@/components/IOSOnboarding';
@@ -158,12 +159,24 @@ export default function AppClientShell({ children }: AppClientShellProps) {
             <EmailVerificationBanner />
             {children}
             <div className="mt-16 border-t border-gray-200 pt-6 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                <Link href="/" className="hover:text-gray-900 dark:hover:text-gray-200">Home</Link>
-                <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-gray-200">Privacy</Link>
-                <Link href="/terms" className="hover:text-gray-900 dark:hover:text-gray-200">Terms</Link>
-                <Link href="/donate" className="hover:text-gray-900 dark:hover:text-gray-200">Support Held</Link>
-                <Link href="mailto:hello@myheld.link" className="hover:text-gray-900 dark:hover:text-gray-200">Contact</Link>
+              <div className="flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4 order-2 md:order-1">
+                  <Link href="/terms" className="hover:text-gray-900 dark:hover:text-gray-100">Terms</Link>
+                  <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+                  <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-gray-100">Privacy</Link>
+                </div>
+                <Link
+                  href="/"
+                  className="order-1 md:order-2 inline-flex items-center justify-center rounded-full px-3 py-3"
+                  aria-label="Held home"
+                >
+                  <Image src="/held-logomark.svg" alt="Held" width={28} height={28} className="h-7 w-7" />
+                </Link>
+                <div className="order-3">
+                  <Link href="/donate" className="font-lg hover:text-gray-900 dark:hover:text-gray-100">
+                    Donate
+                  </Link>
+                </div>
               </div>
             </div>
           </main>
