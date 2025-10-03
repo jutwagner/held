@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { HeldObject, Rotation } from '@/types';
 import { getObject, getUser } from '@/lib/firebase-services';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Heart, MessageCircle } from 'lucide-react';
 
 interface CollaborativeRotationCardProps {
   rotation: Rotation;
@@ -18,6 +19,9 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [ownerName, setOwnerName] = useState<string | null>(null);
   const [ownerAvatar, setOwnerAvatar] = useState<string | null>(null);
+  const [likes, setLikes] = useState(() => Math.floor(Math.random() * 24) + 3);
+  const [comments, setComments] = useState(() => Math.floor(Math.random() * 8));
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -83,6 +87,16 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
     } finally {
       setDeleting(false);
     }
+  };
+
+  const toggleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLiked(prev => {
+      const next = !prev;
+      setLikes(c => (next ? c + 1 : Math.max(0, c - 1)));
+      return next;
+    });
   };
 
   return (
@@ -201,7 +215,25 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
             })()}
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <button
+              type="button"
+              onClick={toggleLike}
+              className={`flex items-center gap-1 transition ${liked ? 'text-rose-500' : 'hover:text-gray-700 dark:hover:text-gray-200'}`}
+            >
+              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : 'stroke-current'}`} />
+              <span className="font-medium">{likes}</span>
+            </button>
+            <button
+              type="button"
+              className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="font-medium">{comments}</span>
+            </button>
+          </div>
           <a
             href={`/rotations/${rotation.id}`}
             className="inline-flex items-center gap-2 bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"

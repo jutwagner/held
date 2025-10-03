@@ -583,7 +583,7 @@ export default function RegistryItemPage() {
         {/* Title + chips */}
         <div className="mb-6">
           {!editing ? (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-loose text-black dark:text-gray-100 mb-20 break-words">{item.title || 'Untitled'}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-loose text-black dark:text-gray-100 mb-0 md:mb-20 break-words">{item.title || 'Untitled'}</h1>
           ) : (
             <input
               className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-black dark:text-gray-100 mb-3 w-full border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 outline-none bg-transparent"
@@ -600,7 +600,7 @@ export default function RegistryItemPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           {/* Left: media + specs + provenance summary */}
           <div className="xl:col-span-2 space-y-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
               {!editing ? (
                 item.images && item.images.length > 0 ? (
                   <div className="flex items-center justify-center">

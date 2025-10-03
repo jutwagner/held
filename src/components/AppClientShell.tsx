@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navigation, { MobileBottomBar } from '@/components/Navigation';
+import Link from 'next/link';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import ThemeBody from '@/components/ThemeBody';
 import IOSOnboarding from '@/components/IOSOnboarding';
@@ -153,9 +154,18 @@ export default function AppClientShell({ children }: AppClientShellProps) {
       <ThemeBody>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {!hideNavigation && <Navigation />}
-          <main className="held-container held-container-wide pb-6">
+          <main className="held-container held-container-wide pb-28 md:pb-16">
             <EmailVerificationBanner />
             {children}
+            <div className="mt-16 border-t border-gray-200 pt-6 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                <Link href="/" className="hover:text-gray-900 dark:hover:text-gray-200">Home</Link>
+                <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-gray-200">Privacy</Link>
+                <Link href="/terms" className="hover:text-gray-900 dark:hover:text-gray-200">Terms</Link>
+                <Link href="/donate" className="hover:text-gray-900 dark:hover:text-gray-200">Support Held</Link>
+                <Link href="mailto:hello@myheld.link" className="hover:text-gray-900 dark:hover:text-gray-200">Contact</Link>
+              </div>
+            </div>
           </main>
           {!isPassport && (
             <MobileBottomBar showProfileIcon={hideNavigation && isCapacitor} />

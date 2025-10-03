@@ -70,23 +70,46 @@ export default function CollaborativeView({
     return match ?? selectedCategory;
   }, [selectedCategory, availableCategories]);
 
-  const filteredContent = useMemo(() => {
-    if (!selectedCategory) {
-      return { rotations, posts };
-    }
+  const filteredEntries = useMemo(() => {
+    const normalizeDate = (value: unknown): number => {
+      if (!value) return 0;
+      if (value instanceof Date) return value.getTime();
+      if (typeof value === 'object' && value && 'toDate' in (value as any)) {
+        try {
+          const date = (value as any).toDate();
+          if (date instanceof Date) return date.getTime();
+        } catch {}
+      }
+      return 0;
+    };
 
-    const targetCategory = selectedCategory.toLowerCase();
+    const matchesCategory = (candidate: string | undefined | null) => {
+      if (!selectedCategory) return true;
+      return candidate?.toLowerCase() === selectedCategory.toLowerCase();
+    };
 
-    const filteredRotations = rotations.filter((rotation) => {
-      const categories = rotationCategoryMap[rotation.id] ?? [];
-      return categories.some((category) => category.toLowerCase() === targetCategory);
-    });
+    const rotationEntries = rotations
+      .filter(rotation => {
+        if (!selectedCategory) return true;
+        const categories = rotationCategoryMap[rotation.id] ?? [];
+        return categories.some(category => matchesCategory(category));
+      })
+      .map(rotation => ({
+        type: 'rotation' as const,
+        createdAt: normalizeDate(rotation.createdAt),
+        rotation,
+      }));
 
-    const filteredPosts = posts.filter(
-      (post) => post.category?.toLowerCase() === targetCategory
-    );
+    const postEntries = posts
+      .filter(post => matchesCategory(post.category))
+      .map(post => ({
+        type: 'post' as const,
+        createdAt: normalizeDate(post.createdAt),
+        post,
+      }));
 
-    return { rotations: filteredRotations, posts: filteredPosts };
+    return [...rotationEntries, ...postEntries]
+      .sort((a, b) => b.createdAt - a.createdAt);
   }, [rotations, posts, selectedCategory, rotationCategoryMap]);
 
   const handleCategoryFilter = (category: string | null) => {
@@ -152,22 +175,24 @@ export default function CollaborativeView({
 
         {loading ? (
           <p className="text-center text-gray-500 dark:text-gray-400">Loading…</p>
-        ) : filteredContent.rotations.length === 0 && filteredContent.posts.length === 0 ? (
+        ) : filteredEntries.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">
             {selectedCategory ? `No ${selectedCategory} content available.` : 'No shared content available.'}
           </p>
         ) : (
           <div className="space-y-6">
-            {filteredContent.rotations.map((rotation) => (
-              <CollaborativeRotationCard
-                key={rotation.id}
-                rotation={rotation}
-                onDelete={() => setRotations((prev) => prev.filter((r) => r.id !== rotation.id))}
-              />
-            ))}
-            {filteredContent.posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {filteredEntries.map(entry => {
+              if (entry.type === 'rotation') {
+                return (
+                  <CollaborativeRotationCard
+                    key={`rotation-${entry.rotation.id}`}
+                    rotation={entry.rotation}
+                    onDelete={() => setRotations(prev => prev.filter(r => r.id !== entry.rotation.id))}
+                  />
+                );
+              }
+              return <PostCard key={`post-${entry.post.id}`} post={entry.post} />;
+            })}
           </div>
         )}
         </div>

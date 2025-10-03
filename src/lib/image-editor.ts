@@ -13,6 +13,14 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
 
 const getRadianAngle = (degreeValue: number) => (degreeValue * Math.PI) / 180;
 
+const rotateSize = (width: number, height: number, rotation: number) => {
+  const rotRad = getRadianAngle(rotation);
+  return {
+    width: Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height: Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
+};
+
 export async function getCroppedImage(
   imageSrc: string,
   pixelCrop: Area,
@@ -20,52 +28,43 @@ export async function getCroppedImage(
   fileType = 'image/jpeg'
 ): Promise<Blob> {
   const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const rotRad = getRadianAngle(rotation);
 
-  if (!ctx) {
+  const { width: bBoxWidth, height: bBoxHeight } = rotateSize(image.width, image.height, rotation);
+
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) {
     throw new Error('Canvas context not available');
   }
 
-  const rotRad = getRadianAngle(rotation);
+  tempCanvas.width = bBoxWidth;
+  tempCanvas.height = bBoxHeight;
 
-  // Use a "safe area" so rotated images never get clipped before cropping
-  const maxSize = Math.max(image.width, image.height);
-  const safeArea = Math.ceil(2 * (maxSize / 2) * Math.sqrt(2));
+  tempCtx.translate(bBoxWidth / 2, bBoxHeight / 2);
+  tempCtx.rotate(rotRad);
+  tempCtx.translate(-image.width / 2, -image.height / 2);
+  tempCtx.drawImage(image, 0, 0);
 
-  canvas.width = safeArea;
-  canvas.height = safeArea;
+  const cropX = Math.max(0, Math.min(Math.round(pixelCrop.x), Math.max(0, Math.floor(bBoxWidth - pixelCrop.width))));
+  const cropY = Math.max(0, Math.min(Math.round(pixelCrop.y), Math.max(0, Math.floor(bBoxHeight - pixelCrop.height))));
+  const cropWidth = Math.min(Math.round(pixelCrop.width), Math.floor(bBoxWidth - cropX));
+  const cropHeight = Math.min(Math.round(pixelCrop.height), Math.floor(bBoxHeight - cropY));
 
-  ctx.translate(safeArea / 2, safeArea / 2);
-  ctx.rotate(rotRad);
-  ctx.translate(-image.width / 2, -image.height / 2);
-  ctx.drawImage(image, 0, 0);
+  const data = tempCtx.getImageData(cropX, cropY, cropWidth, cropHeight);
 
-  const { x, y, width, height } = {
-    x: Math.round(pixelCrop.x),
-    y: Math.round(pixelCrop.y),
-    width: Math.max(1, Math.round(pixelCrop.width)),
-    height: Math.max(1, Math.round(pixelCrop.height)),
-  };
+  const outputCanvas = document.createElement('canvas');
+  const outputCtx = outputCanvas.getContext('2d');
+  if (!outputCtx) {
+    throw new Error('Canvas context not available');
+  }
 
-  const cropX = Math.min(
-    Math.max(0, safeArea / 2 - width / 2 + x),
-    safeArea - width
-  );
-  const cropY = Math.min(
-    Math.max(0, safeArea / 2 - height / 2 + y),
-    safeArea - height
-  );
-
-  const data = ctx.getImageData(cropX, cropY, width, height);
-
-  canvas.width = width;
-  canvas.height = height;
-
-  ctx.putImageData(data, 0, 0);
+  outputCanvas.width = cropWidth;
+  outputCanvas.height = cropHeight;
+  outputCtx.putImageData(data, 0, 0);
 
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((file) => {
+    outputCanvas.toBlob((file) => {
       if (!file) {
         reject(new Error('Canvas is empty'));
         return;
