@@ -68,13 +68,19 @@ async function convertImageToWebP(file: File): Promise<File> {
 }
 
 // Ensure slug uniqueness by appending numeric suffixes (-2, -3, ...)
-async function ensureUniqueSlug(base: string, excludeId?: string): Promise<string> {
+async function ensureUniqueSlug(
+  base: string,
+  excludeId?: string,
+  collectionName: 'objects' | 'rotations' = 'objects'
+): Promise<string> {
   let candidate = base;
   let suffix = 2;
   // Try until no collision (or only collision is the excluded doc)
   // Cap attempts to avoid infinite loops in pathological cases
   for (let i = 0; i < 50; i++) {
-    const snap = await getDocs(query(collection(db, 'objects'), where('slug', '==', candidate), limit(1)));
+    const snap = await getDocs(
+      query(collection(db, collectionName), where('slug', '==', candidate), limit(1))
+    );
     const docHit = snap.docs[0];
     if (!docHit) return candidate;
     if (excludeId && docHit.id === excludeId) return candidate;
@@ -636,14 +642,21 @@ export const getRotation = async (id: string): Promise<Rotation | null> => {
 
 export const getRotationBySlug = async (slug: string): Promise<Rotation | null> => {
   const rotationsRef = collection(db, 'rotations');
-  const q = query(rotationsRef, where('slug', '==', slug), where('isPublic', '==', true));
-  const querySnapshot = await getDocs(q);
-  
-  if (!querySnapshot.empty) {
-    const doc = querySnapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as Rotation;
+  const normalizedSlug = slug.replace(/\+/g, '-');
+
+  const trySlugs = [normalizedSlug];
+  if (!trySlugs.includes(slug)) {
+    trySlugs.push(slug);
   }
-  
+
+  for (const candidate of trySlugs) {
+    const snapshot = await getDocs(query(rotationsRef, where('slug', '==', candidate), limit(1)));
+    const doc = snapshot.docs[0];
+    if (doc) {
+      return { id: doc.id, ...doc.data() } as Rotation;
+    }
+  }
+
   return null;
 };
 
@@ -662,7 +675,8 @@ export const getRotationWithObjects = async (id: string): Promise<RotationWithOb
 };
 
 export const createRotation = async (userId: string, data: CreateRotationData): Promise<Rotation> => {
-  const slug = generateSlug(data.name);
+  const baseSlug = generateSlug(data.name);
+  const slug = await ensureUniqueSlug(baseSlug, undefined, 'rotations');
   const rotationData = {
     userId,
     name: data.name,
@@ -733,7 +747,8 @@ export const updateRotation = async (id: string, data: UpdateRotationData): Prom
   
   // Update slug if name changed
   if (data.name) {
-    updateData.slug = generateSlug(data.name);
+    const baseSlug = generateSlug(data.name);
+    updateData.slug = await ensureUniqueSlug(baseSlug, id, 'rotations');
   }
   
   delete updateData.id; // Remove id from update data

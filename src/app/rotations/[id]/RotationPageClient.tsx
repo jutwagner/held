@@ -118,7 +118,7 @@ function RotationPageClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 animate-pulse">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 animate-pulse full-bleed">
         <header className="top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm">
           <div className="held-container held-container-wide py-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -201,7 +201,7 @@ function RotationPageClient({ id }: { id: string }) {
   ].join(' ');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed">
       {/* Sticky Group Header */}
       <header className={headerClassName}>
         {editing && (
@@ -245,10 +245,10 @@ function RotationPageClient({ id }: { id: string }) {
             <div className="text-center md:text-left">
               {!editing ? (
                 <>
-                  <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3 leading-tight">
+                  <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-gray-100 dark:text-gray-100 mb-3 leading-tight">
                     {rotation.name || 'Unnamed Rotation'}
                   </h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
+                  <p className="text-lg text-gray-100 dark:text-gray-100  max-w-2xl leading-relaxed">
                     {rotation.description || 'No description available'}
                   </p>
                 </>

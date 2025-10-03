@@ -55,7 +55,7 @@ export default function NewRotationPage() {
     ...overrides,
   });
 
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [addPanelOpen, setAddPanelOpen] = useState(false);
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([createPendingItem()]);
   const [modalError, setModalError] = useState<string>('');
   const [addingItems, setAddingItems] = useState(false);
@@ -63,6 +63,7 @@ export default function NewRotationPage() {
   const [editorFile, setEditorFile] = useState<File | null>(null);
   const [editorContext, setEditorContext] = useState<{ type: 'cover' } | { type: 'newItem'; index: number } | null>(null);
   const pendingItemsRef = useRef(pendingItems);
+  const bulkUploadInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     pendingItemsRef.current = pendingItems;
@@ -73,6 +74,15 @@ export default function NewRotationPage() {
       pendingItemsRef.current.forEach(item => releasePreview(item.previewUrl));
     };
   }, []);
+
+  useEffect(() => {
+    if (!addPanelOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [addPanelOpen]);
 
   const releasePreview = (url: string | null) => {
     if (url) {
@@ -167,6 +177,21 @@ export default function NewRotationPage() {
     });
   };
 
+  const handleItemFileSelect = (index: number, fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList).filter(Boolean) as File[];
+    if (files.length === 0) return;
+
+    if (files.length === 1) {
+      setEditorContext({ type: 'newItem', index });
+      setEditorFile(files[0]);
+      setImageEditorOpen(true);
+      return;
+    }
+
+    addFilesToPendingItems(files, index);
+  };
+
   const removePendingItem = (index: number) => {
     setPendingItems(prev => {
       if (prev.length === 1) {
@@ -178,6 +203,17 @@ export default function NewRotationPage() {
       releasePreview(removed.previewUrl);
       return next;
     });
+  };
+
+  const openAddPanel = () => {
+    setModalError('');
+    setAddPanelOpen(true);
+  };
+
+  const closeAddPanel = () => {
+    setAddPanelOpen(false);
+    setModalError('');
+    resetPendingItems();
   };
 
   const handleAddNewItems = async (e: React.FormEvent) => {
@@ -257,8 +293,7 @@ export default function NewRotationPage() {
         });
 
         if (created.length === validItems.length) {
-          resetPendingItems();
-          setShowAddModal(false);
+          closeAddPanel();
         } else {
           setPendingItems(prev => {
             const createdIndices = new Set(created.map(entry => entry.sourceIndex));
@@ -411,7 +446,7 @@ export default function NewRotationPage() {
         onApply={handleEditorApplyFile}
         onUseOriginal={handleEditorUseOriginal}
       />
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed">
         <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
@@ -604,176 +639,260 @@ export default function NewRotationPage() {
                 </div>
               </form>
 
-              {showAddModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
-      <h2 className="text-2xl font-bold mb-4">Add New Items</h2>
-      {modalError && (
-        <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-          {modalError}
-        </div>
-      )}
-      <form onSubmit={handleAddNewItems} className="space-y-6">
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-1">
-          {pendingItems.map((item, index) => (
-            <div key={item.id} className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Title</label>
-                    <Input
-                      value={item.title}
-                      onChange={e => setPendingItemField(index, 'title', e.target.value)}
-                      placeholder="Album name"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Category</label>
-                    <div className="flex flex-wrap gap-2">
-                      {categoryOptions.map(cat => (
-                        <button
-                          key={`${item.id}-${cat}`}
-                          type="button"
-                          className={`pill px-3 py-1 text-xs border ${item.category === cat ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-900 border-gray-300'} transition-colors duration-200`}
-                          onClick={() => setPendingItemField(index, 'category', cat)}
-                        >
-                          {cat}
-                        </button>
-                      ))}
+              {addPanelOpen && (
+                <div className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm">
+                  <div className="flex h-full w-full flex-col bg-white shadow-2xl dark:bg-gray-950">
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                        onClick={closeAddPanel}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to rotation setup
+                      </button>
+                      <div className="text-right">
+                        <h2 className="text-2xl font-serif text-gray-900 dark:text-gray-100">Add items to this rotation</h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                          Drop multiple images or create entries manually. You can refine details later from the registry.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Photo</label>
-                    <div className="flex flex-col gap-3">
-                      {item.previewUrl ? (
+                    <form onSubmit={handleAddNewItems} className="flex flex-1 flex-col overflow-hidden">
+                      <div className="flex-1 overflow-y-auto px-6 py-6">
                         <div
-                          className="relative w-full rounded-md border border-gray-200"
-                          onDragOver={e => {
+                          className="relative mb-8 rounded-3xl border-2 border-dashed border-gray-300 bg-gray-50/70 p-6 text-center transition hover:border-gray-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-500 dark:hover:bg-gray-900"
+                          onDragOver={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                           }}
-                          onDrop={e => {
+                          onDrop={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            const fileList = e.dataTransfer?.files;
-                            if (fileList && fileList.length > 0) {
-                              if (fileList.length === 1) {
-                                setEditorContext({ type: 'newItem', index });
-                                setEditorFile(fileList[0]);
-                                setImageEditorOpen(true);
-                              } else {
-                                addFilesToPendingItems(fileList, index);
-                              }
+                            const files = e.dataTransfer?.files;
+                            if (files && files.length > 0) {
+                              addFilesToPendingItems(files);
                             }
                           }}
                         >
-                          <img src={item.previewUrl} alt={`${item.title || 'Preview'}`} className="h-36 w-full rounded-md object-cover" />
-                          <div className="absolute inset-x-2 bottom-2 flex justify-end gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                if (item.image) {
-                                  setEditorContext({ type: 'newItem', index });
-                                  setEditorFile(item.image);
-                                  setImageEditorOpen(true);
-                                }
-                              }}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setPendingItemField(index, 'image', null)}
-                            >
-                              Remove
-                            </Button>
+                          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-black text-white shadow-sm dark:bg-gray-100 dark:text-gray-900">
+                            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                              <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
                           </div>
-                        </div>
-                      ) : (
-                        <label
-                          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-500 hover:border-gray-400"
-                          onDragOver={e => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onDrop={e => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const fileList = e.dataTransfer?.files;
-                            if (fileList && fileList.length > 0) {
-                              if (fileList.length === 1) {
-                                setEditorContext({ type: 'newItem', index });
-                                setEditorFile(fileList[0]);
-                                setImageEditorOpen(true);
-                              } else {
-                                addFilesToPendingItems(fileList, index);
-                              }
-                            }
-                          }}
-                        >
-                          <span>Drag & drop or click to upload (multiple supported)</span>
+                          <h3 className="mt-4 text-xl font-light text-gray-900 dark:text-gray-100">Drop photos to auto-create entries</h3>
+                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            We&apos;ll make one entry per image and prefill titles from filenames. You can tweak titles and categories before saving.
+                          </p>
+                          <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                            <Button
+                              type="button"
+                              onClick={() => bulkUploadInputRef.current?.click()}
+                              className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                            >
+                              Select from computer
+                            </Button>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG, HEIC up to 10MB</span>
+                          </div>
                           <input
+                            ref={bulkUploadInputRef}
                             type="file"
-                            accept="image/*"
                             multiple
+                            accept="image/*,.heic,.heif"
                             className="hidden"
-                            onChange={e => {
-                              const fileList = e.target.files;
-                              if (fileList && fileList.length > 0) {
-                                if (fileList.length === 1) {
-                                  setEditorContext({ type: 'newItem', index });
-                                  setEditorFile(fileList[0]);
-                                  setImageEditorOpen(true);
-                                } else {
-                                  addFilesToPendingItems(fileList, index);
-                                }
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files.length > 0) {
+                                addFilesToPendingItems(e.target.files);
                               }
                               e.target.value = '';
                             }}
                           />
-                        </label>
-                      )}
-                    </div>
+                        </div>
+
+                        {modalError && (
+                          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                            {modalError}
+                          </div>
+                        )}
+
+                        <div className="space-y-6">
+                          {pendingItems.map((item, index) => {
+                            const fileInputId = `rotation-pending-upload-${item.id}`;
+                            return (
+                              <div key={item.id} className="relative rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700/70 dark:bg-gray-900">
+                                <button
+                                  type="button"
+                                  className="absolute right-4 top-4 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                                  onClick={() => removePendingItem(index)}
+                                  disabled={pendingItems.length === 1}
+                                >
+                                  Remove entry
+                                </button>
+                                <div className="grid gap-6 p-6 lg:grid-cols-[260px,1fr]">
+                                  <div className="space-y-3">
+                                    <div className="text-xs font-semibold uppercase tracking-widest text-gray-500">Cover photo</div>
+                                    <div
+                                      className={`group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border-2 border-dashed ${
+                                        item.previewUrl ? 'border-transparent bg-gray-100 dark:bg-gray-800' : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900'
+                                      }`}
+                                      onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                      onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleItemFileSelect(index, e.dataTransfer?.files || null);
+                                      }}
+                                    >
+                                      {item.previewUrl ? (
+                                        <>
+                                          <img
+                                            src={item.previewUrl}
+                                            alt={item.title || `Pending item ${index + 1}`}
+                                            className="h-full w-full object-cover"
+                                          />
+                                          <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/35" />
+                                          <div className="absolute inset-x-4 bottom-4 flex justify-between gap-2 opacity-0 transition group-hover:opacity-100">
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              variant="outline"
+                                              className="border-white bg-white/80 text-gray-800 hover:bg-white"
+                                              onClick={() => {
+                                                if (item.image) {
+                                                  setEditorContext({ type: 'newItem', index });
+                                                  setEditorFile(item.image);
+                                                  setImageEditorOpen(true);
+                                                } else {
+                                                  document.getElementById(fileInputId)?.click();
+                                                }
+                                              }}
+                                            >
+                                              Edit photo
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              variant="secondary"
+                                              className="border-white bg-black/60 text-white hover:bg-black"
+                                              onClick={() => setPendingItemField(index, 'image', null)}
+                                            >
+                                              Remove
+                                            </Button>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-sm text-gray-500">
+                                          <svg className="h-8 w-8 text-gray-400" viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M9 13l3-3 3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                          <span>Drop or tap to add a photo</span>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => document.getElementById(fileInputId)?.click()}
+                                          >
+                                            Select image
+                                          </Button>
+                                        </div>
+                                      )}
+                                      <input
+                                        id={fileInputId}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          handleItemFileSelect(index, e.target.files);
+                                          e.currentTarget.value = '';
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-5">
+                                    <div>
+                                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500">Title</label>
+                                      <Input
+                                        value={item.title}
+                                        onChange={(e) => setPendingItemField(index, 'title', e.target.value)}
+                                        placeholder="Album name"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="mb-1 flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-gray-500">
+                                        <span>Category</span>
+                                        <button
+                                          type="button"
+                                          className="text-[11px] font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                          onClick={() => {
+                                            const category = pendingItems[index].category;
+                                            if (!category) return;
+                                            setPendingItems(prev => prev.map((entry, i) => (i === index ? entry : { ...entry, category })));
+                                          }}
+                                        >
+                                          Apply to rest
+                                        </button>
+                                      </div>
+                                      <div className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-2 scrollbar-hide">
+                                        {categoryOptions.map(cat => {
+                                          const isActive = item.category === cat;
+                                          return (
+                                            <button
+                                              key={`${item.id}-${cat}`}
+                                              type="button"
+                                              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-medium transition ${
+                                                isActive
+                                                  ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
+                                                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500'
+                                              }`}
+                                              onClick={() => setPendingItemField(index, 'category', cat)}
+                                            >
+                                              {cat}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500">Notes</label>
+                                      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+                                        Add provenance details, editions, or stories later once the object is created.
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/60">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setPendingItems(prev => [...prev, createPendingItem()])}
+                            className="order-2 sm:order-1"
+                          >
+                            + Add blank entry
+                          </Button>
+                          <div className="order-1 flex justify-end gap-2 sm:order-2">
+                            <Button type="button" variant="ghost" onClick={closeAddPanel}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={addingItems} className="bg-black text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
+                              {addingItems ? 'Adding…' : 'Add Items'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
                   </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removePendingItem(index)}
-                  disabled={pendingItems.length === 1}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPendingItems(prev => [...prev, createPendingItem()])}
-          >
-            + Add another item
-          </Button>
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => { resetPendingItems(); setShowAddModal(false); }}>Cancel</Button>
-            <Button type="submit" disabled={addingItems} className="bg-black text-white">
-              {addingItems ? 'Adding…' : 'Add Items'}
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+              )}
             </div>
           </div>
 
@@ -838,8 +957,7 @@ export default function NewRotationPage() {
                     <div
                       className="held-card p-6 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 cursor-pointer hover:border-black transition-all mt-6"
                       onClick={() => {
-                        setModalError('');
-                        setShowAddModal(true);
+                        openAddPanel();
                         setPendingItems(prev => (prev.length === 0 ? [createPendingItem()] : prev));
                       }}
                       onDragOver={e => {
@@ -851,8 +969,7 @@ export default function NewRotationPage() {
                         e.stopPropagation();
                         const fileList = e.dataTransfer?.files;
                         if (fileList && fileList.length > 0) {
-                          setModalError('');
-                          setShowAddModal(true);
+                          openAddPanel();
                           setPendingItems(prev => (prev.length === 0 ? [createPendingItem()] : prev));
                           addFilesToPendingItems(fileList);
                         }

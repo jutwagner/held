@@ -2,12 +2,14 @@ import React, { useRef, useState } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import app from '@/lib/firebase';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl: string; setAvatarUrl: (url: string) => void }) {
   const fallbackAvatar = '/img/placeholder.svg';
   const [preview, setPreview] = useState<string>(avatarUrl && avatarUrl.trim() ? avatarUrl : fallbackAvatar);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -19,11 +21,17 @@ export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl:
     };
     reader.readAsDataURL(file);
 
+    if (!user?.uid) {
+      setUploading(false);
+      return;
+    }
+
     // Upload to Firebase Storage
     setUploading(true);
     try {
       const storage = getStorage(app);
-      const storageRef = ref(storage, `avatars/${Date.now()}_${file.name}`);
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_/]/g, '_');
+      const storageRef = ref(storage, `users/${user.uid}/avatar/${Date.now()}_${safeName}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       setAvatarUrl(url);

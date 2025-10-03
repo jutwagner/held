@@ -694,7 +694,9 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 .active {
   filter:invert(1);
 }
-
+.dark .active {
+  filter: invert(0) !important;
+}
 
 .status-bar-overlay {
   position: fixed;
