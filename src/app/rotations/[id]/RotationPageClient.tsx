@@ -201,11 +201,11 @@ function RotationPageClient({ id }: { id: string }) {
   ].join(' ');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed ">
       {/* Sticky Group Header */}
       <header className={headerClassName}>
         {editing && (
-          <div className="sticky top-0 z-40">
+          <div className="sticky top-0 z-40 bg-black">
             <div className="bg-black dark:bg-gray-800 text-white px-6 sm:px-8 py-3 flex items-center justify-between">
               <div className="text-sm font-medium tracking-wide uppercase">Editing Rotation</div>
               <div className="flex items-center gap-2">
@@ -221,12 +221,12 @@ function RotationPageClient({ id }: { id: string }) {
 
         {/* Cover Image Background - Integrated into header */}
         {hasCoverImage && (
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0  bg-black">
             <Image
               src={coverImageSrc}
               alt="Rotation cover"
               fill
-              className="object-cover"
+              className="object-cover opacity-60"
               priority
             />
             <div className="absolute inset-0 bg-white/20 dark:bg-gray-900/60 backdrop-blur-sm" />

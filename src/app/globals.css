@@ -691,6 +691,10 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 }
 
 
+.bg-black{background: black;}
+
+.opacity-60{opacity: .6}
+
 .active {
   filter:invert(1);
 }
@@ -772,4 +776,13 @@ body {
 
 .no-padding{
   padding: 0;
+}
+
+.platform-horizontal-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.platform-horizontal-scroll::-webkit-scrollbar {
+  display: none;
 }

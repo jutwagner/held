@@ -42,6 +42,7 @@ export default function NewRotationPage() {
     category: string;
     image: File | null;
     previewUrl: string | null;
+    notes: string;
   };
 
   const createPendingItem = (overrides: Partial<PendingItem> = {}): PendingItem => ({
@@ -52,6 +53,7 @@ export default function NewRotationPage() {
     category: '',
     image: null,
     previewUrl: null,
+    notes: '',
     ...overrides,
   });
 
@@ -224,6 +226,7 @@ export default function NewRotationPage() {
       ...item,
       index,
       title: item.title.trim(),
+      notes: item.notes.trim(),
     }));
 
     const validItems = trimmedItems.filter(item => item.title && item.category);
@@ -446,17 +449,17 @@ export default function NewRotationPage() {
         onApply={handleEditorApplyFile}
         onUseOriginal={handleEditorUseOriginal}
       />
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed overflow-x-hidden">
         <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
           <Button variant="ghost" asChild className="mr-4 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
             <Link href="/rotations">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Rotations
+              Back
             </Link>
           </Button>
-          <h1 className="text-3xl font-serif font-medium text-gray-900 dark:text-gray-100">Create New Rotation</h1>
+          <h1 className="text-3xl font-serif font-medium text-gray-900 dark:text-gray-100">Create Rotation</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -640,8 +643,8 @@ export default function NewRotationPage() {
               </form>
 
               {addPanelOpen && (
-                <div className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm">
-                  <div className="flex h-full w-full flex-col bg-white shadow-2xl dark:bg-gray-950">
+                <div className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm overflow-x-hidden">
+                  <div className="flex h-full w-full flex-col bg-white shadow-2xl dark:bg-gray-950 overflow-x-hidden">
                     <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-800">
                       <button
                         type="button"
@@ -649,12 +652,11 @@ export default function NewRotationPage() {
                         onClick={closeAddPanel}
                       >
                         <ArrowLeft className="h-4 w-4" />
-                        Back to rotation setup
+                        Back
                       </button>
                       <div className="text-right">
-                        <h2 className="text-2xl font-serif text-gray-900 dark:text-gray-100">Add items to this rotation</h2>
+                        <h2 className="text-2xl font-serif text-gray-900 dark:text-gray-100">Add items</h2>
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                          Drop multiple images or create entries manually. You can refine details later from the registry.
                         </p>
                       </div>
                     </div>
@@ -812,7 +814,7 @@ export default function NewRotationPage() {
                                       />
                                     </div>
                                   </div>
-                                  <div className="space-y-5">
+                                  <div className="space-y-5 min-w-0">
                                     <div>
                                       <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500">Title</label>
                                       <Input
@@ -836,12 +838,13 @@ export default function NewRotationPage() {
                                           Apply to rest
                                         </button>
                                       </div>
-                                      <div className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-2 scrollbar-hide">
-                                        {categoryOptions.map(cat => {
-                                          const isActive = item.category === cat;
-                                          return (
-                                            <button
-                                              key={`${item.id}-${cat}`}
+                                      <div className="relative">
+                                        <div className="flex max-w-full gap-2 overflow-x-auto pb-2 pr-6 scrollbar-hide">
+                                          {categoryOptions.map(cat => {
+                                            const isActive = item.category === cat;
+                                            return (
+                                              <button
+                                                key={`${item.id}-${cat}`}
                                               type="button"
                                               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-medium transition ${
                                                 isActive
@@ -852,8 +855,10 @@ export default function NewRotationPage() {
                                             >
                                               {cat}
                                             </button>
-                                          );
-                                        })}
+                                            );
+                                          })}
+                                        </div>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80" />
                                       </div>
                                     </div>
                                     <div>
