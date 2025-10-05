@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Send, User, Calendar, Tag as TagIcon } from 'luci
 import { getUser, toggleLike, getLikesCount, hasUserLiked, addComment, getComments, subscribeToComments } from '@/lib/firebase-services';
 import Link from 'next/link';
 import DMModal from './DMModal';
+import TagList from './TagList';
 
 interface PostCardProps {
   post: HeldObject;
@@ -383,19 +384,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         )}
         {post.notes && <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{post.notes}</p>}
         
-        {/* Tags 
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {post.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
+        {Array.isArray(post.tags) && post.tags.length > 0 && (
+          <div className="mb-3">
+            <TagList tags={post.tags} limit={6} size="xs" />
           </div>
-        )}*/}
+        )}
 
         {/* Post Date */}
         {/* <div className="flex items-center text-xs text-gray-500 mb-3">

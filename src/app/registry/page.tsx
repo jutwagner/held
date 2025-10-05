@@ -14,6 +14,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { debounce } from '@/lib/performance';
+import TagList from '@/components/TagList';
 
 import { MobileBottomBar } from '@/components/Navigation';
 
@@ -768,28 +769,11 @@ function ObjectCard({ object }: { object: HeldObject }) {
         </div>
 
 
-          {/* Tags 
-          <div className="mt-auto">
-            {Array.isArray(object.tags) && object.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4 max-h-12 overflow-hidden">
-                {object.tags.slice(0, 6).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-                {object.tags.length > 6 && (
-                  <span className="px-3 py-1 bg-white/70 text-xs text-gray-800 rounded-full border border-white/60 ring-1 ring-black/5 font-mono">
-                    +{object.tags.length - 6}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-*/}
+        <div className="mt-4">
+          {Array.isArray(object.tags) && object.tags.length > 0 && (
+            <TagList tags={object.tags} limit={6} size="xs" />
+          )}
+        </div>
 
 
 

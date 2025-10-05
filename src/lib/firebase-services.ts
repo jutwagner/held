@@ -436,6 +436,44 @@ export function subscribeObjects(
   return unsubscribe;
 }
 
+export function subscribePublicObjectsByTag(
+  tag: string,
+  callback: (objects: HeldObject[]) => void,
+  limitCount: number = 60
+): () => void {
+  const normalized = (tag || '').trim();
+  if (!normalized) {
+    callback([]);
+    return () => {};
+  }
+
+  const objectsRef = collection(db, 'objects');
+  const q = query(
+    objectsRef,
+    where('isPublic', '==', true),
+    where('tags', 'array-contains', normalized),
+    orderBy('createdAt', 'desc'),
+    limit(limitCount)
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot: QuerySnapshot<DocumentData>) => {
+      const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as HeldObject[];
+      callback(objects);
+    },
+    (error) => {
+      console.error('subscribePublicObjectsByTag error', error);
+      callback([]);
+    }
+  );
+
+  return unsubscribe;
+}
+
 // Get objects with pagination for better performance
 export async function getObjectsPaginated(
   userId: string, 

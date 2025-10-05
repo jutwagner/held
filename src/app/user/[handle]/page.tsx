@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/Badge';
 import { ProfileSkeleton } from '@/components/skeletons/ProfileSkeleton';
 import { ChevronLeft, ChevronRight, Settings, Globe, Lock } from 'lucide-react';
+import TagList from '@/components/TagList';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -136,7 +137,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 ">
       {/* Header */}
       <div className="full-bleed bg-white dark:bg-gray-800 shadow-sm">
-        <div className="held-container held-container-wide py-6 align-center">
+        <div className="px-6 py-6 align-center">
           <div className="flex items-center justify-between">
             <Link
               href="/"
@@ -157,7 +158,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="held-container held-container-wide pt-8 align-center mobile-no-top-padding">
+      <div className="pt-8 align-center mobile-no-top-padding">
         {/* Profile Header */}
         <div className="flex justify-center mb-8">
           <div className="w-full">
@@ -597,11 +598,11 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative full-bleed">
       <div ref={containerRef} className="held-container held-container-wide px-0">
-        <div ref={innerRef} className="pl-4 sm:pl-6 lg:pl-8">
-          <div className="relative transition-all duration-300" style={wrapperStyle}>
+        <div ref={innerRef} className="">
+          <div className=" pl-4 sm:pl-6 lg:pl-8 pb-4 relative transition-all duration-300" style={wrapperStyle}>
           <div
             ref={scrollContainerRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide py-12 pr-4 sm:pr-6 lg:pr-8"
+            className=" pl-4 sm:pl-6 lg:pl-8 pb-4  flex gap-4 overflow-x-auto scrollbar-hide py-12 pr-4 sm:pr-6 lg:pr-8"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onScroll={(e) => {
               const currentScroll = e.currentTarget.scrollLeft;

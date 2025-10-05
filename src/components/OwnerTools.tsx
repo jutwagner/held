@@ -11,6 +11,8 @@ import { useAuth, isHeldPlus } from '@/contexts/AuthContext';
 import { Clock, Shield, FileText, UploadCloud, RefreshCcw } from 'lucide-react';
 import AnchorIcon from '@/components/AnchorIcon';
 import Switch from '@/components/ui/switch';
+import Link from 'next/link';
+import TagList from './TagList';
 
 const CATEGORY_OPTIONS = [
   'Art',
@@ -199,13 +201,7 @@ export default function OwnerTools({
             {(Array.isArray((object as any).tags) && (object as any).tags.length > 0) && (
               <div>
                 <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-1">Tags</div>
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {((object as any).tags as string[]).map((t, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-600 inline-flex items-center gap-2 text-xs">
-                      {t}
-                    </span>
-                  ))}
-                </div>
+                <TagList tags={(object as any).tags as string[]} size="xs" />
               </div>
             )}
             {(object.maker || object.year) && (

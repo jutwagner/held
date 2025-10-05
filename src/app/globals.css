@@ -695,6 +695,11 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
 
 .opacity-60{opacity: .6}
 
+.pb-4{
+  padding-bottom: 2rem;
+}
+
+
 .active {
   filter:invert(1);
 }
