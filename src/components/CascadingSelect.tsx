@@ -73,7 +73,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     if (!category) return;
     
     try {
-      const brandsData = await getBrandsByCategory(category, 100);
+      const brandsData = await getBrandsByCategory(category, 500);
       const uniqueBrands = Array.from(new Set(brandsData.map(item => item.brand).filter(Boolean)));
       setBrands(uniqueBrands.sort());
     } catch (error) {
@@ -86,7 +86,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     if (!category || !brand) return;
     
     try {
-      const itemsData = await getItemsByBrand(category, brand, 100);
+      const itemsData = await getItemsByBrand(category, brand, 500);
       const uniqueItems = Array.from(new Set(itemsData.map(item => item.item).filter(Boolean)));
       setItems(uniqueItems.sort());
     } catch (error) {

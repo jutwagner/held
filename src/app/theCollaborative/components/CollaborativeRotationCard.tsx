@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { HeldObject, Rotation } from '@/types';
 import { getObject, getUser } from '@/lib/firebase-services';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -191,6 +192,38 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
         {rotation.description && (
           <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">{rotation.description}</p>
         )}
+        
+        {/* Maker/Artist tags from rotation objects */}
+        {rotationObjects.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {Array.from(new Set(rotationObjects
+                .map(obj => obj.maker)
+                .filter(Boolean)
+              )).slice(0, 6).map((maker) => (
+                <Link
+                  key={maker}
+                  href={`/tags/${encodeURIComponent(maker!)}`}
+                  className="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                >
+                  {maker}
+                </Link>
+              ))}
+              {Array.from(new Set(rotationObjects
+                .map(obj => obj.maker)
+                .filter(Boolean)
+              )).length > 6 && (
+                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+                  +{Array.from(new Set(rotationObjects
+                    .map(obj => obj.maker)
+                    .filter(Boolean)
+                  )).length - 6}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-400 dark:text-gray-500">

@@ -384,6 +384,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         )}
         {post.notes && <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{post.notes}</p>}
         
+        {/* Maker/Artist as clickable tag */}
+        {post.maker && (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/tags/${encodeURIComponent(post.maker)}`}
+                className="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+              >
+                {post.maker}
+              </Link>
+            </div>
+          </div>
+        )}
+
         {Array.isArray(post.tags) && post.tags.length > 0 && (
           <div className="mb-3">
             <TagList tags={post.tags} limit={6} size="xs" />

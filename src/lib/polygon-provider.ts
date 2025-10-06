@@ -26,7 +26,6 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: 'eth_blockNumber',
@@ -77,7 +76,6 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: 'eth_getBlockByNumber',
@@ -120,7 +118,6 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
         const response = await fetch(this.connection.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          referrerPolicy: 'no-referrer',
           body: JSON.stringify({
             jsonrpc: '2.0',
             method: method,
@@ -150,7 +147,6 @@ class CustomPolygonProvider extends ethers.providers.StaticJsonRpcProvider {
       const response = await fetch(this.connection.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        referrerPolicy: 'no-referrer',
         body: JSON.stringify({
           jsonrpc: '2.0',
           method: 'eth_getBlockByNumber',

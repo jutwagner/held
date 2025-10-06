@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Map Vision tags → Held categories
 const TAG_TO_CATEGORY: Record<string, string> = {
-  "speaker": "Audio",
-  "headphones": "Audio", 
-  "turntable": "Audio",
-  "amplifier": "Audio",
+  // Audio/HiFi
+  "speaker": "HiFi",
+  "headphones": "HiFi", 
+  "turntable": "HiFi",
+  "amplifier": "HiFi",
+  "stereo": "HiFi",
+  "audio": "HiFi",
+  "sound": "HiFi",
+  "music": "Music",
+  "vinyl": "Music",
+  "record": "Music",
+  "cd": "Music",
+  "tape": "Music",
+  
+  // Photography
   "camera": "Photography",
   "lens": "Photography",
   "photography": "Photography",
@@ -13,14 +24,52 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "mirrorless": "Photography",
   "film camera": "Photography",
   "digital camera": "Photography",
-  "bicycle": "Bicycles",
+  "photo": "Photography",
+  "picture": "Photography",
+  
+  // Transportation
+  "bicycle": "Bicycle",
+  "bike": "Bicycle",
+  "car": "Auto",
+  "automobile": "Auto",
+  "vehicle": "Auto",
+  "motorcycle": "Moto",
+  "moto": "Moto",
+  "scooter": "Moto",
+  
+  // Furniture
   "chair": "Furniture",
   "sofa": "Furniture",
-  "watch": "Watches",
-  "shoe": "Apparel",
-  "bag": "Apparel",
-  "record": "Media",
-  "vinyl": "Media",
+  "table": "Furniture",
+  "desk": "Furniture",
+  "bed": "Furniture",
+  "lamp": "Lighting",
+  "light": "Lighting",
+  "lighting": "Lighting",
+  
+  // Timepieces
+  "watch": "Timepieces",
+  "clock": "Timepieces",
+  "timepiece": "Timepieces",
+  "wristwatch": "Timepieces",
+  
+  // Fashion
+  "shoe": "Fashion",
+  "shoes": "Fashion",
+  "bag": "Fashion",
+  "handbag": "Fashion",
+  "purse": "Fashion",
+  "clothing": "Fashion",
+  "dress": "Fashion",
+  "shirt": "Fashion",
+  "jacket": "Fashion",
+  "hat": "Fashion",
+  "jewelry": "Fashion",
+  "ring": "Fashion",
+  "necklace": "Fashion",
+  "bracelet": "Fashion",
+  
+  // Tech
   "computer": "Tech",
   "laptop": "Tech",
   "phone": "Tech",
@@ -33,6 +82,11 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "console": "Tech",
   "vr": "Tech",
   "headset": "Tech",
+  "electronic": "Tech",
+  "device": "Tech",
+  "gadget": "Tech",
+  
+  // Art
   "painting": "Art",
   "art": "Art",
   "sculpture": "Art",
@@ -46,22 +100,93 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "frame": "Art",
   "gallery": "Art",
   "museum": "Art",
+  "artwork": "Art",
+  "print": "Art",
+  "poster": "Art",
+  
+  // Books
+  "book": "Books",
+  "books": "Books",
+  "magazine": "Books",
+  "newspaper": "Books",
+  "document": "Books",
+  "text": "Books",
+  "reading": "Books",
+  
+  // Instruments
+  "guitar": "Instruments",
+  "piano": "Instruments",
+  "violin": "Instruments",
+  "drum": "Instruments",
+  "instrument": "Instruments",
+  "music instrument": "Instruments",
+  
+  // Industrial Design
+  "tool": "Industrial Design",
+  "tools": "Industrial Design",
+  "machine": "Industrial Design",
+  "equipment": "Industrial Design",
+  "appliance": "Industrial Design",
+  
+  // Everyday Carry
+  "knife": "Everyday Carry",
+  "pen": "Everyday Carry",
+  "pencil": "Everyday Carry",
+  "notebook": "Everyday Carry",
+  "wallet": "Everyday Carry",
+  "keys": "Everyday Carry",
+  
+  // Ephemera
+  "paper": "Ephemera",
+  "document": "Ephemera",
+  "ticket": "Ephemera",
+  "postcard": "Ephemera",
+  "stamp": "Ephemera",
+  "vintage": "Vintage",
+  "antique": "Vintage",
+  "old": "Vintage",
+  "retro": "Vintage"
 };
 
 // Map Azure Vision categories → Held categories
 const CATEGORY_MAPPING: Record<string, string> = {
+  // Animals (often in art context)
   "animal_cat": "Art",
   "animal_dog": "Art", 
   "animal_bird": "Art",
+  "animal_horse": "Art",
+  "animal_fish": "Art",
+  
+  // Text and documents
   "text_sign": "Art",
-  "text_document": "Art",
+  "text_document": "Books",
+  "text_book": "Books",
+  "text_magazine": "Books",
+  "text_newspaper": "Books",
+  
+  // Outdoor scenes
   "outdoor_landscape": "Art",
   "outdoor_nature": "Art",
+  "outdoor_forest": "Art",
+  "outdoor_mountain": "Art",
+  "outdoor_beach": "Art",
+  "outdoor_city": "Art",
+  
+  // Indoor scenes
   "indoor_room": "Furniture",
   "indoor_kitchen": "Furniture",
   "indoor_bedroom": "Furniture",
+  "indoor_living_room": "Furniture",
+  "indoor_office": "Tech",
+  "indoor_studio": "Art",
+  
+  // People
   "people_portrait": "Art",
   "people_group": "Art",
+  "people_selfie": "Art",
+  "people_family": "Art",
+  
+  // Transportation
   "trans_car": "Auto",
   "trans_truck": "Auto",
   "trans_motorcycle": "Moto",
@@ -70,10 +195,30 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "trans_train": "Auto",
   "trans_airplane": "Auto",
   "trans_boat": "Auto",
+  "trans_helicopter": "Auto",
+  
+  // Abstract and art
   "abstract_rect": "Art",
   "abstract": "Art",
   "abstract_nature": "Art",
   "abstract_other": "Art",
+  "abstract_geometric": "Art",
+  "abstract_colorful": "Art",
+  
+  // Objects and items
+  "object_furniture": "Furniture",
+  "object_electronics": "Tech",
+  "object_clothing": "Fashion",
+  "object_jewelry": "Fashion",
+  "object_tool": "Industrial Design",
+  "object_kitchen": "Furniture",
+  "object_bathroom": "Furniture",
+  "object_bedroom": "Furniture",
+  "object_living_room": "Furniture",
+  "object_office": "Tech",
+  "object_studio": "Art",
+  "object_gallery": "Art",
+  "object_museum": "Art"
 };
 
 // Define valid categories that can be auto-selected
@@ -219,12 +364,27 @@ function extractBrandCategory(data: any) {
   console.log('🏷️ Tags found:', tags);
   
   for (const tag of tags) {
-    if (TAG_TO_CATEGORY[tag]) {
-      console.log(`✅ Found better tag-based mapping: ${tag} → ${TAG_TO_CATEGORY[tag]}`);
-      category = TAG_TO_CATEGORY[tag];
-      categoryConfidence = 0.85; // Higher confidence for tag-based mapping
+    const normalizedTag = tag.toLowerCase().trim();
+    
+    // Direct match
+    if (TAG_TO_CATEGORY[normalizedTag]) {
+      console.log(`✅ Found direct tag-based mapping: ${tag} → ${TAG_TO_CATEGORY[normalizedTag]}`);
+      category = TAG_TO_CATEGORY[normalizedTag];
+      categoryConfidence = 0.9; // High confidence for direct tag mapping
       break;
     }
+    
+    // Partial match (check if tag contains any of our keywords)
+    for (const [keyword, mappedCategory] of Object.entries(TAG_TO_CATEGORY)) {
+      if (normalizedTag.includes(keyword) || keyword.includes(normalizedTag)) {
+        console.log(`✅ Found partial tag-based mapping: ${tag} (contains "${keyword}") → ${mappedCategory}`);
+        category = mappedCategory;
+        categoryConfidence = 0.8; // Good confidence for partial matches
+        break;
+      }
+    }
+    
+    if (category) break;
   }
 
   // Validate that the category is in our valid categories list
@@ -316,3 +476,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

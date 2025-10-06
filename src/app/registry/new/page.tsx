@@ -165,10 +165,16 @@ export default function NewObjectPage() {
       }
       // If neither brand nor item, keep current title
       
+      // Auto-set maker to "Artist" for Art and Music categories
+      let makerValue = brand;
+      if (category === 'Art' || category === 'Music') {
+        makerValue = 'Artist';
+      }
+      
       return {
         ...prev,
         category: category,
-        maker: brand,
+        maker: makerValue,
         title: newTitle
       };
     });
@@ -251,13 +257,18 @@ export default function NewObjectPage() {
 
   // Handle category box selection
   const handleCategorySelect = (category: string) => {
-    setFormData(prev => ({ ...prev, category }));
+    // Auto-set maker to "Artist" for Art and Music categories
+    let makerValue = '';
+    if (category === 'Art' || category === 'Music') {
+      makerValue = 'Artist';
+    }
+    
+    setFormData(prev => ({ ...prev, category, maker: makerValue, title: '' }));
     setSelectedCategory(category);
     setShowCascadingSelect(true);
     // Reset brand and item when changing category
     setSelectedBrand('');
     setSelectedItem('');
-    setFormData(prev => ({ ...prev, maker: '', title: '' }));
   };
 
   const steps = [
@@ -413,7 +424,13 @@ export default function NewObjectPage() {
         
         // Auto-fill form fields if confidence is high enough
         if (result.category && result.categoryConfidence && result.categoryConfidence > 0.5) {
-          setFormData(prev => ({ ...prev, category: result.category }));
+          // Auto-set maker to "Artist" for Art and Music categories
+          let makerValue = '';
+          if (result.category === 'Art' || result.category === 'Music') {
+            makerValue = 'Artist';
+          }
+          
+          setFormData(prev => ({ ...prev, category: result.category, maker: makerValue }));
           setSelectedCategory(result.category);
           setShowCascadingSelect(true); // Automatically show the cascading select
         }

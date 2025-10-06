@@ -471,7 +471,7 @@ export default function RegistryPage() {
                                   onClick={() => handleSort('title')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                                 >
-                                  Registry Item
+                                  Item
                                   {sortField === 'title' && (
                                     sortDirection === 'asc' ? 
                                     <ChevronUp className="h-4 w-4" /> : 
@@ -492,12 +492,12 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left">
+                              <th className="px-3 py-4 text-left">
                                 <button
                                   onClick={() => handleSort('isPublic')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                                 >
-                                  Visibility
+                                  Public
                                   {sortField === 'isPublic' && (
                                     sortDirection === 'asc' ? 
                                     <ChevronUp className="h-4 w-4" /> : 
@@ -505,12 +505,12 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left">
+                              <th className="px-3 py-4 text-left">
                                 <button
                                   onClick={() => handleSort('anchoring')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                                 >
-                                  Anchoring
+                                  Anchor
                                   {sortField === 'anchoring' && (
                                     sortDirection === 'asc'
                                       ? <ChevronUp className="h-4 w-4" />
@@ -518,7 +518,7 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left">
+                              <th className="px-3 py-4 text-left">
                                 <button
                                   onClick={() => handleSort('provenance')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -531,12 +531,12 @@ export default function RegistryPage() {
                                   )}
                                 </button>
                               </th>
-                              <th className="px-6 py-4 text-left">
+                              <th className="px-3 py-4 text-left">
                                 <button
                                   onClick={() => handleSort('updatedAt')}
                                   className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                                 >
-                                  Updated
+                                  Date
                                   {sortField === 'updatedAt' && (
                                     sortDirection === 'asc' ? 
                                     <ChevronUp className="h-4 w-4" /> : 

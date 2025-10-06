@@ -448,7 +448,9 @@ export function subscribePublicObjectsByTag(
   }
 
   const objectsRef = collection(db, 'objects');
-  const q = query(
+  
+  // Query for objects with the tag in their tags array
+  const tagsQuery = query(
     objectsRef,
     where('isPublic', '==', true),
     where('tags', 'array-contains', normalized),
@@ -456,22 +458,76 @@ export function subscribePublicObjectsByTag(
     limit(limitCount)
   );
 
-  const unsubscribe = onSnapshot(
-    q,
+  // Query for objects with the tag matching their maker field
+  const makerQuery = query(
+    objectsRef,
+    where('isPublic', '==', true),
+    where('maker', '==', normalized),
+    orderBy('createdAt', 'desc'),
+    limit(limitCount)
+  );
+
+  let tagsUnsubscribe: (() => void) | null = null;
+  let makerUnsubscribe: (() => void) | null = null;
+  let allObjects: HeldObject[] = [];
+  let tagsObjects: HeldObject[] = [];
+  let makerObjects: HeldObject[] = [];
+
+  const updateCallback = () => {
+    // Combine and deduplicate objects
+    const combined = [...tagsObjects, ...makerObjects];
+    const uniqueObjects = combined.filter((obj, index, self) => 
+      index === self.findIndex(o => o.id === obj.id)
+    );
+    
+    // Sort by creation date (newest first)
+    uniqueObjects.sort((a, b) => {
+      const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+      const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // Limit results
+    allObjects = uniqueObjects.slice(0, limitCount);
+    callback(allObjects);
+  };
+
+  tagsUnsubscribe = onSnapshot(
+    tagsQuery,
     (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const objects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
+      tagsObjects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
         id: doc.id,
         ...doc.data(),
       })) as HeldObject[];
-      callback(objects);
+      updateCallback();
     },
     (error) => {
-      console.error('subscribePublicObjectsByTag error', error);
-      callback([]);
+      console.error('subscribePublicObjectsByTag tags query error', error);
+      tagsObjects = [];
+      updateCallback();
     }
   );
 
-  return unsubscribe;
+  makerUnsubscribe = onSnapshot(
+    makerQuery,
+    (querySnapshot: QuerySnapshot<DocumentData>) => {
+      makerObjects = querySnapshot.docs.map((doc: import('firebase/firestore').QueryDocumentSnapshot) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as HeldObject[];
+      updateCallback();
+    },
+    (error) => {
+      console.error('subscribePublicObjectsByTag maker query error', error);
+      makerObjects = [];
+      updateCallback();
+    }
+  );
+
+  return () => {
+    if (tagsUnsubscribe) tagsUnsubscribe();
+    if (makerUnsubscribe) makerUnsubscribe();
+  };
 }
 
 // Get objects with pagination for better performance

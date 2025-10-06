@@ -39,7 +39,7 @@ export default function TagFeedClient({ tag }: TagFeedClientProps) {
             </Link>
             <h1 className="mt-4 text-3xl sm:text-4xl font-light tracking-tight">{title}</h1>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              A public feed of shared objects carrying the “{tag}” tag.
+              A public feed of shared objects tagged "{tag}" or made by "{tag}".
             </p>
           </div>
           <Button asChild variant="outline">
@@ -51,8 +51,8 @@ export default function TagFeedClient({ tag }: TagFeedClientProps) {
           <div className="py-24 flex justify-center text-gray-500 dark:text-gray-400">Loading…</div>
         ) : objects.length === 0 ? (
           <div className="py-24 text-center text-gray-500 dark:text-gray-400">
-            <p className="text-lg">No public objects are tagged “{tag}” yet.</p>
-            <p className="mt-2 text-sm">Share something with this tag from your registry to see it here.</p>
+            <p className="text-lg">No public objects tagged "{tag}" or made by "{tag}" yet.</p>
+            <p className="mt-2 text-sm">Share something with this tag or maker from your registry to see it here.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -60,7 +60,7 @@ export default function TagFeedClient({ tag }: TagFeedClientProps) {
               <Link
                 key={object.id}
                 href={`/registry/${object.id}`}
-                className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden flex flex-col hover:border-gray-400 dark:hover:border-gray-600 transition"
+                className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden flex flex-col hover:border-gray-400 dark:hover:border-gray-600 transition shadow hover:shadow-md"
               >
                 <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
                   {object.images && object.images.length > 0 ? (
