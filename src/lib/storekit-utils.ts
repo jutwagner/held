@@ -24,11 +24,11 @@ export const StoreKitUtils = {
         console.warn('[StoreKitUtils] getProducts not available on Subscriptions plugin');
         return [];
       }
-      const result = await impl.getProducts({
+      const result: any = await impl.getProducts({
         productIds: ['com.held.app.heldplus']
       });
-      
-      return result.products.map(product => ({
+      const products: any[] = Array.isArray(result?.products) ? result.products : [];
+      return products.map((product: any) => ({
         productId: product.productId,
         title: product.title,
         description: product.description,
@@ -48,11 +48,11 @@ export const StoreKitUtils = {
         console.warn('[StoreKitUtils] purchaseProduct not available on Subscriptions plugin');
         return null;
       }
-      const result = await impl.purchaseProduct({
+      const result: any = await impl.purchaseProduct({
         productId: productId
       });
       
-      if (result.purchase) {
+      if (result?.purchase) {
         return {
           productId: result.purchase.productId,
           transactionId: result.purchase.transactionId,
@@ -73,9 +73,9 @@ export const StoreKitUtils = {
         console.warn('[StoreKitUtils] restorePurchases not available on Subscriptions plugin');
         return [];
       }
-      const result = await impl.restorePurchases();
-      
-      return result.purchases.map(purchase => ({
+      const result: any = await impl.restorePurchases();
+      const purchases: any[] = Array.isArray(result?.purchases) ? result.purchases : [];
+      return purchases.map((purchase: any) => ({
         productId: purchase.productId,
         transactionId: purchase.transactionId,
         receipt: purchase.receipt
