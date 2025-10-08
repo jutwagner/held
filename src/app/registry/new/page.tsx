@@ -86,7 +86,7 @@ export default function NewObjectPage() {
     switch (category) {
       case 'Art': return 'Artist';
       case 'Music': return 'Artist/Band';
-      case 'Photography': return 'Photographer';
+      case 'Photography': return 'Brand';
       case 'Books': return 'Author';
       case 'Fashion': return 'Designer/Brand';
       case 'Furniture': return 'Designer/Manufacturer';
@@ -94,7 +94,17 @@ export default function NewObjectPage() {
       case 'Movie': return 'Director/Studio';
       case 'Ephemera': return 'Creator/Publisher';
       case 'Industrial Design': return 'Designer/Manufacturer';
-      default: return 'Manufacturer';
+      case 'HiFi': return 'Brand/Manufacturer';
+      case 'Instruments': return 'Musician/Brand';
+      case 'Timepieces': return 'Brand/Manufacturer';
+      case 'Auto': return 'Brand/Manufacturer';
+      case 'Bicycle': return 'Brand/Manufacturer';
+      case 'Moto': return 'Brand/Manufacturer';
+      case 'Tech': return 'Brand/Manufacturer';
+      case 'Vintage': return 'Brand/Maker';
+      case 'Everyday Carry': return 'Brand/Maker';
+      case 'Miscellaneous': return 'Brand/Maker';
+      default: return 'Brand/Maker';
     }
   };
   const [currentStep, setCurrentStep] = useState(1);
@@ -1035,7 +1045,15 @@ export default function NewObjectPage() {
                           <Input
                             value={formData.maker}
                             onChange={(e) => setFormData(prev => ({ ...prev, maker: e.target.value }))}
-                            placeholder={formData.category === 'Art' ? 'Van Gogh' : formData.category === 'Music' ? 'The Beatles' : formData.category === 'Books' ? 'J.K. Rowling' : 'Herman Miller'}
+                            placeholder={
+                              formData.category === 'Art' ? 'Van Gogh' : 
+                              formData.category === 'Music' ? 'The Beatles' : 
+                              formData.category === 'Books' ? 'J.K. Rowling' : 
+                              formData.category === 'Photography' ? 'Canon' :
+                              formData.category === 'Fashion' ? 'Chanel' :
+                              formData.category === 'Tech' ? 'Apple' :
+                              'Herman Miller'
+                            }
                             className="text-xl py-6 border-0 border-b border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-gray-300 focus:ring-0 rounded-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100"
                           />
                         </div>

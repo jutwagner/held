@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { HeldObject, Rotation } from '@/types';
-import { getObject, getUser } from '@/lib/firebase-services';
+import { getObject, getUser, toggleLike, getLikesCount, hasUserLiked } from '@/lib/firebase-services';
+import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle } from 'lucide-react';
 
@@ -14,15 +15,17 @@ interface CollaborativeRotationCardProps {
 }
 
 export default function CollaborativeRotationCard({ rotation, onDelete }: CollaborativeRotationCardProps) {
+  const { firebaseUser, loading } = useAuth();
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rotationObjects, setRotationObjects] = useState<HeldObject[]>([]);
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [ownerName, setOwnerName] = useState<string | null>(null);
   const [ownerAvatar, setOwnerAvatar] = useState<string | null>(null);
-  const [likes, setLikes] = useState(() => Math.floor(Math.random() * 24) + 3);
-  const [comments, setComments] = useState(() => Math.floor(Math.random() * 8));
+  const [likes, setLikes] = useState(0);
+  const [comments, setComments] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -77,6 +80,34 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
     fetchOwner();
   }, [rotation.userId]);
 
+  // Fetch social data (likes, comments)
+  useEffect(() => {
+    const fetchSocialData = async () => {
+      if (!firebaseUser || loading) {
+        console.log('Rotation social data fetch skipped:', { firebaseUser: !!firebaseUser, loading });
+        return;
+      }
+      
+      console.log('Fetching rotation social data for:', rotation.id);
+      
+      try {
+        const [likesCount, hasLiked] = await Promise.all([
+          getLikesCount(rotation.id),
+          hasUserLiked(rotation.id, firebaseUser.uid)
+        ]);
+        console.log('Rotation social data fetched:', { likesCount, hasLiked });
+        setLikes(likesCount);
+        setLiked(hasLiked);
+      } catch (error) {
+        console.error('Error fetching rotation social data:', error);
+      }
+    };
+
+    if (firebaseUser && !loading) {
+      fetchSocialData();
+    }
+  }, [rotation.id, firebaseUser, loading]);
+
   const handleDelete = async () => {
     setConfirmOpen(false);
     setDeleting(true);
@@ -90,14 +121,42 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
     }
   };
 
-  const toggleLike = (e: React.MouseEvent) => {
+  const handleToggleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLiked(prev => {
-      const next = !prev;
-      setLikes(c => (next ? c + 1 : Math.max(0, c - 1)));
-      return next;
+    
+    console.log('Rotation like clicked:', { 
+      rotationId: rotation.id, 
+      firebaseUser: !!firebaseUser, 
+      loading, 
+      isLiking 
     });
+    
+    if (!firebaseUser || loading || isLiking) {
+      console.log('Cannot like rotation:', { firebaseUser: !!firebaseUser, loading, isLiking });
+      return;
+    }
+    
+    setIsLiking(true);
+    
+    // Optimistic update
+    const wasLiked = liked;
+    const oldCount = likes;
+    setLiked(!liked);
+    setLikes(prev => liked ? prev - 1 : prev + 1);
+    
+    try {
+      console.log('Calling toggleLike for rotation:', rotation.id);
+      await toggleLike(rotation.id, firebaseUser.uid);
+      console.log('Rotation like toggled successfully');
+    } catch (error) {
+      console.error('Error toggling rotation like:', error);
+      // Rollback optimistic update on error
+      setLiked(wasLiked);
+      setLikes(oldCount);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   return (
@@ -252,8 +311,9 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <button
               type="button"
-              onClick={toggleLike}
-              className={`flex items-center gap-1 transition ${liked ? 'text-rose-500' : 'hover:text-gray-700 dark:hover:text-gray-200'}`}
+              onClick={handleToggleLike}
+              disabled={!firebaseUser || isLiking}
+              className={`flex items-center gap-1 transition ${liked ? 'text-rose-500' : 'hover:text-gray-700 dark:hover:text-gray-200'} ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <Heart className={`h-4 w-4 ${liked ? 'fill-current' : 'stroke-current'}`} />
               <span className="font-medium">{likes}</span>

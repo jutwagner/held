@@ -175,7 +175,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       const currentVersion = (passport.anchoring?.version || 0) + 1;
       
       // Anchor the Passport (premium/full data for Held+) in async mode
-      const result = await anchorPassport(passport, uri, currentVersion, 'full', 'async');
+      const result = await anchorPassport(passport, uri, currentVersion, 'full', 'async', user?.uid);
       setSubmittedTxHash(result.txHash);
       setInfo('Anchoring started. Confirmation will complete in background.');
       
@@ -200,7 +200,7 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
       const baseURL = window.location.origin;
       const uri = generatePassportURI(passport, baseURL);
       const version = (passport.anchoring?.version || 0) + 1 || 1;
-      const result = await anchorPassport(passport, uri, version, 'core', 'async');
+      const result = await anchorPassport(passport, uri, version, 'core', 'async', user?.uid);
       setSubmittedTxHash(result.txHash);
       setInfo('Anchoring started. Confirmation will complete in background.');
     } catch (error) {
@@ -335,23 +335,43 @@ export default function BlockchainAnchoring({ passport, onAnchoringUpdate }: Blo
                 )}
               </div>
             ) : (
-              <Button
-                onClick={handleAnchorBasic}
-                disabled={isAnchoring}
-                className="w-full bg-black hover:bg-gray-800 text-white border-0 transition-colors"
-              >
-                {isAnchoring ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Anchoring...
-                  </>
-                ) : (
-                  <>
-                    <Anchor className="h-4 w-4 mr-2" />
-                    Create Basic Proof
-                  </>
-                )}
-              </Button>
+              isUserHeldPlus ? (
+                <Button
+                  onClick={handleAnchorBasic}
+                  disabled={isAnchoring}
+                  className="w-full bg-black hover:bg-gray-800 text-white border-0 transition-colors"
+                >
+                  {isAnchoring ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Anchoring...
+                    </>
+                  ) : (
+                    <>
+                      <Anchor className="h-4 w-4 mr-2" />
+                      Create Basic Proof
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="w-full p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Crown className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Held+ Required</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Basic blockchain anchoring is a Held+ feature
+                  </p>
+                  <Button
+                    onClick={() => window.location.href = '/settings/premium'}
+                    size="sm"
+                    className="bg-black hover:bg-gray-800 text-white border-0 transition-colors"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade to Held+
+                  </Button>
+                </div>
+              )
             )}
             
             {/* Enhanced anchoring for Held+ users */}

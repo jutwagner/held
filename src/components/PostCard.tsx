@@ -18,6 +18,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
+  const [isLiking, setIsLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -149,6 +150,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       postId: post.id, 
       userId: firebaseUser?.uid,
       loading,
+      isLiking,
       firebaseUser: firebaseUser ? {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
@@ -165,6 +167,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       console.log('Auth still loading, cannot like yet');
       return;
     }
+    
+    if (isLiking) {
+      console.log('Already processing like, ignoring click');
+      return;
+    }
+    
+    // Prevent multiple clicks
+    setIsLiking(true);
     
     // Optimistic update - show change immediately
     const wasLiked = liked;
@@ -185,6 +195,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       // Rollback optimistic update on error
       setLiked(wasLiked);
       setLikesCount(oldCount);
+    } finally {
+      // Always reset the liking state
+      setIsLiking(false);
     }
   };
 
@@ -419,11 +432,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <div className="flex items-center space-x-4">
             <button
               onClick={handleLike}
-              disabled={!firebaseUser}
+              disabled={!firebaseUser || isLiking}
               className={`flex items-center space-x-1 transition-colors ${
                 liked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-              } ${!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-              title={!firebaseUser ? 'Sign in to like posts' : 'Like this post'}
+              } ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              title={!firebaseUser ? 'Sign in to like posts' : isLiking ? 'Processing...' : 'Like this post'}
             >
               <Heart className={`h-5 w-5 ${liked ? 'fill-current' : ''}`} />
               <span className="text-sm">{likesCount}</span>

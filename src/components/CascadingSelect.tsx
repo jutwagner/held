@@ -32,7 +32,7 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
     switch (category) {
       case 'Art': return 'Artist';
       case 'Music': return 'Artist/Band';
-      case 'Photography': return 'Photographer';
+      case 'Photography': return 'Brand';
       case 'Books': return 'Author';
       case 'Fashion': return 'Designer/Brand';
       case 'Furniture': return 'Designer/Manufacturer';
@@ -40,6 +40,16 @@ export default function CascadingSelect({ onSelectionChange, className = '', pre
       case 'Movie': return 'Director/Studio';
       case 'Ephemera': return 'Creator/Publisher';
       case 'Industrial Design': return 'Designer/Manufacturer';
+      case 'HiFi': return 'Brand/Manufacturer';
+      case 'Instruments': return 'Musician/Brand';
+      case 'Timepieces': return 'Brand/Manufacturer';
+      case 'Auto': return 'Brand/Manufacturer';
+      case 'Bicycle': return 'Brand/Manufacturer';
+      case 'Moto': return 'Brand/Manufacturer';
+      case 'Tech': return 'Brand/Manufacturer';
+      case 'Vintage': return 'Brand/Maker';
+      case 'Everyday Carry': return 'Brand/Maker';
+      case 'Miscellaneous': return 'Brand/Maker';
       default: return 'Brand/Maker';
     }
   };

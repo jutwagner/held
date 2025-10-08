@@ -10,14 +10,41 @@ type Body = {
   uri?: string;
   version?: number;
   mode?: 'sync' | 'async'; // async returns quickly and confirms in background
+  uid?: string; // User UID for authentication
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { kind = 'core', passport, uri = '', version = 1, mode = 'sync' } = (await req.json()) as Body;
+    const { kind = 'core', passport, uri = '', version = 1, mode = 'sync', uid } = (await req.json()) as Body;
 
     if (!passport?.id) {
       return NextResponse.json({ error: 'Missing passport.id' }, { status: 400 });
+    }
+
+    if (!uid) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: 'You must be signed in to anchor passports'
+      }, { status: 401 });
+    }
+
+    // Check if user has Held+ subscription
+    try {
+      const userDoc = await db.collection('users').doc(uid).get();
+      const userData = userDoc.data();
+      
+      if (!userData?.premium?.active) {
+        return NextResponse.json({ 
+          error: 'Held+ subscription required',
+          details: 'Enhanced blockchain anchoring is a Held+ feature. Please upgrade to anchor passports.'
+        }, { status: 403 });
+      }
+    } catch (error) {
+      console.error('[API/anchor] Error checking user subscription:', error);
+      return NextResponse.json({ 
+        error: 'Unable to verify subscription',
+        details: 'Please try again or contact support'
+      }, { status: 500 });
     }
 
     const pk = process.env.PRIVATE_KEY;

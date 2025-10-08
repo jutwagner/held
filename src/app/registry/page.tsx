@@ -742,17 +742,15 @@ function ObjectCard({ object }: { object: HeldObject }) {
                   <span className="px-2 py-0.5 rounded-full bg-white/70 dark:bg-gray-700/70 border border-white/60 dark:border-gray-600/60 ring-1 ring-black/5 dark:ring-white/5 font-mono text-[11px] text-gray-700 dark:text-gray-300">+{object.chain.length - 2} more</span>
                 )}
               </div>
-            ) : (
-              <span className="text-gray-400 dark:text-gray-500 italic">No chain of ownership</span>
-            )}
+            ) : ''}
           </div>
 
         {/* Meta row */}
         <div className="flex items-center justify-between text-sm mt-4">
           <div className="flex items-center gap-2 border-none ">
-            <span className="px-2.5 ring-1 ring-black/5 dark:ring-white/5 font-mono text-[12px] text-gray-800 dark:text-gray-200">
-              {object.year && !isNaN(object.year) ? `${object.year}` : 'Year N/A'}
-            </span>
+            
+            {object.year && !isNaN(object.year) ? <span className="px-2.5 ring-1 ring-black/5 dark:ring-white/5 font-mono text-[12px] text-gray-800 dark:text-gray-200">${object.year}</span> : ''}
+         
             {typeof object.value !== 'undefined' && (
               <span className="px-2.5  ring-1 ring-black/5 dark:ring-white/5 border-none font-mono text-[12px] text-emerald-700 dark:text-emerald-400">
                 {isNaN(object.value) ? 'Value N/A' : formatCurrency(object.value)}
@@ -763,7 +761,7 @@ function ObjectCard({ object }: { object: HeldObject }) {
             {object.isPublic ? (
               <span></span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-gray-400 dark:text-gray-500"><EyeOff className="h-4 w-4" /> Private</span>
+              <span className="inline-flex items-center gap-1 text-gray-400 dark:text-gray-500">Private</span>
             )}
           </div>
         </div>

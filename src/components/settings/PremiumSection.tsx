@@ -1,11 +1,13 @@
 import React from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
 import PremiumUpsell from './PremiumUpsell';
+import CapacitorPaymentComponent from './CapacitorPaymentComponent';
 import { UserDoc } from '@/types';
 import UpdatePaymentForm from './UpdatePaymentForm';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import InvoiceHistory from './InvoiceHistory';
+import { shouldUseCapacitorPayments } from '@/lib/capacitor-utils';
 
 export default function PremiumSection({ user }: { user?: UserDoc }) {
   // All state declarations at the very top
@@ -27,6 +29,12 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
   React.useEffect(() => {
     setLocalUser(user);
     if (!user?.uid) return;
+    
+    // Debug logging for specific user
+    if (user?.email === 'justwagner@gmail.com') {
+      console.log('[PremiumSection] Setting up Firestore listener for user:', user.uid);
+    }
+    
     // Listen for Firestore changes to this user
     // Use 'unknown' for window and doc, then typecast as needed
     const heldFirebase = (window as unknown as { heldFirebase?: unknown }).heldFirebase;
@@ -34,13 +42,24 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? (heldFirebase as any).firestore().collection('users').doc(user.uid)
           .onSnapshot((doc: DocumentSnapshot) => {
-            setLocalUser(doc.data() as UserDoc);
+            const userData = doc.data() as UserDoc;
+            setLocalUser(userData);
+            
+            // Debug logging for specific user
+            if (user?.email === 'justwagner@gmail.com') {
+              console.log('[PremiumSection] Firestore user data updated:', {
+                premium: userData?.premium,
+                active: userData?.premium?.active,
+                cancelRequested: userData?.premium?.cancelRequested,
+                plan: userData?.premium?.plan
+              });
+            }
           })
       : null;
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, [user?.uid]);
+  }, [user?.uid, user?.email]);
 
   // Fallback: clear cancelRequested if premium is active
   React.useEffect(() => {
@@ -64,6 +83,12 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
 
   const handleCancel = async () => {
     setCancelLoading(true);
+    
+    // Debug logging for specific user
+    if (user?.email === 'justwagner@gmail.com') {
+      console.log('[PremiumSection] Starting subscription cancellation for user:', user.uid);
+    }
+    
     // Optimistically update localUser for instant UI feedback
     setLocalUser(prev => prev ? {
       ...prev,
@@ -80,19 +105,34 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         body: JSON.stringify({ uid: user?.uid }),
       });
       const data = await res.json();
+      
+      // Debug logging for specific user
+      if (user?.email === 'justwagner@gmail.com') {
+        console.log('[PremiumSection] Cancel subscription response:', data);
+      }
+      
       if (data.success) {
         setCancelSuccess(true);
         setShowCancelDialog(false);
       } else {
         alert(data.error || 'Unable to cancel subscription.');
       }
-    } catch {
+    } catch (error) {
+      // Debug logging for specific user
+      if (user?.email === 'justwagner@gmail.com') {
+        console.error('[PremiumSection] Cancel subscription error:', error);
+      }
       alert('Unable to cancel subscription.');
     }
     setCancelLoading(false);
   };
 
   const handleUpgradeSuccess = () => {
+    // Debug logging for specific user
+    if (user?.email === 'justwagner@gmail.com') {
+      console.log('[PremiumSection] Upgrade success - updating local user state');
+    }
+    
     setLocalUser(prev => prev ? {
       ...prev,
       premium: {
@@ -109,8 +149,16 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: user.uid, cancelRequested: false }),
         });
+        
+        // Debug logging for specific user
+        if (user?.email === 'justwagner@gmail.com') {
+          console.log('[PremiumSection] Clearing cancelRequested in Firestore for user:', user.uid);
+        }
       } catch (err) {
-        // Ignore error for now
+        // Debug logging for specific user
+        if (user?.email === 'justwagner@gmail.com') {
+          console.error('[PremiumSection] Error clearing cancelRequested:', err);
+        }
       }
     }
     setForceActive(true);
@@ -138,12 +186,14 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
   return (
     <section aria-labelledby="heldplus-header" className="mb-8">
       <div className="bg-gray-100 dark:bg-gray-600 rounded-xl p-6 shadow mb-4">
-        {/* DEBUG: Show premium status values */}
-        <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-900 dark:text-yellow-400">
-          <strong>DEBUG:</strong> premium.active: {String(localUser?.premium?.active)} | premium.cancelRequested: {String(localUser?.premium?.cancelRequested)} | premium.plan: {String(localUser?.premium?.plan)}
-        </div>
+        {/* Debug info only for specific user */}
+        {user?.email === 'justwagner@gmail.com' && (
+          <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-900 dark:text-yellow-400">
+            <strong>DEBUG:</strong> premium.active: {String(localUser?.premium?.active)} | premium.cancelRequested: {String(localUser?.premium?.cancelRequested)} | premium.plan: {String(localUser?.premium?.plan)}
+          </div>
+        )}
         <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-          Held+
+         x
           {hydrated && (
             forceActive ? (
               <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
@@ -172,6 +222,12 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         Experience Held at its highest level. Unlock advanced tools, refined design, and exclusive features crafted for those who expect more.
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+      <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Unlimted Registry Items</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Your whole collection, all yours.</div>
+        </div>
+
         <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
           <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Unlimited Rotations</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">Expand without boundaries.</div>
@@ -183,10 +239,6 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
         <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
           <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Vanity URLs</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">Your presence, distinctly yours.</div>
-        </div>
-        <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Saved Filters & Advanced Search</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">Precision at your fingertips.</div>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
           <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Exports & Encrypted Backups</div>
@@ -314,16 +366,40 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
             )}
           </>
         )}
-        {/* Always show the credit card form for non-premium users */}
+        {/* Show appropriate payment component based on platform */}
         {!localUser?.premium.active && (
-          <PremiumUpsell user={localUser} showCheckoutForm={true} onSuccess={handleUpgradeSuccess} />
+          shouldUseCapacitorPayments() ? (
+            <CapacitorPaymentComponent 
+              user={localUser} 
+              onSuccess={handleUpgradeSuccess}
+              onError={(error) => {
+                console.error('Payment error:', error);
+                alert(error);
+              }}
+            />
+          ) : (
+            <PremiumUpsell user={localUser} showCheckoutForm={true} onSuccess={handleUpgradeSuccess} />
+          )
         )}
         {localUser?.premium.active && localUser?.premium.cancelRequested && showCardForm && (
           <>
             <div className="mt-6">
-              <PremiumUpsell user={localUser} showCheckoutForm={showCardForm} onSuccess={handleUpgradeSuccess} />
+              {shouldUseCapacitorPayments() ? (
+                <CapacitorPaymentComponent 
+                  user={localUser} 
+                  onSuccess={handleUpgradeSuccess}
+                  onError={(error) => {
+                    console.error('Payment error:', error);
+                    alert(error);
+                  }}
+                />
+              ) : (
+                <PremiumUpsell user={localUser} showCheckoutForm={showCardForm} onSuccess={handleUpgradeSuccess} />
+              )}
             </div>
-            <PremiumUpsell user={localUser} showCheckoutForm={false} onSuccess={handleUpgradeSuccess} />
+            {!shouldUseCapacitorPayments() && (
+              <PremiumUpsell user={localUser} showCheckoutForm={false} onSuccess={handleUpgradeSuccess} />
+            )}
           </>
         )}
         {forceActive && (

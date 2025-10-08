@@ -519,7 +519,7 @@ export default function OwnerTools({
               }
             }}
           >
-            {(object as any).openToSale ? 'Disable' : 'Allow messages for offers'}
+            {(object as any).openToSale ? 'Disable' : 'Allow offers'}
           </Button>
           {!isHeldPlus(user) && (
             <span className="text-xs text-gray-500">You can mark {3 - forSaleCount > 0 ? `${3 - forSaleCount} more` : '0'} items for sale.</span>

@@ -397,9 +397,22 @@ export default function PassportClient() {
             <Link href="/" className="inline-block">
               <img src="/held-logomark.svg" alt="Held" className="h-10 w-10 opacity-80 hover:opacity-100 transition-opacity" />
             </Link>
-            <p className="text-gray-600 font-light tracking-wide text-sm text-center sm:text-left">
-              Immutable blockchain verification • Professional provenance tracking
-            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+              <p className="text-gray-600 font-light tracking-wide text-sm text-center sm:text-left">
+                Immutable blockchain verification • Professional provenance tracking
+              </p>
+              <div className="flex items-center gap-6 text-sm">
+                <Link href="/terms" className="text-gray-600 hover:text-black transition-colors font-light tracking-wide">
+                  Terms
+                </Link>
+                <Link href="/privacy" className="text-gray-600 hover:text-black transition-colors font-light tracking-wide">
+                  Privacy
+                </Link>
+                <Link href="/donate" className="text-gray-600 hover:text-black transition-colors font-light tracking-wide">
+                  Donate
+                </Link>
+              </div>
+            </div>
           </div>
         </footer>
         </main>

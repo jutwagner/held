@@ -16,7 +16,7 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "cd": "Music",
   "tape": "Music",
   
-  // Photography
+  // Photography (high priority - very specific)
   "camera": "Photography",
   "lens": "Photography",
   "photography": "Photography",
@@ -26,6 +26,9 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "digital camera": "Photography",
   "photo": "Photography",
   "picture": "Photography",
+  "photographic": "Photography",
+  "camera equipment": "Photography",
+  "camera gear": "Photography",
   
   // Transportation
   "bicycle": "Bicycle",
@@ -109,7 +112,6 @@ const TAG_TO_CATEGORY: Record<string, string> = {
   "books": "Books",
   "magazine": "Books",
   "newspaper": "Books",
-  "document": "Books",
   "text": "Books",
   "reading": "Books",
   
@@ -363,28 +365,72 @@ function extractBrandCategory(data: any) {
   const tags = data.description?.tags || [];
   console.log('🏷️ Tags found:', tags);
   
+  // Collect all possible mappings with their confidence scores
+  const tagMappings: Array<{tag: string, category: string, confidence: number, type: 'direct' | 'partial'}> = [];
+  
   for (const tag of tags) {
     const normalizedTag = tag.toLowerCase().trim();
     
     // Direct match
     if (TAG_TO_CATEGORY[normalizedTag]) {
+      tagMappings.push({
+        tag: tag,
+        category: TAG_TO_CATEGORY[normalizedTag],
+        confidence: 0.9,
+        type: 'direct'
+      });
       console.log(`✅ Found direct tag-based mapping: ${tag} → ${TAG_TO_CATEGORY[normalizedTag]}`);
-      category = TAG_TO_CATEGORY[normalizedTag];
-      categoryConfidence = 0.9; // High confidence for direct tag mapping
-      break;
     }
     
     // Partial match (check if tag contains any of our keywords)
     for (const [keyword, mappedCategory] of Object.entries(TAG_TO_CATEGORY)) {
       if (normalizedTag.includes(keyword) || keyword.includes(normalizedTag)) {
+        tagMappings.push({
+          tag: tag,
+          category: mappedCategory,
+          confidence: 0.8,
+          type: 'partial'
+        });
         console.log(`✅ Found partial tag-based mapping: ${tag} (contains "${keyword}") → ${mappedCategory}`);
-        category = mappedCategory;
-        categoryConfidence = 0.8; // Good confidence for partial matches
-        break;
       }
     }
+  }
+  
+  // If we have multiple mappings, prioritize the most specific ones
+  if (tagMappings.length > 0) {
+    // Special handling for photography vs generic electronics
+    const hasPhotographyMapping = tagMappings.some(m => m.category === 'Photography');
+    const hasTechMapping = tagMappings.some(m => m.category === 'Tech');
     
-    if (category) break;
+    if (hasPhotographyMapping && hasTechMapping) {
+      console.log('🎯 Photography vs Tech conflict detected - prioritizing Photography');
+      // Filter to only photography mappings
+      const photographyMappings = tagMappings.filter(m => m.category === 'Photography');
+      tagMappings.splice(0, tagMappings.length, ...photographyMappings);
+    }
+    
+    // Sort by confidence (direct matches first), then by specificity
+    tagMappings.sort((a, b) => {
+      if (a.confidence !== b.confidence) {
+        return b.confidence - a.confidence; // Higher confidence first
+      }
+      
+      // For same confidence, prioritize more specific categories
+      const specificityOrder = ['Photography', 'Art', 'Music', 'Books', 'Fashion', 'Furniture', 'Tech', 'Auto', 'Timepieces'];
+      const aIndex = specificityOrder.indexOf(a.category);
+      const bIndex = specificityOrder.indexOf(b.category);
+      
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex; // Lower index = more specific
+      }
+      
+      return 0;
+    });
+    
+    const bestMapping = tagMappings[0];
+    category = bestMapping.category;
+    categoryConfidence = bestMapping.confidence;
+    console.log(`🎯 Selected best mapping: ${bestMapping.tag} → ${bestMapping.category} (${bestMapping.type}, confidence: ${bestMapping.confidence})`);
   }
 
   // Validate that the category is in our valid categories list

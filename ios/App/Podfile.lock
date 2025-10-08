@@ -1,34 +1,46 @@
 PODS:
   - Capacitor (7.4.3):
     - CapacitorCordova
+  - CapacitorBrowser (7.0.2):
+    - Capacitor
   - CapacitorCordova (7.4.3)
   - CapacitorKeyboard (7.0.3):
     - Capacitor
   - CapacitorStatusBar (7.0.3):
     - Capacitor
+  - SquareetlabsCapacitorSubscriptions (1.0.19):
+    - Capacitor
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "SquareetlabsCapacitorSubscriptions (from `../../node_modules/@squareetlabs/capacitor-subscriptions`)"
 
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorKeyboard:
     :path: "../../node_modules/@capacitor/keyboard"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
+  SquareetlabsCapacitorSubscriptions:
+    :path: "../../node_modules/@squareetlabs/capacitor-subscriptions"
 
 SPEC CHECKSUMS:
   Capacitor: 28d6c01026a9a3f7156529498ec1f389a2a28dbc
+  CapacitorBrowser: 22541e48442de44dc629c214388290d6eecc6ae9
   CapacitorCordova: 435121e81a2df4d0034f0fb11fcefab5104cfdb5
   CapacitorKeyboard: 62f36104f26d53d8b3a2a43f2a69fe714f1777d5
   CapacitorStatusBar: 0659ddc7b1713764a05831463d215b177a15d054
+  SquareetlabsCapacitorSubscriptions: c22d5907dba23dcf7f0d78705f1e631d7633c4d5
 
-PODFILE CHECKSUM: ef201c5378df74cce0a4b4f0b5b92e09a42fd289
+PODFILE CHECKSUM: 4a65ae2e6be8f2ce5ca71433f125008649a0d3b2
 
 COCOAPODS: 1.16.2
