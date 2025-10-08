@@ -19,7 +19,12 @@ export interface StoreKitPurchase {
 export const StoreKitUtils = {
   async getProducts(): Promise<StoreKitProduct[]> {
     try {
-      const result = await Subscriptions.getProducts({
+      const impl: any = Subscriptions as any;
+      if (!impl?.getProducts) {
+        console.warn('[StoreKitUtils] getProducts not available on Subscriptions plugin');
+        return [];
+      }
+      const result = await impl.getProducts({
         productIds: ['com.held.app.heldplus']
       });
       
@@ -38,7 +43,12 @@ export const StoreKitUtils = {
 
   async purchaseProduct(productId: string): Promise<StoreKitPurchase | null> {
     try {
-      const result = await Subscriptions.purchaseProduct({
+      const impl: any = Subscriptions as any;
+      if (!impl?.purchaseProduct) {
+        console.warn('[StoreKitUtils] purchaseProduct not available on Subscriptions plugin');
+        return null;
+      }
+      const result = await impl.purchaseProduct({
         productId: productId
       });
       
@@ -58,7 +68,12 @@ export const StoreKitUtils = {
 
   async restorePurchases(): Promise<StoreKitPurchase[]> {
     try {
-      const result = await Subscriptions.restorePurchases();
+      const impl: any = Subscriptions as any;
+      if (!impl?.restorePurchases) {
+        console.warn('[StoreKitUtils] restorePurchases not available on Subscriptions plugin');
+        return [];
+      }
+      const result = await impl.restorePurchases();
       
       return result.purchases.map(purchase => ({
         productId: purchase.productId,
