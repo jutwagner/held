@@ -43,7 +43,7 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
         setPostUser(userData);
       } catch (error) {
         console.error('Error fetching user:', error);
-        // Set fallback user data
+        // Set fallback user data that satisfies UserDoc shape
         setPostUser({
           id: post.userId,
           uid: post.userId,
@@ -52,8 +52,21 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
           handle: 'anonymous',
           email: '',
           avatarUrl: '',
+          objectIds: [],
+          isPublic: false,
           createdAt: new Date(),
           updatedAt: new Date(),
+          quarterlyReview: false,
+          push: false,
+          premium: {
+            active: false,
+            plan: null,
+            since: null,
+            renewsAt: null,
+            cancelRequested: false,
+          },
+          backup: { enabled: false, lastRun: null },
+          security: { providers: [], sessions: [] },
         });
       }
     };
@@ -540,8 +553,8 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
         <DMModal
           isOpen={isDMOpen}
           onClose={() => setIsDMOpen(false)}
-          recipient={postUser}
-          post={post}
+          targetUserId={postUser.uid}
+          targetUserName={postUser.displayName || postUser.name}
         />
       )}
     </div>
