@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { MobileBottomBar } from '@/components/Navigation';
-import PostCard from '@/components/PostCard';
+import SleekPostCard from '@/components/SleekPostCard';
 import type { Rotation } from '@/types';
 import { subscribePublicPosts, subscribePublicRotations } from '@/lib/firebase-services';
 import { useRotationCategories } from '@/hooks/useRotationCategories';
@@ -191,7 +191,7 @@ export default function CollaborativeView({
                   />
                 );
               }
-              return <PostCard key={`post-${entry.post.id}`} post={entry.post} />;
+              return <SleekPostCard key={`post-${entry.post.id}`} post={entry.post} />;
             })}
           </div>
         )}

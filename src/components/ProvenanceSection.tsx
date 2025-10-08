@@ -110,7 +110,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
             <p className="text-gray-600 dark:text-gray-400 text-sm">Authentication and Chain of Custody</p>
           </div>
           {!editable && onRequestEdit && (
-            <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+            <button
+              onClick={onRequestEdit}
+              className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Edit this section"
+            >
+              <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+            </button>
           )}
         </div>
       </div>
@@ -130,7 +136,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Identity & Documentation
               {!editable && onRequestEdit && (
-                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                <button
+                  onClick={onRequestEdit}
+                  className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Edit this section"
+                >
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                </button>
               )}
             </h3>
             
@@ -272,7 +284,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Certificate of Authenticity
               {!editable && onRequestEdit && (
-                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                <button
+                  onClick={onRequestEdit}
+                  className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Edit this section"
+                >
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                </button>
               )}
             </h3>
             
@@ -404,7 +422,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
                 <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 Chain of Custody
                 {!editable && onRequestEdit && (
-                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                  <button
+                    onClick={onRequestEdit}
+                    className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                    title="Edit this section"
+                  >
+                    <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                  </button>
                 )}
               </h3>
             </div>
@@ -526,7 +550,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Associated Documents
               {!editable && onRequestEdit && (
-                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                <button
+                  onClick={onRequestEdit}
+                  className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Edit this section"
+                >
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                </button>
               )}
             </h3>
 
@@ -620,7 +650,13 @@ const ProvenanceSection: React.FC<ProvenanceSectionProps> = ({ data, onChange, o
               <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               Provenance Notes
               {!editable && onRequestEdit && (
-                <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-auto" />
+                <button
+                  onClick={onRequestEdit}
+                  className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Edit this section"
+                >
+                  <Edit className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                </button>
               )}
             </h3>
             

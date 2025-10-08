@@ -118,7 +118,7 @@ export default function OwnerTools({
       const baseURL = window.location.origin;
       const uri = generatePassportURI(object as any, baseURL);
       const version = (object.anchoring?.version || 0) + 1 || 1;
-      const res = await anchorPassport(object as any, uri, version, kind, 'async');
+      const res = await anchorPassport(object as any, uri, version, kind, 'async', user?.uid);
       await updateObjectAnchoring(object.id, {
         isAnchored: false,
         version,

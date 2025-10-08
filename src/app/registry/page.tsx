@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { debounce } from '@/lib/performance';
 import TagList from '@/components/TagList';
+import SleekObjectCard from '@/components/SleekObjectCard';
 
 import { MobileBottomBar } from '@/components/Navigation';
 
@@ -453,7 +454,7 @@ export default function RegistryPage() {
                               {/* <input type="checkbox" checked={selected.has(obj.id)} onChange={() => toggleSelection(obj.id)} />
                              <Link href={`/registry/${obj.id}`} className="text-sm text-gray-600 underline">Edit</Link>*/}
                             </div>
-                            <ObjectCard object={obj} />
+                            <SleekObjectCard object={obj} />
                           </div>
                         ))}
                       </div>

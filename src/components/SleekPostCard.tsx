@@ -1,0 +1,551 @@
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { HeldObject, UserDoc } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { Heart, MessageCircle, Send, User, Calendar, Tag as TagIcon } from 'lucide-react';
+import { getUser, toggleLike, getLikesCount, hasUserLiked, addComment, getComments, subscribeToComments } from '@/lib/firebase-services';
+import Link from 'next/link';
+import DMModal from './DMModal';
+import TagList from './TagList';
+
+interface PostCardProps {
+  post: HeldObject;
+}
+
+const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
+  const { user, firebaseUser, loading } = useAuth();
+  const [postUser, setPostUser] = useState<UserDoc | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [isLiking, setIsLiking] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [comments, setComments] = useState<Array<{
+    id: string;
+    userId: string;
+    userDisplayName: string;
+    userHandle: string;
+    text: string;
+    createdAt: Date;
+  }>>([]);
+  const [isDMOpen, setIsDMOpen] = useState(false);
+  const isOwner = !!firebaseUser && firebaseUser.uid === post.userId;
+
+  // Fetch post user data and social data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        console.log('Fetching user data for:', post.userId);
+        const userData = await getUser(post.userId);
+        console.log('Fetched user data:', userData);
+        setPostUser(userData);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        // Set fallback user data
+        setPostUser({
+          id: post.userId,
+          uid: post.userId,
+          name: 'Anonymous',
+          displayName: 'Anonymous',
+          handle: 'anonymous',
+          email: '',
+          avatarUrl: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    };
+
+    const fetchSocialData = async () => {
+      if (!firebaseUser) {
+        console.log('No firebaseUser, skipping social data fetch');
+        return;
+      }
+      
+      if (loading) {
+        console.log('Auth still loading, skipping social data fetch');
+        return;
+      }
+      
+      // Double-check that Firebase Auth is ready
+      if (!firebaseUser.uid) {
+        console.log('Firebase user UID not available, skipping social data fetch');
+        return;
+      }
+      
+      try {
+        console.log('Fetching social data for post:', post.id, {
+          firebaseUser: {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            emailVerified: firebaseUser.emailVerified
+          }
+        });
+        
+        // Add a small delay to ensure Firebase Auth is fully established
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        const [likes, hasLiked] = await Promise.all([
+          getLikesCount(post.id),
+          hasUserLiked(post.id, firebaseUser.uid)
+        ]);
+        console.log('Social data fetched:', { likes, hasLiked });
+        setLikesCount(likes);
+        setLiked(hasLiked);
+      } catch (error) {
+        console.error('Error fetching social data:', error);
+        // Set default values on error
+        setLikesCount(0);
+        setLiked(false);
+      }
+    };
+    
+    fetchUser();
+    // Only fetch social data if user is authenticated and auth is ready
+    if (firebaseUser && !loading) {
+      console.log('Auth ready, fetching social data...');
+      // Ensure Firebase Auth is fully established
+      if (firebaseUser.uid) {
+        fetchSocialData();
+      } else {
+        console.log('Firebase user UID not available yet');
+      }
+    } else {
+      console.log('Auth not ready yet:', { firebaseUser: !!firebaseUser, loading });
+    }
+  }, [post.userId, post.id, firebaseUser, loading]);
+
+  // Handle like
+  const handleLike = async () => {
+    console.log('Like button clicked!', { 
+      user: !!firebaseUser, 
+      postId: post.id, 
+      userId: firebaseUser?.uid,
+      isLiking,
+      loading
+    });
+    
+    if (!firebaseUser) {
+      console.log('No user authenticated, cannot like');
+      return;
+    }
+    
+    if (loading) {
+      console.log('Auth still loading, cannot like yet');
+      return;
+    }
+    
+    if (isLiking) {
+      console.log('Already processing like, ignoring click');
+      return;
+    }
+    
+    // Prevent multiple clicks
+    setIsLiking(true);
+    
+    // Optimistic update - show change immediately
+    const wasLiked = liked;
+    const oldCount = likesCount;
+    setLiked(!liked);
+    setLikesCount(prev => liked ? prev - 1 : prev + 1);
+    
+    try {
+      console.log('Attempting to toggle like...');
+      
+      // Add a small delay to ensure Firebase Auth is fully established
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      await toggleLike(post.id, firebaseUser.uid);
+      console.log('Like toggled successfully!');
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Rollback optimistic update on error
+      setLiked(wasLiked);
+      setLikesCount(oldCount);
+    } finally {
+      // Always reset the liking state
+      setIsLiking(false);
+    }
+  };
+
+  // Handle comment
+  const handleComment = async () => {
+    console.log('Comment button clicked!', { user: !!firebaseUser, comment: newComment.trim() });
+    if (!firebaseUser) {
+      console.log('No user authenticated, cannot comment');
+      return;
+    }
+    if (!newComment.trim()) {
+      console.log('No comment text, cannot submit');
+      return;
+    }
+    
+    const commentText = newComment.trim();
+    setNewComment(''); // Clear input immediately for better UX
+    
+    try {
+      console.log('Attempting to add comment...');
+      await addComment(post.id, {
+        userId: firebaseUser.uid,
+        userDisplayName: user?.displayName || 'Anonymous',
+        userHandle: user?.handle || 'anonymous',
+        text: commentText,
+      });
+      
+      console.log('Comment added successfully!');
+      // The real-time listener will update the comments automatically
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      // Restore the comment text if it failed
+      setNewComment(commentText);
+    }
+  };
+
+  // Subscribe to comments when comments section is opened
+  useEffect(() => {
+    if (!showComments || !firebaseUser || loading) return;
+    
+    const unsubscribe = subscribeToComments(post.id, (newComments) => {
+      console.log('Comments updated:', newComments);
+      setComments(newComments);
+      setCommentsCount(newComments.length);
+    });
+    
+    return unsubscribe;
+  }, [showComments, post.id, firebaseUser, loading]);
+
+  // Fetch initial comments when component mounts
+  useEffect(() => {
+    const fetchInitialComments = async () => {
+      if (!firebaseUser) {
+        console.log('No firebaseUser, skipping comments fetch');
+        return;
+      }
+      
+      if (loading) {
+        console.log('Auth still loading, skipping comments fetch');
+        return;
+      }
+      
+      // Double-check that Firebase Auth is ready
+      if (!firebaseUser.uid) {
+        console.log('Firebase user UID not available, skipping comments fetch');
+        return;
+      }
+      
+      setCommentsLoading(true);
+      try {
+        console.log('Fetching initial comments for post:', post.id, {
+          firebaseUser: {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            emailVerified: firebaseUser.emailVerified
+          }
+        });
+        
+        // Add a small delay to ensure Firebase Auth is fully established
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        const initialComments = await getComments(post.id);
+        console.log('Initial comments fetched:', initialComments);
+        setComments(initialComments);
+        setCommentsCount(initialComments.length);
+      } catch (error) {
+        console.error('Error fetching initial comments:', error);
+      } finally {
+        setCommentsLoading(false);
+      }
+    };
+    
+    // Only fetch comments if user is authenticated and auth is ready
+    if (firebaseUser && !loading) {
+      console.log('Auth ready, fetching comments...');
+      // Ensure Firebase Auth is fully established
+      if (firebaseUser.uid) {
+        fetchInitialComments();
+      } else {
+        console.log('Firebase user UID not available yet for comments');
+      }
+    } else {
+      console.log('Auth not ready yet for comments:', { firebaseUser: !!firebaseUser, loading });
+    }
+  }, [post.id, firebaseUser, loading]);
+
+  // Handle DM
+  const handleDM = () => {
+    console.log('DM button clicked!', { user: !!firebaseUser, postUser: !!postUser, postUserId: post.userId });
+    if (!firebaseUser) {
+      console.log('No user authenticated, cannot send DM');
+      return;
+    }
+    if (!postUser) {
+      console.log('No post user data, cannot send DM');
+      return;
+    }
+    if (firebaseUser.uid === post.userId) {
+      console.log('Cannot message yourself');
+      return;
+    }
+    
+    // Open DM modal
+    console.log('Open DM with:', postUser.handle || postUser.displayName || 'Unknown User');
+    setIsDMOpen(true);
+  };
+
+  return (
+    <div 
+      className="relative rounded-2xl overflow-hidden aspect-[4/5] flex flex-col transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
+      style={{ 
+        willChange: 'transform',
+        borderRadius: '1rem',
+        transform: 'translateZ(0)'
+      }}
+    >
+      {/* Full-bleed background image */}
+      <div className="absolute inset-0">
+        {post.images && post.images.length > 0 ? (
+          <Image
+            src={post.images[0]}
+            alt={post.title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+            priority={false}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/img/placeholder.svg';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 flex items-center justify-center">
+            <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
+          </div>
+        )}
+        
+        {/* Subtle blur gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+        
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+      </div>
+
+      {/* User Header - positioned at top with gradient background */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-4 avatar-header">
+        {/* Gradient background for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+              {postUser?.avatarUrl ? (
+                <Image
+                  src={postUser.avatarUrl}
+                  alt={postUser.displayName}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <User className="h-5 w-5 text-white" />
+              )}
+            </div>
+            <div>
+              <div className="font-medium text-white text-sm drop-shadow-lg">
+                {postUser?.displayName || 'Anonymous'}
+              </div>
+              <div className="text-xs text-white/90 drop-shadow-lg">
+                @{postUser?.handle || 'anonymous'}
+              </div>
+            </div>
+          </div>
+          
+          {user && user.uid !== post.userId && (
+            <button
+              onClick={handleDM}
+              disabled={!user}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
+                !user ? 'bg-white/10 text-white/50 border-white/20 cursor-not-allowed' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
+              }`}
+              title={!user ? 'Sign in to send messages' : 'Send a message'}
+            >
+              <Send className="h-4 w-4" />
+              <span className="text-sm">Message</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Content overlay - positioned at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
+        {/* Title and description */}
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold mb-2 text-white leading-tight">{post.title}</h2>
+          {post.description && (
+            <p className="text-white/90 text-sm mb-3 line-clamp-2">{post.description}</p>
+          )}
+        </div>
+
+        {/* Maker/Artist as clickable tag */}
+        {post.maker && (
+          <div className="mb-3">
+            <Link
+              href={`/tags/${encodeURIComponent(post.maker)}`}
+              className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full border border-white/30 hover:bg-white/30 transition-colors"
+            >
+              {post.maker}
+            </Link>
+          </div>
+        )}
+
+        {/* Tags */}
+        {Array.isArray(post.tags) && post.tags.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.slice(0, 3).map((tag, idx) => (
+                <span 
+                  key={idx} 
+                  className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30"
+                >
+                  {tag}
+                </span>
+              ))}
+              {post.tags.length > 3 && (
+                <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30">
+                  +{post.tags.length - 3}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Social Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleLike}
+              disabled={!firebaseUser || isLiking}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-full backdrop-blur-sm border transition-colors ${
+                liked ? 'bg-red-500/90 text-white border-red-400/30' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
+              } ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              title={!firebaseUser ? 'Sign in to like posts' : isLiking ? 'Processing...' : 'Like this post'}
+            >
+              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+              <span className="text-sm font-medium">{likesCount}</span>
+            </button>
+            
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 transition-colors cursor-pointer"
+              title="View comments"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">{commentsCount}</span>
+            </button>
+          </div>
+          
+          {post.openToSale && (
+            <div className="flex items-center">
+              {isOwner ? (
+                <span className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-green-500/90 text-white border border-green-400/30 backdrop-blur-sm">
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </span>
+              ) : (
+                <button
+                  onClick={handleDM}
+                  disabled={!firebaseUser}
+                  className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full border backdrop-blur-sm ${!firebaseUser ? 'opacity-50 cursor-not-allowed bg-white/10 text-white/50 border-white/20' : 'bg-green-500/90 text-white border-green-400/30 hover:bg-green-600/90'}`}
+                  title={!firebaseUser ? 'Sign in to message' : 'Message seller'}
+                  aria-label="Message seller about this item"
+                >
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sign-in Prompt for Unauthenticated Users */}
+        {!firebaseUser && (
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-white font-medium">Want to interact?</p>
+                <p className="text-xs text-white/80">Sign in to like, comment, and message other collectors</p>
+              </div>
+              <Link 
+                href="/auth/signin" 
+                className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors border border-white/30"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t border-white/20 pt-4 mt-4">
+            {/* Add Comment */}
+            {firebaseUser && (
+              <div className="flex items-center space-x-2 mb-3">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="flex-1 px-3 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  onKeyPress={(e) => e.key === 'Enter' && handleComment()}
+                />
+                <button
+                  onClick={handleComment}
+                  disabled={!newComment.trim()}
+                  className="px-3 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg text-sm hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed border border-white/30"
+                >
+                  Post
+                </button>
+              </div>
+            )}
+
+            {/* Comments List */}
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {commentsLoading ? (
+                <div className="text-center py-4">
+                  <div className="text-sm text-white/60">Loading comments...</div>
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="text-center py-4">
+                  <div className="text-sm text-white/60">No comments yet. Be the first to comment!</div>
+                </div>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="text-sm font-medium text-white">@{comment.userHandle}</span>
+                      <span className="text-xs text-white/60">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/90">{comment.text}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* DM Modal */}
+      {isDMOpen && postUser && (
+        <DMModal
+          isOpen={isDMOpen}
+          onClose={() => setIsDMOpen(false)}
+          recipient={postUser}
+          post={post}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SleekPostCard;

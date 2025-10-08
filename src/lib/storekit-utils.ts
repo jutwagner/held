@@ -1,5 +1,5 @@
 // StoreKit utilities for iOS In-App Purchases
-import { CapacitorSubscriptions } from '@squareetlabs/capacitor-subscriptions';
+import { Subscriptions } from '@squareetlabs/capacitor-subscriptions';
 
 export interface StoreKitProduct {
   productId: string;
@@ -19,7 +19,7 @@ export interface StoreKitPurchase {
 export const StoreKitUtils = {
   async getProducts(): Promise<StoreKitProduct[]> {
     try {
-      const result = await CapacitorSubscriptions.getProducts({
+      const result = await Subscriptions.getProducts({
         productIds: ['com.held.app.heldplus']
       });
       
@@ -38,7 +38,7 @@ export const StoreKitUtils = {
 
   async purchaseProduct(productId: string): Promise<StoreKitPurchase | null> {
     try {
-      const result = await CapacitorSubscriptions.purchaseProduct({
+      const result = await Subscriptions.purchaseProduct({
         productId: productId
       });
       
@@ -58,7 +58,7 @@ export const StoreKitUtils = {
 
   async restorePurchases(): Promise<StoreKitPurchase[]> {
     try {
-      const result = await CapacitorSubscriptions.restorePurchases();
+      const result = await Subscriptions.restorePurchases();
       
       return result.purchases.map(purchase => ({
         productId: purchase.productId,

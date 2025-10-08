@@ -597,6 +597,13 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   }
 }
 
+.avatar-header{
+  padding: 1rem 1rem 10rem 1rem;
+}
+
+.w-400px{
+  width: 400px;
+}
 .min-h-screen{
   min-height: calc(100vh);
 }

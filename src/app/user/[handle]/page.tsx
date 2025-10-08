@@ -13,6 +13,7 @@ import { Badge } from '@/components/Badge';
 import { ProfileSkeleton } from '@/components/skeletons/ProfileSkeleton';
 import { ChevronLeft, ChevronRight, Settings, Globe, Lock } from 'lucide-react';
 import TagList from '@/components/TagList';
+import SleekObjectCard from '@/components/SleekObjectCard';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -344,59 +345,11 @@ export default function ProfilePage() {
               };
 
               return (
-                <Link key={object.id} href={getItemUrl()} className="w-64 flex-shrink-0">
-                <div className="relative rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 ring-1 ring-black/5 dark:ring-white/5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_24px_64px_rgba(0,0,0,0.4)] h-[400px] flex flex-col transition-transform duration-300 hover:scale-[1.02] cursor-pointer group">
-                  {/* Subtle top sheen */}
-                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-b from-white/50 dark:from-gray-800/50 to-transparent" />
-                  
-                  {/* Premium/Public Accent */}
-                  {object.isPublic && (
-                    <span className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-green-300 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow z-10 tracking-wide uppercase">Public</span>
-                  )}
-                  
-                  {/* Image */}
-                  <div className="relative aspect-square rounded-2xl overflow-hidden flex items-center justify-center border border-white/70 dark:border-gray-700/70 ring-1 ring-black/5 dark:ring-white/5 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 m-4">
-                    {object.images.length > 0 ? (
-                      <Image
-                        src={object.images[0]}
-                        alt={object.title}
-                        width={200}
-                        height={200}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="px-4 pb-4 flex-1 flex flex-col">
-                    <h3 className="font-serif text-lg font-semibold mb-1 line-clamp-1 text-gray-900 dark:text-gray-100 tracking-tight">
-                      {object.title}
-                    </h3>
-                    {object.maker ? (
-                      <p className="text-sm text-gray-700/90 dark:text-gray-300/90 mb-3 font-light">
-                        {object.maker}
-                      </p>
-                    ) : (
-                      <div className="h-5 mb-3" />
-                    )}
-                    
-                    {/* Tags */}
-                    {object.tags && object.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {object.tags.slice(0, 2).map((tag) => (
-                          <span key={tag} className="px-2 py-1 rounded-full bg-white/70 dark:bg-gray-700/70 border border-white/60 dark:border-gray-600/60 ring-1 ring-black/5 dark:ring-white/5 text-xs text-gray-800 dark:text-gray-200">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                <div key={object.id} className="w-400px flex-shrink-0">
+                  <Link href={getItemUrl()}>
+                    <SleekObjectCard object={object} />
+                  </Link>
                 </div>
-                </Link>
               );
             })}
           </HorizontalCarousel>
@@ -596,14 +549,18 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
     : undefined;
 
   return (
-    <div className="relative full-bleed">
+    <div className="relative full-bleed overflow-hidden">
       <div ref={containerRef} className="held-container held-container-wide px-0">
         <div ref={innerRef} className="">
-          <div className=" pl-4 sm:pl-6 lg:pl-8 pb-4 relative transition-all duration-300" style={wrapperStyle}>
+          <div className="pb-4 relative transition-all duration-300 overflow-hidden" style={wrapperStyle}>
           <div
             ref={scrollContainerRef}
-            className=" pl-4 sm:pl-6 lg:pl-8 pb-4  flex gap-4 overflow-x-auto scrollbar-hide py-12 pr-4 sm:pr-6 lg:pr-8"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="flex gap-4 overflow-x-auto scrollbar-hide"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              overflowY: 'hidden'
+            }}
             onScroll={(e) => {
               const currentScroll = e.currentTarget.scrollLeft;
               setScrollPosition(currentScroll);
@@ -620,7 +577,7 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           style={leftArrowStyle}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -630,7 +587,7 @@ function HorizontalCarousel({ children }: { children: React.ReactNode }) {
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           style={rightArrowStyle}
         >
           <ChevronRight className="h-4 w-4" />
