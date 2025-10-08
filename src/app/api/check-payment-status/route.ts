@@ -21,15 +21,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Check for recent Stripe sessions
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 10,
-      customer_email: userData?.email,
-    });
+    // Check for recent Stripe sessions (list then filter by email if present)
+    const sessions = await stripe.checkout.sessions.list({ limit: 10 });
 
-    const completedSession = sessions.data.find(
-      session => session.payment_status === 'paid' && session.status === 'complete'
-    );
+    const completedSession = sessions.data.find(session => {
+      const emailMatches = userData?.email
+        ? session.customer_details?.email === userData.email
+        : true;
+      return emailMatches && session.payment_status === 'paid' && session.status === 'complete';
+    });
 
     if (completedSession) {
       // Update user's premium status
