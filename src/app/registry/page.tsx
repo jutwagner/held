@@ -321,7 +321,7 @@ export default function RegistryPage() {
                   </button>
                   <Link
                     href="/registry/new"
-                    className="add-cta flex h-12 w-12 items-center justify-center rounded-lg border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="round-full add-cta flex h-12 w-12 items-center justify-center border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     title="Add object"
                   >
                     <Plus className="h-5 w-5" />
@@ -656,7 +656,7 @@ export default function RegistryPage() {
                                   <td className="py-4">
                                     <Link 
                                       href={`/registry/${obj.id}`} 
-                                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                      className="inline-flex items-center px-3 py-1.5 round-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     >
                                       Open
                                     </Link>

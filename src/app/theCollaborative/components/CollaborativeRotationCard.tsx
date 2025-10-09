@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { HeldObject, Rotation } from '@/types';
-import { getObject, getUser, toggleLike, getLikesCount, hasUserLiked } from '@/lib/firebase-services';
+import { getObject, getUser, toggleLike, getLikesCount, hasUserLiked, addComment, subscribeToComments } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Send } from 'lucide-react';
 
 interface CollaborativeRotationCardProps {
   rotation: Rotation;
@@ -23,9 +23,20 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   const [ownerName, setOwnerName] = useState<string | null>(null);
   const [ownerAvatar, setOwnerAvatar] = useState<string | null>(null);
   const [likes, setLikes] = useState(0);
-  const [comments, setComments] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<Array<{
+    id: string;
+    userId: string;
+    userDisplayName: string;
+    userHandle: string;
+    text: string;
+    createdAt: Date;
+  }>>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -108,6 +119,18 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
     }
   }, [rotation.id, firebaseUser, loading]);
 
+  // Subscribe to comments when comments section is opened
+  useEffect(() => {
+    if (!showComments || !firebaseUser || loading) return;
+    
+    const unsubscribe = subscribeToComments(rotation.id, (newComments) => {
+      setComments(newComments);
+      setCommentsCount(newComments.length);
+    });
+    
+    return unsubscribe;
+  }, [showComments, rotation.id, firebaseUser, loading]);
+
   const handleDelete = async () => {
     setConfirmOpen(false);
     setDeleting(true);
@@ -156,6 +179,21 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
       setLikes(oldCount);
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!firebaseUser || !newComment.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await addComment(rotation.id, firebaseUser.uid, newComment.trim());
+      setNewComment('');
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      alert('Failed to submit comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -320,11 +358,16 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
             </button>
             <button
               type="button"
-              className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
+              onClick={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                setShowComments(!showComments);
+              }}
+              title="View comments"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="font-medium">{comments}</span>
+              <span className="font-medium">{commentsCount}</span>
             </button>
           </div>
           <a
@@ -370,6 +413,82 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
             </div>
           )}
         </>
+      )}
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="mt-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Comments ({commentsCount})
+          </h4>
+          
+          {/* Comments List */}
+          <div className="max-h-96 overflow-y-auto mb-4 space-y-3">
+            {comments.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                No comments yet. Be the first to comment!
+              </p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                      {comment.userDisplayName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <Link
+                        href={`/user/${comment.userHandle}`}
+                        className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:underline"
+                      >
+                        {comment.userDisplayName}
+                      </Link>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {comment.createdAt.toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 break-words">
+                      {comment.text}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Comment Input */}
+          {firebaseUser ? (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }
+                }}
+                placeholder="Add a comment..."
+                className="flex-1 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                disabled={isSubmitting}
+              />
+              <button
+                onClick={handleSubmitComment}
+                disabled={!newComment.trim() || isSubmitting}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {isSubmitting ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+              Sign in to comment
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

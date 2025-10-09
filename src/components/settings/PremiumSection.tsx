@@ -185,45 +185,45 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
 
   return (
     <section aria-labelledby="heldplus-header" className="mb-8">
-      <div className="bg-gray-100 dark:bg-gray-600 rounded-xl p-6 shadow mb-4">
+      <div className="">
         {/* Debug info only for specific user */}
         {user?.email === 'justwagner@gmail.com' && (
           <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-900 dark:text-yellow-400">
             <strong>DEBUG:</strong> premium.active: {String(localUser?.premium?.active)} | premium.cancelRequested: {String(localUser?.premium?.cancelRequested)} | premium.plan: {String(localUser?.premium?.plan)}
           </div>
         )}
-        <h2 id="heldplus-header" className="font-serif text-2xl mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-         x
+        <h2 id="heldplus-header" className="align-center font-serif text-2xl mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+         
           {hydrated && (
             forceActive ? (
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
+              <span className="inline-flex align-center items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
             ) : localUser?.premium.active && localUser?.premium.cancelRequested ? (
               <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-800 ml-2">
                 Active Until {formatDate(localUser?.premium?.renewsAt ?? undefined)}
               </span>
             ) : localUser?.premium.active && !localUser?.premium.cancelRequested ? (
-              <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
+              <span className="inline-flex align-center items-center px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 ml-2">Active</span>
             ) : null
           )}
           {hydrated && isExpired && !localUser?.premium.active && (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 ml-2">Expired</span>
+            <span className="inline-flex align-center items-center px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 ml-2">Expired</span>
           )}
         </h2>
 
 
 
 
-  <div className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Plan: {localUser?.premium?.plan}</div>
-  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Since: {formatDate(localUser?.premium?.since ?? undefined)}</div>
-  <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">Renews: {formatDate(localUser?.premium?.renewsAt ?? undefined)}</div>
+  <div className="align-center font-semibold mb-1 text-gray-900 dark:text-gray-100">Plan: {localUser?.premium?.plan}</div>
+  <div className="align-center text-sm text-gray-600 dark:text-gray-400 mb-1">Since: {formatDate(localUser?.premium?.since ?? undefined)}</div>
+  <div className="align-center text-sm text-gray-600 dark:text-gray-400 mb-6">Renews: {formatDate(localUser?.premium?.renewsAt ?? undefined)}</div>
         
 
-      <div className="text-base text-gray-700 dark:text-gray-300 mb-4 font-medium">
+      <div className="text-base text-gray-700 dark:text-gray-300 mb-4 mt-4 font-medium">
         Experience Held at its highest level. Unlock advanced tools, refined design, and exclusive features crafted for those who expect more.
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
-      <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 flex flex-col">
           <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Unlimted Registry Items</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">Your whole collection, all yours.</div>
         </div>
@@ -241,12 +241,12 @@ export default function PremiumSection({ user }: { user?: UserDoc }) {
           <div className="text-xs text-gray-500 dark:text-gray-400">Your presence, distinctly yours.</div>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Exports & Encrypted Backups</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">Security and control, always.</div>
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Exports & Backups</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Control always.</div>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col">
-          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Themes & Layouts</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">A workspace that reflects you.</div>
+          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Polygon Anchoring</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Record on the blockchain.</div>
         </div>
       </div>
 

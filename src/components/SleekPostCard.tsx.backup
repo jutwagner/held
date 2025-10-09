@@ -309,199 +309,191 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
 
   return (
     <div className="w-full">
-      <div 
-        className="relative rounded-2xl overflow-hidden aspect-[4/5] flex flex-col transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
-        style={{ 
-          willChange: 'transform',
-          borderRadius: '1rem',
-          transform: 'translateZ(0)'
-        }}
-      >
-        {/* Full-bleed background image */}
-        <div className="absolute inset-0">
-          {post.images && post.images.length > 0 ? (
-            <Image
-              src={post.images[0]}
-              alt={post.title}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="lazy"
-              priority={false}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = '/img/placeholder.svg';
-              }}
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 flex items-center justify-center">
-              <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
+      <div className="relative rounded-2xl overflow-hidden aspect-[4/5] flex flex-col transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]" style={{ willChange: 'transform', borderRadius: '1rem', transform: 'translateZ(0)' }}>
+      {/* Full-bleed background image */}
+      <div className="absolute inset-0">
+        {post.images && post.images.length > 0 ? (
+          <Image
+            src={post.images[0]}
+            alt={post.title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+            priority={false}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/img/placeholder.svg';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 flex items-center justify-center">
+            <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
+          </div>
+        )}
+        
+        {/* Subtle blur gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+        
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+      </div>
+
+      {/* User Header - positioned at top with gradient background */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-4 avatar-header">
+        {/* Gradient background for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+              {postUser?.avatarUrl ? (
+                <Image
+                  src={postUser.avatarUrl}
+                  alt={postUser.displayName}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <User className="h-5 w-5 text-white" />
+              )}
             </div>
-          )}
+            <div>
+              <div className="font-medium text-white text-sm drop-shadow-lg">
+                {postUser?.displayName || 'Anonymous'}
+              </div>
+              <div className="text-xs text-white/90 drop-shadow-lg">
+                @{postUser?.handle || 'anonymous'}
+              </div>
+            </div>
+          </div>
           
-          {/* Subtle blur gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
-          
-          {/* Dark gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-        </div>
-
-        {/* User Header - positioned at top with gradient background */}
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 avatar-header">
-          {/* Gradient background for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
-                {postUser?.avatarUrl ? (
-                  <Image
-                    src={postUser.avatarUrl}
-                    alt={postUser.displayName}
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
-                ) : (
-                  <User className="h-5 w-5 text-white" />
-                )}
-              </div>
-              <div>
-                <div className="font-medium text-white text-sm drop-shadow-lg">
-                  {postUser?.displayName || 'Anonymous'}
-                </div>
-                <div className="text-xs text-white/90 drop-shadow-lg">
-                  @{postUser?.handle || 'anonymous'}
-                </div>
-              </div>
-            </div>
-            
-            {user && user.uid !== post.userId && (
-              <button
-                onClick={handleDM}
-                disabled={!user}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
-                  !user ? 'bg-white/10 text-white/50 border-white/20 cursor-not-allowed' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
-                }`}
-                title={!user ? 'Sign in to send messages' : 'Send a message'}
-              >
-                <Send className="h-4 w-4" />
-                <span className="text-sm">Message</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Content overlay - positioned at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
-          {/* Title and description */}
-          <div className="mb-4">
-            <h2 className="text-2xl font-bold mb-2 text-white leading-tight">{post.title}</h2>
-            {post.description && (
-              <p className="text-white/90 text-sm mb-3 line-clamp-2">{post.description}</p>
-            )}
-          </div>
-
-          {/* Maker/Artist as clickable tag */}
-          {post.maker && (
-            <div className="mb-3">
-              <Link
-                href={`/tags/${encodeURIComponent(post.maker)}`}
-                className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full border border-white/30 hover:bg-white/30 transition-colors"
-              >
-                {post.maker}
-              </Link>
-            </div>
-          )}
-
-          {/* Tags */}
-          {Array.isArray(post.tags) && post.tags.length > 0 && (
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2">
-                {post.tags.slice(0, 3).map((tag, idx) => (
-                  <span 
-                    key={idx} 
-                    className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {post.tags.length > 3 && (
-                  <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30">
-                    +{post.tags.length - 3}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Social Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLike}
-                disabled={!firebaseUser || isLiking}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-full backdrop-blur-sm border transition-colors ${
-                  liked ? 'bg-red-500/90 text-white border-red-400/30' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
-                } ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={!firebaseUser ? 'Sign in to like posts' : isLiking ? 'Processing...' : 'Like this post'}
-              >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
-                <span className="text-sm font-medium">{likesCount}</span>
-              </button>
-              
-              <button
-                onClick={() => setShowComments(!showComments)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 transition-colors cursor-pointer"
-                title="View comments"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">{commentsCount}</span>
-              </button>
-            </div>
-            
-            {post.openToSale && (
-              <div className="flex items-center">
-                {isOwner ? (
-                  <span className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-green-500/90 text-white border border-green-400/30 backdrop-blur-sm">
-                    <Send className="h-3.5 w-3.5" /> Open to sale
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleDM}
-                    disabled={!firebaseUser}
-                    className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full border backdrop-blur-sm ${!firebaseUser ? 'opacity-50 cursor-not-allowed bg-white/10 text-white/50 border-white/20' : 'bg-green-500/90 text-white border-green-400/30 hover:bg-green-600/90'}`}
-                    title={!firebaseUser ? 'Sign in to message' : 'Message seller'}
-                    aria-label="Message seller about this item"
-                  >
-                    <Send className="h-3.5 w-3.5" /> Open to sale
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Sign-in Prompt for Unauthenticated Users */}
-          {!firebaseUser && (
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-white font-medium">Want to interact?</p>
-                  <p className="text-xs text-white/80">Sign in to like, comment, and message other collectors</p>
-                </div>
-                <Link 
-                  href="/auth/signin" 
-                  className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors border border-white/30"
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
+          {user && user.uid !== post.userId && (
+            <button
+              onClick={handleDM}
+              disabled={!user}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
+                !user ? 'bg-white/10 text-white/50 border-white/20 cursor-not-allowed' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
+              }`}
+              title={!user ? 'Sign in to send messages' : 'Send a message'}
+            >
+              <Send className="h-4 w-4" />
+              <span className="text-sm">Message</span>
+            </button>
           )}
         </div>
       </div>
 
+      {/* Content overlay - positioned at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
+        {/* Title and description */}
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold mb-2 text-white leading-tight">{post.title}</h2>
+          {post.description && (
+            <p className="text-white/90 text-sm mb-3 line-clamp-2">{post.description}</p>
+          )}
+        </div>
+
+        {/* Maker/Artist as clickable tag */}
+        {post.maker && (
+          <div className="mb-3">
+            <Link
+              href={`/tags/${encodeURIComponent(post.maker)}`}
+              className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full border border-white/30 hover:bg-white/30 transition-colors"
+            >
+              {post.maker}
+            </Link>
+          </div>
+        )}
+
+        {/* Tags */}
+        {Array.isArray(post.tags) && post.tags.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.slice(0, 3).map((tag, idx) => (
+                <span 
+                  key={idx} 
+                  className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30"
+                >
+                  {tag}
+                </span>
+              ))}
+              {post.tags.length > 3 && (
+                <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white/90 text-xs font-medium rounded-full border border-white/30">
+                  +{post.tags.length - 3}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Social Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleLike}
+              disabled={!firebaseUser || isLiking}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-full backdrop-blur-sm border transition-colors ${
+                liked ? 'bg-red-500/90 text-white border-red-400/30' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
+              } ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              title={!firebaseUser ? 'Sign in to like posts' : isLiking ? 'Processing...' : 'Like this post'}
+            >
+              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+              <span className="text-sm font-medium">{likesCount}</span>
+            </button>
+            
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 transition-colors cursor-pointer"
+              title="View comments"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">{commentsCount}</span>
+            </button>
+          </div>
+          
+          {post.openToSale && (
+            <div className="flex items-center">
+              {isOwner ? (
+                <span className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-green-500/90 text-white border border-green-400/30 backdrop-blur-sm">
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </span>
+              ) : (
+                <button
+                  onClick={handleDM}
+                  disabled={!firebaseUser}
+                  className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full border backdrop-blur-sm ${!firebaseUser ? 'opacity-50 cursor-not-allowed bg-white/10 text-white/50 border-white/20' : 'bg-green-500/90 text-white border-green-400/30 hover:bg-green-600/90'}`}
+                  title={!firebaseUser ? 'Sign in to message' : 'Message seller'}
+                  aria-label="Message seller about this item"
+                >
+                  <Send className="h-3.5 w-3.5" /> Open to sale
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sign-in Prompt for Unauthenticated Users */}
+        {!firebaseUser && (
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-white font-medium">Want to interact?</p>
+                <p className="text-xs text-white/80">Sign in to like, comment, and message other collectors</p>
+              </div>
+              <Link 
+                href="/auth/signin" 
+                className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors border border-white/30"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Comments Section - Below the card */}
       {showComments && (
-        <div className="jutcomment bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl-bottom border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+        <div className="mt-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
           {/* Add Comment */}
           {firebaseUser && (
             <div className="flex items-center space-x-2 mb-4">

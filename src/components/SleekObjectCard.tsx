@@ -32,7 +32,7 @@ export default function SleekObjectCard({ object }: { object: HeldObject }) {
               src={object.images[0]}
               alt={object.title}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-cover"
               loading="lazy"
               priority={false}
               onError={(e) => {
@@ -124,7 +124,7 @@ export default function SleekObjectCard({ object }: { object: HeldObject }) {
             </div>
             <div className="h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
               <div
-                className="h-full bg-white/80 rounded-full transition-all duration-500"
+                className="h-full bg-white/80 rounded-full"
                 style={{ width: `${getProvenanceScore(object)}%` }}
               />
             </div>

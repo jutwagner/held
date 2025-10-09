@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "held-button-primary",
+        default: "held-button-primary round-full",
         secondary: "held-button-secondary",
         ghost: "held-button-ghost",
         outline: "held-button border border-gray-300 dark:border-gray-600 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100",

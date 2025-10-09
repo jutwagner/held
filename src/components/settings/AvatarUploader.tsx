@@ -3,6 +3,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import app from '@/lib/firebase';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { validateFile, generateSecureStoragePath, isSuspiciousFile } from '@/lib/file-security';
 
 export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl: string; setAvatarUrl: (url: string) => void }) {
   const fallbackAvatar = '/img/placeholder.svg';
@@ -14,30 +15,48 @@ export default function AvatarUploader({ avatarUrl, setAvatarUrl }: { avatarUrl:
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Show local preview
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (ev.target?.result) setPreview(ev.target.result as string);
-    };
-    reader.readAsDataURL(file);
 
     if (!user?.uid) {
       setUploading(false);
       return;
     }
 
-    // Upload to Firebase Storage
+    // Security validation
     setUploading(true);
     try {
+      // Check for suspicious files
+      if (isSuspiciousFile(file)) {
+        alert('This file type is not allowed for security reasons.');
+        setUploading(false);
+        return;
+      }
+
+      // Validate file
+      const validation = await validateFile(file);
+      if (!validation.isValid) {
+        alert(`File validation failed: ${validation.error}`);
+        setUploading(false);
+        return;
+      }
+
+      // Show local preview
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) setPreview(ev.target.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to Firebase Storage with secure path
       const storage = getStorage(app);
-      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_/]/g, '_');
-      const storageRef = ref(storage, `users/${user.uid}/avatar/${Date.now()}_${safeName}`);
+      const securePath = generateSecureStoragePath(user.uid, validation.sanitizedFilename || file.name);
+      const storageRef = ref(storage, securePath);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       setAvatarUrl(url);
       setPreview(url);
-    } catch {
-      // Optionally show error
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload failed. Please try a different file.');
       setPreview(avatarUrl || '/default-avatar.png');
     }
     setUploading(false);

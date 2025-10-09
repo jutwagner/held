@@ -9,7 +9,11 @@ export default function PremiumSettings() {
   return (
     <SettingsLayout section="premium">
       <div className="flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-serif font-bold mb-8 text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Libre Baskerville, serif' }}>Held+</h1>
+        <h1 className="text-3xl font-serif font-bold mb-8 text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Libre Baskerville, serif' }}>
+        <img src="/held-seal-plus.svg" alt="Held+ Seal" className="h-16 w-16" />
+          </h1>
+          
+        
         <PremiumSection user={user ?? undefined} />
       </div>
     </SettingsLayout>

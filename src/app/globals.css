@@ -597,6 +597,14 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   }
 }
 
+.round-full{
+  border-radius: 100px;
+}
+
+.round-none{
+  border-radius: 0;
+}
+
 .avatar-header{
   padding: 1rem 1rem 10rem 1rem;
 }
@@ -613,12 +621,22 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   height: auto;
 }
 
+.jutcomment{
+  margin-top: -13px;
+}
 
 .line-height-lrg{
   line-height: 2.9rem;
 }
 
 
+.align-center{
+  text-align: center;
+}
+
+.rounded-xl-bottom {
+  border-radius: 0 0 1rem 1rem;
+}
 
 @media screen and (max-width: 768px) {
   .mobile-no-top-padding{
