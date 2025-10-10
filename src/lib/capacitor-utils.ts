@@ -39,3 +39,4 @@ export function getPaymentMethod(): 'stripe' | 'storekit' | 'web' {
   
   return isUS ? 'stripe' : 'storekit';
 }
+

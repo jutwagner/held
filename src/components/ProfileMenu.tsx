@@ -134,3 +134,4 @@ export default function ProfileMenu({ currentSection = 'profile' }: ProfileMenuP
     </div>
   );
 }
+
