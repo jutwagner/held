@@ -1,4 +1,6 @@
 // Conditional imports for Capacitor plugins
+import type { URLOpenListenerEvent } from '@capacitor/app';
+
 let App: any;
 let Browser: any;
 
@@ -35,7 +37,7 @@ export function setupCapacitorOAuthHandler() {
   console.log('[OAuth] Setting up Capacitor deep link handler');
 
   // Listen for app URL opens (from OAuth redirects)
-  App.addListener('appUrlOpen', async (event) => {
+  App.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
     console.log('[OAuth] App URL opened:', event.url);
     
     // Check if this is a Firebase auth handler callback (OAuth flow completion)
