@@ -15,7 +15,7 @@ interface CollaborativeRotationCardProps {
 }
 
 export default function CollaborativeRotationCard({ rotation, onDelete }: CollaborativeRotationCardProps) {
-  const { firebaseUser, loading } = useAuth();
+  const { user, firebaseUser, loading } = useAuth();
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rotationObjects, setRotationObjects] = useState<HeldObject[]>([]);
@@ -183,11 +183,16 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   };
 
   const handleSubmitComment = async () => {
-    if (!firebaseUser || !newComment.trim() || isSubmitting) return;
+    if (!firebaseUser || !user || !newComment.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      await addComment(rotation.id, firebaseUser.uid, newComment.trim());
+      await addComment(rotation.id, {
+        userId: firebaseUser.uid,
+        userDisplayName: user.displayName,
+        userHandle: user.handle,
+        text: newComment.trim()
+      });
       setNewComment('');
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -458,7 +463,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
           </div>
 
           {/* Comment Input */}
-          {firebaseUser ? (
+          {firebaseUser && user ? (
             <div className="flex gap-2">
               <input
                 type="text"
