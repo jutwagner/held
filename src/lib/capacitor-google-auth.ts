@@ -4,7 +4,7 @@ import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from './firebase';
 
 export async function signInWithGoogleCapacitor(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const capacitor = (window as any).Capacitor;
     if (!capacitor?.isNativePlatform?.()) {
       reject(new Error('Not a Capacitor app'));
@@ -27,7 +27,7 @@ export async function signInWithGoogleCapacitor(): Promise<void> {
     console.log('[CapacitorGoogleAuth] Opening browser with OAuth URL');
 
     // Set up the listener BEFORE opening the browser
-    const urlListener = App.addListener('appUrlOpen', async (event) => {
+    const urlListener = await App.addListener('appUrlOpen', async (event) => {
       console.log('[CapacitorGoogleAuth] App URL opened:', event.url);
 
       if (event.url.includes('code=')) {
