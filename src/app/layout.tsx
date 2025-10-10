@@ -17,23 +17,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   gtag('config', 'G-8ZB18NNRPR');
 `}}
         />
-        {/* iOS native app configuration */}
+        {/* iOS native app configuration - CRITICAL for hiding Safari UI */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui"
         />
 
-        
+        {/* These meta tags are CRITICAL for hiding Safari UI in standalone mode */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        {/*}
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-*/}
-
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
 
         <meta name="apple-mobile-web-app-title" content="Held" />
         <meta name="apple-touch-fullscreen" content="yes" />
-        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
 

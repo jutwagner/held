@@ -23,6 +23,9 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { createUser, getUser, initializePresence } from '@/lib/firebase-services';
 import type { UserDoc } from '@/types';
+import { setupCapacitorOAuthHandler } from '@/lib/capacitor-oauth-handler';
+import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
 
 import type { Dispatch, SetStateAction } from 'react';
 interface AuthContextType {
@@ -74,7 +77,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isCapacitorNative = Boolean(capacitor?.isNativePlatform?.());
     const isStandalonePWA = isiOSSafariStandalone || (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches);
     const shouldUseRedirect = isIOSDevice || isStandalonePWA || isCapacitorNative;
+    
     try {
+      // For Capacitor, use native Google Auth plugin
+      if (isCapacitorNative) {
+        console.log('[Auth] Using native Google Auth for Capacitor');
+        const { signInWithGoogleNative } = await import('../lib/native-google-auth');
+        const result = await signInWithGoogleNative();
+        
+        if (result?.user) {
+          const userData = await getUser(result.user.uid);
+          if (!userData) {
+            await createUser({
+              uid: result.user.uid,
+              email: result.user.email!,
+              displayName: result.user.displayName || '',
+              avatarUrl: result.user.photoURL || '',
+            });
+          }
+        }
+        return 'popup'; // Return 'popup' to indicate immediate completion
+      }
+      
       if (shouldUseRedirect) {
         console.log('[Auth] Using signInWithRedirect flow');
         await signInWithRedirect(auth, provider);
@@ -187,8 +211,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const init = async () => {
       try {
+        // Setup Capacitor OAuth handler for deep links
+        setupCapacitorOAuthHandler();
+        
+        // Log Capacitor environment for debugging
+        const capacitor = typeof window !== 'undefined' ? (window as any).Capacitor : undefined;
+        const isCapacitorNative = Boolean(capacitor?.isNativePlatform?.());
+        console.log('[Auth] Initializing auth context', {
+          isCapacitor: isCapacitorNative,
+          platform: capacitor?.getPlatform?.(),
+          url: typeof window !== 'undefined' ? window.location.href : 'N/A'
+        });
+        
+        // Initialize native Google Auth if in Capacitor
+        if (isCapacitorNative) {
+          const { initializeGoogleAuth } = await import('../lib/native-google-auth');
+          initializeGoogleAuth();
+        }
+
+
         const result = await getRedirectResult(auth);
         console.log('[Auth] getRedirectResult returned', result?.user ? 'user' : result === null ? 'null' : 'no user');
+        if (result?.user) {
+          console.log('[Auth] Redirect result user:', {
+            uid: result.user.uid,
+            email: result.user.email,
+            displayName: result.user.displayName
+          });
+        } else if (result === null) {
+          console.log('[Auth] No redirect result - this is normal for fresh app loads');
+        } else {
+          console.log('[Auth] Unexpected redirect result:', result);
+        }
+        
         if (typeof window !== 'undefined') {
           const redirectStorageKey = `firebase:redirectEvent:${auth.app.options.apiKey}:${auth.app.name}`;
           const sessionValue = window.sessionStorage.getItem(redirectStorageKey);
@@ -198,10 +253,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             local: localValue,
           });
           console.log('[Auth] Current location after redirect:', window.location.href);
+          
+          // Check for OAuth redirect parameters in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const hasAuthParams = urlParams.has('code') || urlParams.has('state') || urlParams.has('oauth_token');
+          console.log('[Auth] URL has OAuth params:', hasAuthParams);
         }
+        
         if (result?.user) {
           const existing = await getUser(result.user.uid);
           if (!existing) {
+            console.log('[Auth] Creating new user from redirect result');
             await createUser({
               uid: result.user.uid,
               email: result.user.email!,

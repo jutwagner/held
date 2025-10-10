@@ -45,5 +45,52 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	<key>WKAppBoundDomains</key>
+	<array>
+		<string>held-62986.firebaseapp.com</string>
+		<string>192.168.1.243</string>
+		<string>localhost</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.held.app</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.held.app</string>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>held-62986</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.held.app.firebase</string>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.612683552247-p7bgbhai2ed62i9b5tmpk6m2miqvcp08</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.held.app.google</string>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googlechrome</string>
+		<string>googlechromes</string>
+		<string>com.googleusercontent.apps</string>
+	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>webcredentials:held-62986.firebaseapp.com</string>
+	</array>
 </dict>
 </plist>

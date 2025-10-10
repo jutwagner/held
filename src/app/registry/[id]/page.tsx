@@ -554,7 +554,7 @@ export default function RegistryItemPage() {
           <div className="flex items-center gap-2">
             {item.isPublic && (
               <Button asChild variant="ghost" className="text-black dark:text-gray-100 p-0">
-                <Link href={`/passport/${item.slug || item.id}`} target="_blank" className="p-0">
+                <Link href={`/passport/${item.slug || item.id}`} className="p-0">
                   <Image src={passportSvg} alt="Passport" width={39} height={39} className=" opacity-100 float-left" />
               </Link> 
               </Button>

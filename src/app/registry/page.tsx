@@ -274,9 +274,10 @@ export default function RegistryPage() {
               {/* Header */}
               <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">Registry</h1>
+                  <h1 className="text-lg md:text-2xl font-serif tracking-tight mb-1 mt-2 text-gray-900 dark:text-gray-100">  
+                   Registry</h1>
                   <p className="text-gray-600/90 dark:text-gray-300/90">
-                    {objects.length} object{objects.length !== 1 ? 's' : ''} in your collection
+                    {objects.length} item{objects.length !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 mt-4 sm:mt-0">

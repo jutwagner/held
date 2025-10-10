@@ -9,6 +9,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // Configure WKWebView to hide Safari UI elements
+        if let bridgeViewController = window?.rootViewController as? CAPBridgeViewController {
+            // Disable Safari-like features
+            bridgeViewController.webView?.configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
+            bridgeViewController.webView?.scrollView.contentInsetAdjustmentBehavior = .never
+            
+            // Hide the Safari toolbar and other UI elements
+            bridgeViewController.webView?.scrollView.bounces = true
+            // Disable native gesture since it doesn't work with Next.js client-side routing
+            // We'll implement a custom swipe handler instead
+            bridgeViewController.webView?.allowsBackForwardNavigationGestures = false
+            
+            // Prevent showing Safari context menus
+            bridgeViewController.webView?.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+            
+            // Make it feel more native
+            bridgeViewController.webView?.isOpaque = false
+            bridgeViewController.webView?.backgroundColor = .white
+        }
+        
         return true
     }
     func applicationWillResignActive(_ application: UIApplication) {
@@ -34,6 +55,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        // Handle OAuth redirects (Google Sign-In, Apple Sign-In, etc.)
+        if url.scheme == "com.held.app" || url.scheme == "held-62986" {
+            print("[AppDelegate] Handling OAuth redirect URL: \(url)")
+            // Let Capacitor handle the deep link
+            return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+        }
+        
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)

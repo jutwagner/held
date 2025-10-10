@@ -16,12 +16,22 @@ const config: CapacitorConfig = {
     allowsLinkPreview: false,
     scrollEnabled: true,
     contentInset: 'automatic',
-    overrideUserAgent: 'Held-iOS-App/1.0'
+    overrideUserAgent: 'Held-iOS-App/1.0',
+    preferredContentMode: 'mobile',
+    // Hide all Safari UI elements
+    limitsNavigationsToAppBoundDomains: true,
+    // Prevent showing Safari toolbar
+    backgroundColor: '#ffffff'
   },
   plugins: {
     Keyboard: {
       style: KeyboardStyle.Dark,
       resizeOnFullScreen: true
+    },
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      serverClientId: '612683552247-p7bgbhai2ed62i9b5tmpk6m2miqvcp08.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true
     }
   }
 };

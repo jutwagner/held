@@ -72,10 +72,15 @@ export default function RotationsPage() {
         
               <div className="flex  sm:flex-row justify-between items-start sm:items-center mb-10">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">Rotations</h1>
-                  <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500/90 dark:text-gray-300/90">
-              {rotationsWithObjects.length} rotation{rotationsWithObjects.length !== 1 ? 's' : ''} in your collection
-            </p>
+
+                <h1 className="text-lg md:text-2xl font-serif tracking-tight mb-1 mt-2 text-gray-900 dark:text-gray-100">  
+                   Rotations</h1>
+                  <p className="text-gray-600/90 dark:text-gray-300/90">
+                  {rotationsWithObjects.length} Rotation{rotationsWithObjects.length !== 1 ? 's' : ''}
+                  </p>
+
+
+
           </div>
           <Button asChild className="mt-4 sm:mt-0">
 
