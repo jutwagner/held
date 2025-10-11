@@ -7,7 +7,7 @@ import type { HeldObject, Rotation } from '@/types';
 import { getObject, getUser, toggleLike, getLikesCount, hasUserLiked, addComment, subscribeToComments } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Send } from 'lucide-react';
+import { Heart, MessageCircle, Send, Eye, Calendar } from 'lucide-react';
 
 interface CollaborativeRotationCardProps {
   rotation: Rotation;
@@ -203,110 +203,86 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
-      <div className="relative h-64 bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-        <div className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 shadow-md pad-top-rotation opacity-90">
-          <Image src="/img/rotations.svg" alt="Rotation" width={24} height={24} className="h-6 w-6 dark:invert" />
-        </div>
-        {rotation.coverImage && (
+    <>
+    <Link href={`/rotations/${rotation.id}`}>
+      <div 
+        className="group relative rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] hover:shadow-2xl transition-shadow duration-300"
+        style={{ 
+          willChange: 'transform',
+          borderRadius: '1rem',
+          transform: 'translateZ(0)'
+        }}
+      >
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        {rotation.coverImage ? (
           <Image
             src={rotation.coverImage}
-            alt="Rotation Cover"
+            alt={rotation.name}
             fill
-            className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 blur-sm scale-105"
-            style={{ objectFit: 'cover' }}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             priority
           />
-        )}
-        <div className="relative z-10 w-full flex items-center justify-center">
-          {loadingObjects ? (
-            <div className="flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : rotationObjects.length > 0 ? (
-            <div className="flex items-center justify-center px-4">
-              {rotationObjects.slice(0, 6).map((obj, index) => (
-                <div key={obj.id} className="relative flex-shrink-0">
-                  <div
-                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white shadow-xl bg-gray-200 dark:bg-gray-800 hover:scale-105 transition-transform duration-200 flex-shrink-0"
-                    style={{
-                      aspectRatio: '1',
-                      marginLeft: index > 0 ? '-8px' : '0',
-                      zIndex: 10 - index,
-                    }}
-                  >
-                    {obj.images && obj.images.length > 0 ? (
-                      <Image
-                        src={obj.images[0]}
-                        alt={obj.title}
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover"
-                        style={{ aspectRatio: '1' }}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center" style={{ aspectRatio: '1' }}>
-                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-gray-500">
-                          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
-                          <path d="M9 9h6v6H9z" stroke="currentColor" strokeWidth="2" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  {index === 5 && rotationObjects.length > 6 && (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 absolute inset-0 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xl font-bold font-serif">+{rotationObjects.length - 6}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="w-32 h-32 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
-              <svg width="64" height="64" fill="none" viewBox="0 0 32 32" className="text-gray-400 dark:text-gray-500">
-                <rect x="3" y="3" width="26" height="26" rx="4" stroke="currentColor" strokeWidth="2" />
-                <path d="M12 12h8v8h-8z" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </div>
-          )}
-        </div>
-        {rotation.isPublic && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">Public</span>
-          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600" />
         )}
       </div>
 
-      <div className="p-6">
+      {/* Dark Gradient Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+
+      {/* Public Badge */}
+      {rotation.isPublic && (
+        <div className="absolute top-4 left-4 z-20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-full text-xs font-medium text-gray-900 dark:text-gray-100 shadow-lg border border-white/20">
+            <Eye className="h-3 w-3" />
+            Public
+          </span>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col justify-end h-full p-6">
+        {/* Owner Info */}
         {ownerName && (
-          <div className="flex items-center gap-3 mb-3 text-sm text-gray-600 dark:text-gray-300">
-            <Avatar className="h-8 w-8">
+          <div className="flex items-center gap-2 mb-3">
+            <Avatar className="h-7 w-7 border-2 border-white shadow-lg">
               {ownerAvatar ? (
                 <AvatarImage src={ownerAvatar} alt={ownerName} />
               ) : (
-                <AvatarFallback>{ownerName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-xs">{ownerName.slice(0, 2).toUpperCase()}</AvatarFallback>
               )}
             </Avatar>
-            <span className="font-medium">{ownerName}</span>
+            <span className="text-sm font-medium text-white/90 drop-shadow-md">{ownerName}</span>
           </div>
         )}
-        <h3 className="font-serif font-bold text-xl mb-3 text-gray-900 dark:text-gray-100">{rotation.name}</h3>
+
+        {/* Title */}
+        <h3 className="text-2xl font-semibold text-white mb-2 line-clamp-2 drop-shadow-lg">
+          {rotation.name}
+        </h3>
+        
+        {/* Description */}
         {rotation.description && (
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">{rotation.description}</p>
+          <p className="text-white/90 text-sm mb-4 line-clamp-2 drop-shadow-md">
+            {rotation.description}
+          </p>
         )}
         
         {/* Maker/Artist tags from rotation objects */}
         {rotationObjects.length > 0 && (
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1.5">
               {Array.from(new Set(rotationObjects
                 .map(obj => obj.maker)
                 .filter(Boolean)
-              )).slice(0, 6).map((maker) => (
+              )).slice(0, 4).map((maker) => (
                 <Link
                   key={maker}
                   href={`/tags/${encodeURIComponent(maker!)}`}
-                  className="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                  onClick={(e) => e.stopPropagation()}
+                  className="px-2 py-0.5 text-xs rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 transition drop-shadow-md"
                 >
                   {maker}
                 </Link>
@@ -314,28 +290,77 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
               {Array.from(new Set(rotationObjects
                 .map(obj => obj.maker)
                 .filter(Boolean)
-              )).length > 6 && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+              )).length > 4 && (
+                <span className="px-2 py-0.5 text-xs rounded-full bg-white/10 backdrop-blur-sm text-white/80 border border-white/20 drop-shadow-md">
                   +{Array.from(new Set(rotationObjects
                     .map(obj => obj.maker)
                     .filter(Boolean)
-                  )).length - 6}
+                  )).length - 4}
                 </span>
               )}
             </div>
           </div>
         )}
-        
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-gray-400 dark:text-gray-500">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
-              <path d="M9 9h6v6H9z" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            <span className="font-medium">{rotation.objectIds?.length || 0} objects</span>
+
+        {/* Registry Objects Circles */}
+        <div className="mb-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 transition-all duration-300 group-hover:bg-white/15">
+            <div className="flex justify-center items-center px-2">
+              {loadingObjects ? (
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : rotationObjects.length > 0 ? (
+                <>
+                  {rotationObjects.slice(0, 5).map((obj: HeldObject, index) => (
+                    <div 
+                      key={obj.id} 
+                      className="w-12 h-12 bg-white rounded-full border-2 border-white shadow-lg overflow-hidden flex-shrink-0 transition-transform duration-200 hover:scale-110"
+                      style={{ 
+                        zIndex: 10 - index, 
+                        marginLeft: index > 0 ? '-8px' : '0',
+                      }}
+                    >
+                      {obj.images && obj.images.length > 0 ? (
+                        <Image 
+                          src={obj.images[0]} 
+                          alt={obj.title} 
+                          width={48} 
+                          height={48} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <span className="text-gray-400 text-xs">?</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {rotationObjects.length > 5 && (
+                    <div 
+                      className="w-12 h-12 bg-white/90 rounded-full border-2 border-white shadow-lg flex items-center justify-center flex-shrink-0"
+                      style={{ 
+                        zIndex: 5, 
+                        marginLeft: '-8px',
+                      }}
+                    >
+                      <span className="text-gray-700 text-xs font-semibold">+{rotationObjects.length - 5}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-white/60 text-sm">No objects</div>
+              )}
+            </div>
+            <p className="text-sm text-white/90 mt-3 text-center font-medium drop-shadow-md">
+              {rotation.objectIds?.length || 0} object{(rotation.objectIds?.length || 0) !== 1 ? 's' : ''}
+            </p>
           </div>
-          <div className="text-xs text-gray-400 dark:text-gray-500">
-            {(() => {
+        </div>
+
+        {/* Footer Meta with Date */}
+        <div className="flex items-center justify-between text-xs text-white/75 drop-shadow-md mb-4">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{(() => {
               if (rotation.createdAt instanceof Date) {
                 return rotation.createdAt.toLocaleDateString();
               }
@@ -347,55 +372,45 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
                 return (rotation.createdAt as any).toDate().toLocaleDateString();
               }
               return 'Recently created';
-            })()}
+            })()}</span>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <button
-              type="button"
-              onClick={handleToggleLike}
-              disabled={!firebaseUser || isLiking}
-              className={`flex items-center gap-1 transition ${liked ? 'text-rose-500' : 'hover:text-gray-700 dark:hover:text-gray-200'} ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : 'stroke-current'}`} />
-              <span className="font-medium">{likes}</span>
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                setShowComments(!showComments);
-              }}
-              title="View comments"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="font-medium">{commentsCount}</span>
-            </button>
-          </div>
-          <a
-            href={`/rotations/${rotation.id}`}
-            className="inline-flex items-center gap-2 bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+        {/* Social Actions */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleToggleLike(e);
+            }}
+            disabled={!firebaseUser || isLiking}
+            className={`flex items-center gap-1.5 transition ${liked ? 'text-rose-400' : 'text-white/80 hover:text-white'} ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} drop-shadow-md`}
           >
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-              <path d="M5 12h14m-7-7l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            View Rotation
-          </a>
+            <Heart className={`h-4 w-4 ${liked ? 'fill-current' : 'stroke-current'}`} />
+            <span className="text-sm font-medium">{likes}</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowComments(!showComments);
+            }}
+            className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
+            title="View comments"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">{commentsCount}</span>
+          </button>
         </div>
       </div>
+      </div>
+    </Link>
+
       {rotation.isPublic && (
         <>
-          <button
-            className="absolute top-4 right-4 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition disabled:opacity-50"
-            onClick={() => setConfirmOpen(true)}
-            disabled={deleting}
-            title="Delete rotation"
-          >
-            {deleting ? 'Deleting...' : 'Delete'}
-          </button>
+
           {confirmOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm w-full">
@@ -495,6 +510,6 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -156,10 +156,10 @@ export default function CollaborativeView({
   return (
     <div className="relative min-h-screen">
       <div className="full-bleed min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="held-container held-container-wide py-10">
+        <div className="held-container held-container-wide full-bleed py-10">
         <div className="flex sm:flex-row justify-between items-start sm:items-center mb-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">
+            <h1 className="text-lg md:text-2xl font-serif tracking-tight mb-2 text-gray-900 dark:text-gray-100">
               theCollaborative
             </h1>
             <p className="text-gray-600/90 dark:text-gray-300/90">

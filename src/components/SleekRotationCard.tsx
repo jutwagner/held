@@ -274,9 +274,6 @@ export default function SleekRotationCard({ rotation, disabled = false }: SleekR
                   </div>
                 )}
               </div>
-              <p className="text-sm text-white/90 mt-3 text-center font-medium drop-shadow-md">
-                {rotation.objects.length} object{rotation.objects.length !== 1 ? 's' : ''}
-              </p>
             </div>
           </div>
 

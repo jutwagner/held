@@ -816,3 +816,8 @@ body {
 .platform-horizontal-scroll::-webkit-scrollbar {
   display: none;
 }
+
+
+.h-95vh {
+  height: 95vh;;
+}

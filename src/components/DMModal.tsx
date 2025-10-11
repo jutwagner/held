@@ -166,15 +166,10 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg h-[700px] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="max-w-lg h-[700px] h-95vh flex flex-col p-0 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-white">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-white">
-                <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
-              </svg>
-            </div>
             <div>
               <h3 className="font-semibold text-gray-900">Direct Message</h3>
               <div className="flex items-center space-x-2">
@@ -196,11 +191,7 @@ export default function DMModal({ isOpen, onClose, conversationId, targetUserId,
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="text-gray-400">
-                    <path d="M2 8l8 5 8-5M2 8v6a2 2 0 002 2h12a2 2 0 002-2V8l-8 5-8-5z" stroke="currentColor" strokeWidth="1.5"/>
-                  </svg>
-                </div>
+
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
                 <p className="text-sm text-gray-500 max-w-xs">
                   Send a message to @jutwagner to begin chatting

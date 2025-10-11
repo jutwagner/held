@@ -310,21 +310,22 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <div className="w-full">
       <div 
-        className="relative rounded-2xl overflow-hidden aspect-[4/5] flex flex-col transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
+        className="relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
         style={{ 
           willChange: 'transform',
           borderRadius: '1rem',
           transform: 'translateZ(0)'
         }}
       >
-        {/* Full-bleed background image */}
-        <div className="absolute inset-0">
-          {post.images && post.images.length > 0 ? (
+        {/* Image determines the card size */}
+        {post.images && post.images.length > 0 ? (
+          <div className="relative">
             <Image
               src={post.images[0]}
               alt={post.title}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              width={800}
+              height={600}
+              className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
               priority={false}
               onError={(e) => {
@@ -332,18 +333,21 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                 e.currentTarget.src = '/img/placeholder.svg';
               }}
             />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 flex items-center justify-center">
-              <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
-            </div>
-          )}
-          
-          {/* Subtle blur gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
-          
-          {/* Dark gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-        </div>
+            
+            {/* Subtle blur gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+            
+            {/* Dark gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+          </div>
+        ) : (
+          <div className="aspect-[4/5] bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 flex items-center justify-center">
+            <Image src="/img/placeholder.svg" alt="No image" width={48} height={48} className="w-12 h-12 opacity-40" loading="lazy" priority={false} />
+            
+            {/* Dark gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+          </div>
+        )}
 
         {/* User Header - positioned at top with gradient background */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 avatar-header">
