@@ -146,8 +146,8 @@ export default function TheCollaborativePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="full-bleed held-container held-container-wide py-10">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 full-bleed">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex sm:flex-row justify-between items-start sm:items-center mb-10">
           <div>
             <h1 className="text-lg md:text-2xl font-serif  tracking-tight mb-2 text-gray-900 dark:text-gray-100">
@@ -197,7 +197,7 @@ export default function TheCollaborativePage() {
         ) : (
           <div className="columns-1 md:columns-2 gap-6 space-y-6">
             {combinedEntries.map((entry) => (
-              <div key={entry.id} className="break-inside-avoid mb-6">
+              <div key={entry.id} className="break-inside-avoid mb-6 rounded-2xl">
                 {entry.type === 'post' ? (
                   <SleekPostCard post={entry.data as HeldObject} />
                 ) : (

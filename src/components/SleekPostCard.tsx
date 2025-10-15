@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { HeldObject, UserDoc } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart, MessageCircle, Send, User, Calendar, Tag as TagIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, User, Calendar, Tag as TagIcon, ShoppingCart, ExternalLink, Info } from 'lucide-react';
 import { getUser, toggleLike, getLikesCount, hasUserLiked, addComment, getComments, subscribeToComments } from '@/lib/firebase-services';
 import Link from 'next/link';
 import DMModal from './DMModal';
@@ -14,6 +14,22 @@ interface PostCardProps {
 
 const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
   const { user, firebaseUser, loading } = useAuth();
+
+  // Helper function to get platform-specific styling
+  const getPlatformStyling = (platform?: string) => {
+    switch (platform) {
+      case 'amazon':
+        return 'bg-orange-500/90 border-orange-400/30 hover:bg-orange-600/90';
+      case 'ebay':
+        return 'bg-blue-500/90 border-blue-400/30 hover:bg-blue-600/90';
+      case 'etsy':
+        return 'bg-pink-500/90 border-pink-400/30 hover:bg-pink-600/90';
+      case 'shopify':
+        return 'bg-green-500/90 border-green-400/30 hover:bg-green-600/90';
+      default:
+        return 'bg-gray-500/90 border-gray-400/30 hover:bg-gray-600/90';
+    }
+  };
   const [postUser, setPostUser] = useState<UserDoc | null>(null);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -31,6 +47,7 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
     createdAt: Date;
   }>>([]);
   const [isDMOpen, setIsDMOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const isOwner = !!firebaseUser && firebaseUser.uid === post.userId;
 
   // Fetch post user data and social data
@@ -308,9 +325,9 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <div 
-        className="relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
+        className="overflow-hidden relative rounded-2xl transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
         style={{ 
           willChange: 'transform',
           borderRadius: '1rem',
@@ -379,17 +396,33 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
             </div>
             
             {user && user.uid !== post.userId && (
-              <button
-                onClick={handleDM}
-                disabled={!user}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
-                  !user ? 'bg-white/10 text-white/50 border-white/20 cursor-not-allowed' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
-                }`}
-                title={!user ? 'Sign in to send messages' : 'Send a message'}
-              >
-                <Send className="h-4 w-4" />
-                <span className="text-sm">Message</span>
-              </button>
+              <>
+                {post.openToSale ? (
+                  <button
+                    onClick={handleDM}
+                    disabled={!user}
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
+                      !user ? 'bg-green-500/50 text-white/50 border-green-400/20 cursor-not-allowed' : 'bg-green-500/90 text-white border-green-400/30 hover:bg-green-600/90'
+                    }`}
+                    title={!user ? 'Sign in to send messages' : 'Message seller about this item'}
+                  >
+                    <Send className="h-4 w-4" />
+                    <span className="text-sm font-medium">Open to sale</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleDM}
+                    disabled={!user}
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${
+                      !user ? 'bg-white/10 text-white/50 border-white/20 cursor-not-allowed' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
+                    }`}
+                    title={!user ? 'Sign in to send messages' : 'Send a message'}
+                  >
+                    <Send className="h-4 w-4" />
+                    <span className="text-sm">Message</span>
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -399,12 +432,13 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
           {/* Title and description */}
           <div className="mb-4">
             <h2 className="text-2xl font-bold mb-2 text-white leading-tight">{post.title}</h2>
-            {post.description && (
+            
+            {/*post.description && (
               <p className="text-white/90 text-sm mb-3 line-clamp-2">{post.description}</p>
-            )}
+            )*/}
           </div>
 
-          {/* Maker/Artist as clickable tag */}
+          {/* Maker/Artist as clickable tag
           {post.maker && (
             <div className="mb-3">
               <Link
@@ -415,8 +449,8 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
               </Link>
             </div>
           )}
-
-          {/* Tags */}
+          */}
+          {/* Tags 
           {Array.isArray(post.tags) && post.tags.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
@@ -435,52 +469,67 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                 )}
               </div>
             </div>
-          )}
+          )}*/}
 
           {/* Social Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleLike}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleLike();
+                }}
                 disabled={!firebaseUser || isLiking}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-full backdrop-blur-sm border transition-colors ${
-                  liked ? 'bg-red-500/90 text-white border-red-400/30' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'
-                } ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`flex items-center gap-1.5 transition ${liked ? 'text-rose-400' : 'text-white/80 hover:text-white'} ${!firebaseUser || isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} drop-shadow-md`}
                 title={!firebaseUser ? 'Sign in to like posts' : isLiking ? 'Processing...' : 'Like this post'}
               >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+                <Heart className={`h-4 w-4 ${liked ? 'fill-current' : 'stroke-current'}`} />
                 <span className="text-sm font-medium">{likesCount}</span>
               </button>
               
               <button
-                onClick={() => setShowComments(!showComments)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowComments(!showComments);
+                }}
+                className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
                 title="View comments"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">{commentsCount}</span>
               </button>
+
+              {/* Buy Button - Show for all users if post has purchase link */}
+              {post.purchaseLink && (
+                <a
+                  href={post.purchaseLink.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-full backdrop-blur-sm text-white border transition-colors cursor-pointer ${getPlatformStyling(post.purchaseLink.platform)}`}
+                  title={`${post.purchaseLink.title || 'Buy this item'}`}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="text-sm font-medium">Buy</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+
+              {/* Details Button - Always show */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowDetails(!showDetails);
+                }}
+                className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
+                title="View details"
+              >
+                <Info className="h-4 w-4" />
+                <span className="text-sm font-medium">Details</span>
+              </button>
             </div>
-            
-            {post.openToSale && (
-              <div className="flex items-center">
-                {isOwner ? (
-                  <span className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-green-500/90 text-white border border-green-400/30 backdrop-blur-sm">
-                    <Send className="h-3.5 w-3.5" /> Open to sale
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleDM}
-                    disabled={!firebaseUser}
-                    className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full border backdrop-blur-sm ${!firebaseUser ? 'opacity-50 cursor-not-allowed bg-white/10 text-white/50 border-white/20' : 'bg-green-500/90 text-white border-green-400/30 hover:bg-green-600/90'}`}
-                    title={!firebaseUser ? 'Sign in to message' : 'Message seller'}
-                    aria-label="Message seller about this item"
-                  >
-                    <Send className="h-3.5 w-3.5" /> Open to sale
-                  </button>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Sign-in Prompt for Unauthenticated Users */}
@@ -549,6 +598,89 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                   <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
                 </div>
               ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Details Section - Similar to comments */}
+      {showDetails && (
+        <div className="jutdetails bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Item Details
+          </h4>
+          
+          {/* Description */}
+          {post.description && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Description</h5>
+              <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">{post.description}</p>
+            </div>
+          )}
+
+          {/* Maker */}
+          {post.maker && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Maker</h5>
+              <Link
+                href={`/tags/${encodeURIComponent(post.maker)}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-block px-3 py-1.5 text-sm rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+              >
+                {post.maker}
+              </Link>
+            </div>
+          )}
+
+          {/* Tags */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tags</h5>
+              <div className="flex flex-wrap gap-1.5">
+                {post.tags.slice(0, 8).map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/tags/${encodeURIComponent(tag)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                  >
+                    {tag}
+                  </Link>
+                ))}
+                {post.tags.length > 8 && (
+                  <span className="px-2 py-1 text-xs rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+                    +{post.tags.length - 8} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Info */}
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            {post.year && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Year:</span>
+                <span className="ml-1 text-gray-900 dark:text-gray-100">{post.year}</span>
+              </div>
+            )}
+            {post.condition && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Condition:</span>
+                <span className="ml-1 text-gray-900 dark:text-gray-100 capitalize">{post.condition}</span>
+              </div>
+            )}
+            {post.category && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Category:</span>
+                <span className="ml-1 text-gray-900 dark:text-gray-100 capitalize">{post.category}</span>
+              </div>
+            )}
+            {post.value && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Value:</span>
+                <span className="ml-1 text-gray-900 dark:text-gray-100">${post.value.toLocaleString()}</span>
+              </div>
             )}
           </div>
         </div>

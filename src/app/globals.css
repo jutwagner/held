@@ -621,8 +621,15 @@ body.capacitor-ios input::-webkit-textfield-decoration-container {
   height: auto;
 }
 
-.jutcomment{
-  margin-top: -13px;
+.jutcomment, .jutdetails{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  border-radius: 1rem;
+  z-index: 50;
+  max-width: 100%;
 }
 
 .line-height-lrg{
@@ -820,4 +827,8 @@ body {
 
 .h-95vh {
   height: 95vh;;
+}
+
+.rotation-height {
+  min-height: 40vh;
 }

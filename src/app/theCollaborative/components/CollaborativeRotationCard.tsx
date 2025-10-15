@@ -7,7 +7,7 @@ import type { HeldObject, Rotation } from '@/types';
 import { getObject, getUser, toggleLike, getLikesCount, hasUserLiked, addComment, subscribeToComments } from '@/lib/firebase-services';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Send, Eye, Calendar } from 'lucide-react';
+import { Heart, MessageCircle, Send, Eye, Calendar, Info } from 'lucide-react';
 
 interface CollaborativeRotationCardProps {
   rotation: Rotation;
@@ -37,6 +37,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   }>>([]);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -203,10 +204,10 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   };
 
   return (
-    <>
+    <div className="relative">
     <Link href={`/rotations/${rotation.id}`}>
       <div 
-        className="group relative rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] hover:shadow-2xl transition-shadow duration-300"
+        className="rotation-height overflow-hidden group relative rounded-2xl  cursor-pointer hover:shadow-2xl transition-shadow duration-300"
         style={{ 
           willChange: 'transform',
           borderRadius: '1rem',
@@ -232,21 +233,10 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
 
-      {/* Public Badge */}
-      {rotation.isPublic && (
-        <div className="absolute top-4 left-4 z-20">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-full text-xs font-medium text-gray-900 dark:text-gray-100 shadow-lg border border-white/20">
-            <Eye className="h-3 w-3" />
-            Public
-          </span>
-        </div>
-      )}
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col justify-end h-full p-6">
         {/* Owner Info */}
         {ownerName && (
-          <div className="flex items-center gap-2 mb-3">
+          <div className="px-3 py-1.5 flex items-center gap-2 mb-3">
             <Avatar className="h-7 w-7 border-2 border-white shadow-lg">
               {ownerAvatar ? (
                 <AvatarImage src={ownerAvatar} alt={ownerName} />
@@ -258,17 +248,32 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
           </div>
         )}
 
+
+
+      {/* Public Badge 
+      {rotation.isPublic && (
+        <div className="absolute top-4 left-4 z-20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-full text-xs font-medium text-gray-900 dark:text-gray-100 shadow-lg border border-white/20">
+            <Eye className="h-3 w-3" />
+            Public
+          </span>
+        </div>
+      )}*/}
+
+      {/* Content */}
+      <div className="rotation-height relative z-10 flex flex-col justify-end h-full p-6">
+
         {/* Title */}
         <h3 className="text-2xl font-semibold text-white mb-2 line-clamp-2 drop-shadow-lg">
           {rotation.name}
         </h3>
         
-        {/* Description */}
+        {/* Description
         {rotation.description && (
           <p className="text-white/90 text-sm mb-4 line-clamp-2 drop-shadow-md">
             {rotation.description}
           </p>
-        )}
+        )} */}
         
         {/* Maker/Artist tags from rotation objects */}
         {rotationObjects.length > 0 && (
@@ -350,33 +355,13 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
                 <div className="text-white/60 text-sm">No objects</div>
               )}
             </div>
-            <p className="text-sm text-white/90 mt-3 text-center font-medium drop-shadow-md">
-              {rotation.objectIds?.length || 0} object{(rotation.objectIds?.length || 0) !== 1 ? 's' : ''}
-            </p>
+
           </div>
         </div>
 
-        {/* Footer Meta with Date */}
-        <div className="flex items-center justify-between text-xs text-white/75 drop-shadow-md mb-4">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>{(() => {
-              if (rotation.createdAt instanceof Date) {
-                return rotation.createdAt.toLocaleDateString();
-              }
-              if (
-                rotation.createdAt &&
-                typeof rotation.createdAt === 'object' &&
-                typeof (rotation.createdAt as any).toDate === 'function'
-              ) {
-                return (rotation.createdAt as any).toDate().toLocaleDateString();
-              }
-              return 'Recently created';
-            })()}</span>
-          </div>
-        </div>
         {/* Social Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
+          <div className='flex items-center space-x-4'>
           <button
             type="button"
             onClick={(e) => {
@@ -403,6 +388,20 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
             <MessageCircle className="h-4 w-4" />
             <span className="text-sm font-medium">{commentsCount}</span>
           </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowDetails(!showDetails);
+            }}
+            className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
+            title="View details"
+          >
+            <Info className="h-4 w-4" />
+            <span className="text-sm font-medium">Details</span>
+          </button>
+        </div>
         </div>
       </div>
       </div>
@@ -437,7 +436,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
 
       {/* Comments Section */}
       {showComments && (
-        <div className="mt-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg rounded-xl-bottom">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
             Comments ({commentsCount})
           </h4>
@@ -510,6 +509,128 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
           )}
         </div>
       )}
-    </>
+
+      {/* Details Section - Similar to comments */}
+      {showDetails && (
+        <div className="jutcomment bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl-bottom border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Rotation Details
+          </h4>
+          
+          {/* Description */}
+          {rotation.description && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Description</h5>
+              <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">{rotation.description}</p>
+            </div>
+          )}
+
+          {/* Objects in Rotation */}
+          {rotationObjects.length > 0 && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Objects in Rotation</h5>
+              <div className="grid grid-cols-2 gap-2">
+                {rotationObjects.slice(0, 6).map((obj) => (
+                  <div key={obj.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    {obj.images && obj.images.length > 0 && (
+                      <Image
+                        src={obj.images[0]}
+                        alt={obj.title}
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 rounded object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{obj.title}</p>
+                      {obj.maker && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{obj.maker}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {rotationObjects.length > 6 && (
+                  <div className="flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">+{rotationObjects.length - 6} more</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Unique Makers from Objects */}
+          {rotationObjects.length > 0 && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Featured Makers</h5>
+              <div className="flex flex-wrap gap-1.5">
+                {Array.from(new Set(rotationObjects
+                  .map(obj => obj.maker)
+                  .filter(Boolean)
+                )).slice(0, 6).map((maker) => (
+                  <Link
+                    key={maker}
+                    href={`/tags/${encodeURIComponent(maker!)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                  >
+                    {maker}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unique Tags from Objects */}
+          {rotationObjects.length > 0 && (
+            <div className="mb-4">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tags</h5>
+              <div className="flex flex-wrap gap-1.5">
+                {Array.from(new Set(rotationObjects
+                  .flatMap(obj => obj.tags)
+                  .filter(Boolean)
+                )).slice(0, 8).map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/tags/${encodeURIComponent(tag!)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                  >
+                    {tag}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rotation Info */}
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Objects:</span>
+              <span className="ml-1 text-gray-900 dark:text-gray-100">{rotation.objectIds?.length || 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Created:</span>
+              <span className="ml-1 text-gray-900 dark:text-gray-100">
+                {(() => {
+                  if (rotation.createdAt instanceof Date) {
+                    return rotation.createdAt.toLocaleDateString();
+                  }
+                  if (rotation.createdAt && typeof rotation.createdAt === 'object' && 'toDate' in rotation.createdAt) {
+                    return (rotation.createdAt as any).toDate().toLocaleDateString();
+                  }
+                  return 'Recently';
+                })()}
+              </span>
+            </div>
+            {rotation.isPublic && (
+              <div className="col-span-2">
+                <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                <span className="ml-1 text-green-600 dark:text-green-400 font-medium">Public</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

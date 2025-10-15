@@ -73,6 +73,13 @@ export interface HeldObject {
   updatedAt: Date;
   description?: string;
   shareInCollaborative?: boolean; // New field
+  // Purchase link fields (Held+ only)
+  purchaseLink?: {
+    url: string;
+    platform?: 'amazon' | 'ebay' | 'etsy' | 'shopify' | 'other';
+    title?: string; // "Buy on Amazon", "Purchase on Etsy"
+  };
+  isForSale?: boolean;
   // Provenance fields
   chain?: Array<{ owner: string; acquiredAt?: Date; notes?: string }>;
   serialNumber?: string;
