@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { HeldObject, Rotation } from '@/types';
@@ -38,6 +38,8 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [overlayHeight, setOverlayHeight] = useState(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -132,6 +134,16 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
     return unsubscribe;
   }, [showComments, rotation.id, firebaseUser, loading]);
 
+  // Measure overlay height when it changes
+  useEffect(() => {
+    if (overlayRef.current && (showComments || showDetails)) {
+      const height = overlayRef.current.offsetHeight;
+      setOverlayHeight(height);
+    } else {
+      setOverlayHeight(0);
+    }
+  }, [showComments, showDetails, comments, rotationObjects]);
+
   const handleDelete = async () => {
     setConfirmOpen(false);
     setDeleting(true);
@@ -204,7 +216,7 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
   };
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ marginBottom: overlayHeight > 0 ? `${overlayHeight + 16}px` : '0' }}>
     <Link href={`/rotations/${rotation.id}`}>
       <div 
         className="rotation-height overflow-hidden group relative rounded-2xl  cursor-pointer hover:shadow-2xl transition-shadow duration-300"
@@ -381,6 +393,9 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
               e.preventDefault();
               e.stopPropagation();
               setShowComments(!showComments);
+              if (!showComments) {
+                setShowDetails(false); // Close details when opening comments
+              }
             }}
             className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
             title="View comments"
@@ -394,6 +409,9 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
               e.preventDefault();
               e.stopPropagation();
               setShowDetails(!showDetails);
+              if (!showDetails) {
+                setShowComments(false); // Close comments when opening details
+              }
             }}
             className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
             title="View details"
@@ -434,12 +452,24 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
         </>
       )}
 
-      {/* Comments Section */}
+      {/* Comments Section - Positioned below the card */}
       {showComments && (
-        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg rounded-xl-bottom">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Comments ({commentsCount})
-          </h4>
+        <div ref={overlayRef} className="absolute top-full left-0 right-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-b-xl border-l border-r border-b border-gray-200 dark:border-gray-700 p-4 shadow-lg rotation-tab max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Comments ({commentsCount})
+            </h4>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowComments(false);
+              }}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              ×
+            </button>
+          </div>
           
           {/* Comments List */}
           <div className="max-h-96 overflow-y-auto mb-4 space-y-3">
@@ -510,12 +540,24 @@ export default function CollaborativeRotationCard({ rotation, onDelete }: Collab
         </div>
       )}
 
-      {/* Details Section - Similar to comments */}
+      {/* Details Section - Positioned below the card */}
       {showDetails && (
-        <div className="jutcomment bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl-bottom border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Rotation Details
-          </h4>
+        <div ref={overlayRef} className="rotation-tab absolute top-full left-0 right-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-b-xl border-l border-r border-b border-gray-200 dark:border-gray-700 p-4 shadow-lg max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Rotation Details
+            </h4>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDetails(false);
+              }}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              ×
+            </button>
+          </div>
           
           {/* Description */}
           {rotation.description && (

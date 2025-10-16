@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { HeldObject, UserDoc } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +48,8 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
   }>>([]);
   const [isDMOpen, setIsDMOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [overlayHeight, setOverlayHeight] = useState(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const isOwner = !!firebaseUser && firebaseUser.uid === post.userId;
 
   // Fetch post user data and social data
@@ -246,6 +248,16 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
     return unsubscribe;
   }, [showComments, post.id, firebaseUser, loading]);
 
+  // Measure overlay height when it changes
+  useEffect(() => {
+    if (overlayRef.current && (showComments || showDetails)) {
+      const height = overlayRef.current.offsetHeight;
+      setOverlayHeight(height);
+    } else {
+      setOverlayHeight(0);
+    }
+  }, [showComments, showDetails, comments]);
+
   // Fetch initial comments when component mounts
   useEffect(() => {
     const fetchInitialComments = async () => {
@@ -325,7 +337,7 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative" style={{ marginBottom: overlayHeight > 0 ? `${overlayHeight + 16}px` : '0' }}>
       <div 
         className="overflow-hidden relative rounded-2xl transition-all duration-300 hover:scale-[1.01] cursor-pointer group shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_24px_64px_rgba(0,0,0,0.25)]"
         style={{ 
@@ -493,6 +505,9 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowComments(!showComments);
+                  if (!showComments) {
+                    setShowDetails(false); // Close details when opening comments
+                  }
                 }}
                 className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
                 title="View comments"
@@ -522,6 +537,9 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowDetails(!showDetails);
+                  if (!showDetails) {
+                    setShowComments(false); // Close comments when opening details
+                  }
                 }}
                 className="flex items-center gap-1.5 text-white/80 hover:text-white transition cursor-pointer drop-shadow-md"
                 title="View details"
@@ -552,9 +570,25 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
         </div>
       </div>
 
-      {/* Comments Section - Below the card */}
+      {/* Comments Section - Positioned below the card */}
       {showComments && (
-        <div className="jutcomment bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl-bottom border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+        <div ref={overlayRef} className="absolute top-full left-0 right-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-b-xl border-l border-r border-b border-gray-200 dark:border-gray-700 p-4 shadow-lg rotation-tab max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-sm text-gray-900 dark:text-gray-100 font-sans">
+              Comments ({commentsCount})
+            </h4>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowComments(false);
+              }}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              ×
+            </button>
+          </div>
+          
           {/* Add Comment */}
           {firebaseUser && (
             <div className="flex items-center space-x-2 mb-4">
@@ -562,14 +596,14 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                 type="text"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Comment"
+                className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-sm text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleComment()}
               />
               <button
                 onClick={handleComment}
                 disabled={!newComment.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-xlg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Post
               </button>
@@ -583,13 +617,12 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
                 <div className="text-sm text-gray-500 dark:text-gray-400">Loading comments...</div>
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</div>
+              <div className="text-center">
               </div>
             ) : (
               comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center space-x-2 mb-2">
+                <div key={comment.id} className="border-bottom border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center space-x-2 space-between">
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">@{comment.userHandle}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(comment.createdAt).toLocaleDateString()}
@@ -603,12 +636,24 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
         </div>
       )}
 
-      {/* Details Section - Similar to comments */}
+      {/* Details Section - Positioned below the card */}
       {showDetails && (
-        <div className="jutdetails bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-lg">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Item Details
-          </h4>
+        <div ref={overlayRef} className="absolute top-full left-0 right-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-b-xl border-l border-r border-b border-gray-200 dark:border-gray-700 p-4 shadow-lg rotation-tab max-h-96 overflow-y-auto">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Item Details
+            </h4>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDetails(false);
+              }}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              ×
+            </button>
+          </div>
           
           {/* Description */}
           {post.description && (

@@ -18,6 +18,7 @@ import TagList from '@/components/TagList';
 import SleekObjectCard from '@/components/SleekObjectCard';
 
 import { MobileBottomBar } from '@/components/Navigation';
+import FloatingActionButton from '@/components/FloatingActionButton';
 
 function getProvenanceScore(o: HeldObject): number {
   let score = 0;
@@ -46,6 +47,7 @@ export default function RegistryPage() {
   const [editingTitle, setEditingTitle] = useState('');
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Load view preference from localStorage
   useEffect(() => {
@@ -281,6 +283,15 @@ export default function RegistryPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                <button
+                    type="button"
+                    onClick={() => setShowSearch(!showSearch)}
+                    className="round-full search-cta flex h-12 w-12 items-center justify-center border border-transparent text-black transition-colors dark:bg-gray-100 dark:text-gray-900"
+                    title={showSearch ? "Hide search" : "Search objects"}
+                  >
+                    <Search className="h-5 w-5" />
+                    <span className="sr-only">{showSearch ? "Hide search" : "Search objects"}</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleViewChange('grid')}
@@ -320,7 +331,10 @@ export default function RegistryPage() {
                     />
                     <span className="sr-only">Table view</span>
                   </button>
-                  <Link
+
+                  
+                  
+                  {/*<Link
                     href="/registry/new"
                     className="round-full add-cta flex h-12 w-12 items-center justify-center border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     title="Add object"
@@ -328,20 +342,23 @@ export default function RegistryPage() {
                     <Plus className="h-5 w-5" />
                     <span className="sr-only">Add object</span>
                   </Link>
+                  */}
                 </div>
               </div>
 
               {/* Search and Filters */}
-              <div className="flex flex-row gap-3 mb-10">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  <Input
-                    placeholder="Search objects, makers, or tags..."
-                    defaultValue={searchTerm}
-                    onChange={(e) => debouncedSearch(e.target.value)}
-                    className="pl-4 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
-                  />
-                </div>
+              {showSearch && (
+                <div className="flex flex-row gap-3 mb-10">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <Input
+                      placeholder="Search objects, makers, or tags..."
+                      defaultValue={searchTerm}
+                      onChange={(e) => debouncedSearch(e.target.value)}
+                      className="pl-4 h-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-gray-900 dark:text-gray-100"
+                      autoFocus
+                    />
+                  </div>
                 {/*
                 <Button
                   variant={showPublicOnly ? "default" : "outline"}
@@ -357,6 +374,7 @@ export default function RegistryPage() {
                 </Button>
                 */}
                 </div>
+              )}
                 {/*
                 <select
                   value={anchoringFilter}
@@ -678,6 +696,7 @@ export default function RegistryPage() {
         </div>
       </div>
       <MobileBottomBar />
+      <FloatingActionButton href="/registry/new" label="Add new object" />
     </div>
     </>
   );

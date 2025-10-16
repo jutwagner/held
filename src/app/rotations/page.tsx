@@ -9,6 +9,7 @@ import type { RotationWithObjects } from '@/types';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { MobileBottomBar } from '@/components/Navigation';
+import FloatingActionButton from '@/components/FloatingActionButton';
 import SleekRotationCard from '@/components/SleekRotationCard';
 
 export default function RotationsPage() {
@@ -57,6 +58,7 @@ export default function RotationsPage() {
           </div>
         </div>
         <MobileBottomBar />
+        <FloatingActionButton href="/rotations/new" label="Add new rotation" />
       </div>
     );
   }
@@ -147,6 +149,7 @@ export default function RotationsPage() {
       </div>
     </div>
     <MobileBottomBar />
+    <FloatingActionButton href="/rotations/new" label="Add new rotation" />
     </div>
   );
 }
