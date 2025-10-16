@@ -704,11 +704,6 @@ export default function NewObjectPage() {
                 {/* Step 1: Identification */}
                 {currentStep === 1 && (
                   <div className="space-y-12">
-                    <div className="border-b border-gray-100 dark:border-gray-800 dark:border-gray-800 pb-4">
-                      <div className="text-xs font-medium tracking-widest uppercase text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">01</div>
-                      <h2 className="text-4xl font-light text-black dark:text-gray-100 dark:text-gray-100 tracking-tight">Photos</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">Add clear photos. The first will be used as the cover.</p>
-                    </div>
                     <div className="space-y-4">
                       <div>
                         {/* Image Upload Area */}
@@ -1280,9 +1275,8 @@ export default function NewObjectPage() {
                     type="button" 
                     variant="outline" 
                     onClick={prevStep}
-                    className="flex items-center gap-3 border-black text-black dark:text-gray-100 hover:bg-black hover:text-white rounded-sm font-light tracking-wide px-8 py-3"
+                    className="flex items-center gap-3 border-black text-black dark:text-gray-100 hover:bg-black hover:text-white rounded-xlg font-light tracking-wide px-8 py-3"
                   >
-                    <ChevronLeft className="h-4 w-4" />
                     Previous
                   </Button>
                 )}
@@ -1315,7 +1309,6 @@ export default function NewObjectPage() {
                     className="bg-black hover:bg-gray-800 text-white font-light tracking-wide flex items-center gap-3 px-8 py-3 rounded-sm"
                   >
                     Continue
-                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 )}
               </div>
