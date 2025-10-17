@@ -616,18 +616,18 @@ export default function NewObjectPage() {
         <div className="held-container held-container-wide py-8">
         {/* Header */}
         <div className="max-w-none mx-auto">
-          <div className="flex items-center justify-between mb-15">
-            <Button variant="ghost" asChild className="p-2 h-auto text-black dark:text-gray-100 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-              <Link href="/registry" className="flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
-                <ArrowLeft className="h-4 w-4" />
-                Registry
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" asChild className="p-0 h-auto text-black dark:text-gray-100 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+              <Link href="/registry" className="flex items-center gap-1 text-sm font-medium tracking-wide">
+                <ArrowLeft className="h-6 w-6" />
+                
               </Link>
             </Button>
     
           </div>
           
           <div className="mb-10">
-            <h1 className="text-4xl md:text-5xl font-light text-black dark:text-gray-100 dark:text-gray-100 mb-2 tracking-tighter leading-none">
+            <h1 className="text-2xl md:text-2xl font-light text-black dark:text-gray-100 dark:text-gray-100 mb-2 tracking-tighter leading-none text-center">
               Add New
             </h1>
           </div>
@@ -651,7 +651,7 @@ export default function NewObjectPage() {
         )}
 
         {/* Progress Indicator */}
-        <div className="max-w-sm mx-auto mb-12 md:mb-5">
+        <div className="mx-auto mb-5 md:mb-5">
           <div className="-mx-2 px-2">
             <div className="w-md">
               {/* Row 1: circles + connectors spanning full width */}

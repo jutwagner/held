@@ -6,6 +6,7 @@ import type { Area } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { getCroppedImage, blobToFile, readFileAsDataURL } from '@/lib/image-editor';
+import { RotateCcw, RotateCw, Maximize, Lock, Unlock, ZoomIn, RotateCcw as RotateLeftIcon, RotateCw as RotateRightIcon } from 'lucide-react';
 
 interface ImageEditorModalProps {
   open: boolean;
@@ -20,6 +21,17 @@ interface ImageEditorModalProps {
 
 const DEFAULT_MIN_ZOOM = 1;
 const DEFAULT_MAX_ZOOM = 3;
+
+const ASPECT_RATIO_OPTIONS = [
+  { label: 'Original', value: undefined, icon: Maximize },
+  { label: '1:1', value: 1, icon: Maximize },
+  { label: '4:3', value: 4/3, icon: Maximize },
+  { label: '3:4', value: 3/4, icon: Maximize },
+  { label: '16:9', value: 16/9, icon: Maximize },
+  { label: '9:16', value: 9/16, icon: Maximize },
+  { label: '3:2', value: 3/2, icon: Maximize },
+  { label: '2:3', value: 2/3, icon: Maximize },
+];
 
 export function ImageEditorModal({
   open,
@@ -40,9 +52,10 @@ export function ImageEditorModal({
   const [imageAspect, setImageAspect] = useState<number | undefined>(undefined);
   const [lockAspect, setLockAspect] = useState(true);
   const [cropSize, setCropSize] = useState<{ width: number; height: number } | undefined>(undefined);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const effectiveAspect = lockAspect ? aspect ?? imageAspect : undefined;
+  const effectiveAspect = lockAspect ? (selectedAspectRatio ?? aspect ?? imageAspect) : undefined;
 
   useEffect(() => {
     if (!open) {
@@ -55,6 +68,7 @@ export function ImageEditorModal({
       setImageAspect(undefined);
       setLockAspect(true);
       setCropSize(undefined);
+      setSelectedAspectRatio(undefined);
       return;
     }
 
@@ -190,74 +204,147 @@ export function ImageEditorModal({
             )}
           </div>
 
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Zoom</label>
-              <input
-                type="range"
-                min={DEFAULT_MIN_ZOOM}
-                max={DEFAULT_MAX_ZOOM}
-                step={0.1}
-                value={zoom}
-                onChange={(event) => setZoom(parseFloat(event.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Rotation</label>
-              <div className="flex items-center gap-3">
-                <Button type="button" variant="outline" size="sm" onClick={() => setRotation((prev) => prev - 90)} disabled={processing}>
-                  Rotate left
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => setRotation((prev) => prev + 90)} disabled={processing}>
-                  Rotate right
-                </Button>
+          {/* Modern Controls */}
+          <div className="space-y-6">
+            {/* Zoom Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ZoomIn className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">Zoom</span>
+                </div>
+                <span className="text-sm text-gray-500 font-mono">{zoom.toFixed(1)}x</span>
+              </div>
+              <div className="relative">
                 <input
                   type="range"
-                  min={-180}
-                  max={180}
-                  step={1}
-                  value={rotation}
-                  onChange={(event) => setRotation(parseInt(event.target.value, 10))}
-                  className="w-full"
+                  min={DEFAULT_MIN_ZOOM}
+                  max={DEFAULT_MAX_ZOOM}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(event) => setZoom(parseFloat(event.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb 100%)`
+                  }}
                 />
-                <span className="text-sm w-12 text-right">{rotation}°</span>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Aspect ratio</label>
-              <div className="flex items-center gap-2">
-                <Button
+
+            {/* Rotation Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Rotation</span>
+                <span className="text-sm text-gray-500 font-mono">{rotation}°</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Quick rotation buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRotation((prev) => prev - 90)}
+                    disabled={processing}
+                    className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RotateLeftIcon className="w-4 h-4 text-gray-700" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRotation((prev) => prev + 90)}
+                    disabled={processing}
+                    className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RotateRightIcon className="w-4 h-4 text-gray-700" />
+                  </button>
+                </div>
+                
+                {/* Fine rotation slider */}
+                <div className="flex-1 relative">
+                  <input
+                    type="range"
+                    min={-180}
+                    max={180}
+                    step={1}
+                    value={rotation}
+                    onChange={(event) => setRotation(parseInt(event.target.value, 10))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((rotation + 180) / 360) * 100}%, #e5e7eb ${((rotation + 180) / 360) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Aspect Ratio Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Aspect Ratio</span>
+                <button
                   type="button"
-                  variant={lockAspect ? 'default' : 'outline'}
-                  size="sm"
                   onClick={() => setLockAspect(prev => !prev)}
                   disabled={!imageSrc}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    lockAspect 
+                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
+                  {lockAspect ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                   {lockAspect ? 'Locked' : 'Free'}
-                </Button>
-                {lockAspect && effectiveAspect ? (
-                  <span className="text-xs text-gray-500">
-                    {effectiveAspect.toFixed(2)}:1
-                  </span>
-                ) : null}
+                </button>
               </div>
+              
+              {lockAspect && (
+                <div className="grid grid-cols-4 gap-2">
+                  {ASPECT_RATIO_OPTIONS.map((option) => (
+                    <button
+                      key={option.label}
+                      type="button"
+                      onClick={() => setSelectedAspectRatio(option.value)}
+                      disabled={!imageSrc}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        selectedAspectRatio === option.value
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
             {onUseOriginal && (
-              <Button type="button" variant="ghost" onClick={handleUseOriginal} disabled={!file || processing}>
+              <button
+                type="button"
+                onClick={handleUseOriginal}
+                disabled={!file || processing}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Use original
-              </Button>
+              </button>
             )}
-            <div className="ml-auto flex items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => !processing && onClose()} disabled={processing}>
+            <div className="ml-auto flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => !processing && onClose()}
+                disabled={processing}
+                className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Cancel
-              </Button>
-              <Button type="button" onClick={handleApply} disabled={disableApply}>
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={disableApply}
+                className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
                 {processing ? 'Processing…' : 'Apply'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

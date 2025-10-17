@@ -26,7 +26,7 @@ export default function FloatingActionButton({ href, label }: FloatingActionButt
   return (
     <Link
       href={href}
-      className="fixed bottom-20 right-4 z-50 md:hidden"
+      className="FAB fixed bottom-20 right-4 z-50 md:hidden"
       style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
     >
       <button
@@ -39,3 +39,4 @@ export default function FloatingActionButton({ href, label }: FloatingActionButt
     </Link>
   );
 }
+
