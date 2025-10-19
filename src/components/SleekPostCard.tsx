@@ -384,7 +384,7 @@ const SleekPostCard: React.FC<PostCardProps> = ({ post }) => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+              <div className="overflow-hidden w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                 {postUser?.avatarUrl ? (
                   <Image
                     src={postUser.avatarUrl}

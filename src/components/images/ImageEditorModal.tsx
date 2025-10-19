@@ -6,7 +6,7 @@ import type { Area } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { getCroppedImage, blobToFile, readFileAsDataURL } from '@/lib/image-editor';
-import { RotateCcw, RotateCw, Maximize, Lock, Unlock, ZoomIn, RotateCcw as RotateLeftIcon, RotateCw as RotateRightIcon } from 'lucide-react';
+import { RotateCcw, RotateCw, Maximize, ZoomIn, RotateCcw as RotateLeftIcon, RotateCw as RotateRightIcon } from 'lucide-react';
 
 interface ImageEditorModalProps {
   open: boolean;
@@ -50,12 +50,11 @@ export function ImageEditorModal({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [processing, setProcessing] = useState(false);
   const [imageAspect, setImageAspect] = useState<number | undefined>(undefined);
-  const [lockAspect, setLockAspect] = useState(true);
   const [cropSize, setCropSize] = useState<{ width: number; height: number } | undefined>(undefined);
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const effectiveAspect = lockAspect ? (selectedAspectRatio ?? aspect ?? imageAspect) : undefined;
+  const effectiveAspect = selectedAspectRatio ?? aspect ?? imageAspect;
 
   useEffect(() => {
     if (!open) {
@@ -66,7 +65,6 @@ export function ImageEditorModal({
       setProcessing(false);
       setImageSrc(null);
       setImageAspect(undefined);
-      setLockAspect(true);
       setCropSize(undefined);
       setSelectedAspectRatio(undefined);
       return;
@@ -88,7 +86,6 @@ export function ImageEditorModal({
     };
 
     const loadSource = async () => {
-      setLockAspect(true);
       if (file) {
         const dataUrl = await readFileAsDataURL(file);
         if (active) {
@@ -178,12 +175,12 @@ export function ImageEditorModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && !processing && onClose()}>
-      <DialogContent className="max-w-3xl w-full">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl w-full h-full md:h-auto md:max-h-[90vh] flex flex-col md:rounded-lg">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-lg font-medium">Adjust photo</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div ref={containerRef} className="relative w-full h-[400px] bg-gray-900/90 rounded-lg overflow-hidden">
+        <div className="flex-1 flex flex-col space-y-4 min-h-0">
+          <div ref={containerRef} className="relative w-full flex-1 min-h-[300px] md:h-[400px] bg-gray-900/90 rounded-lg overflow-hidden">
             {imageSrc && (
               <Cropper
                 image={imageSrc}
@@ -223,7 +220,7 @@ export function ImageEditorModal({
                   step={0.1}
                   value={zoom}
                   onChange={(event) => setZoom(parseFloat(event.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
                   style={{
                     background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb 100%)`
                   }}
@@ -267,7 +264,7 @@ export function ImageEditorModal({
                     step={1}
                     value={rotation}
                     onChange={(event) => setRotation(parseInt(event.target.value, 10))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
                     style={{
                       background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((rotation + 180) / 360) * 100}%, #e5e7eb ${((rotation + 180) / 360) * 100}%, #e5e7eb 100%)`
                     }}
@@ -278,42 +275,28 @@ export function ImageEditorModal({
 
             {/* Aspect Ratio Control */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between px-6">
                 <span className="text-sm font-medium text-gray-700">Aspect Ratio</span>
-                <button
-                  type="button"
-                  onClick={() => setLockAspect(prev => !prev)}
-                  disabled={!imageSrc}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    lockAspect 
-                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {lockAspect ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                  {lockAspect ? 'Locked' : 'Free'}
-                </button>
               </div>
               
-              {lockAspect && (
-                <div className="grid grid-cols-4 gap-2">
-                  {ASPECT_RATIO_OPTIONS.map((option) => (
-                    <button
-                      key={option.label}
-                      type="button"
-                      onClick={() => setSelectedAspectRatio(option.value)}
-                      disabled={!imageSrc}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                        selectedAspectRatio === option.value
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 -mx-6 px-6">
+                {ASPECT_RATIO_OPTIONS.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => setSelectedAspectRatio(option.value)}
+                    disabled={!imageSrc}
+                    className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+                      selectedAspectRatio === option.value
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    title={option.label}
+                  >
+                    {option.label === 'Original' ? '∞' : option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -908,3 +908,22 @@ body {
   background: #e5e7eb;
   border: none;
 }
+
+
+
+
+
+
+
+
+.rotation-avatar{
+  width: 2.5rem;
+  height:2.5rem;
+  border: none; 
+  margin-top: 8px;
+}
+.rotation-avatar img{
+  width: 40px;
+  height: 40px;
+
+}

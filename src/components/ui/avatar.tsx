@@ -9,7 +9,7 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Avatar({ className = '', fallback, children, ...props }: AvatarProps) {
   return (
     <div
-      className={`relative inline-flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 text-gray-600 ${className}`}
+      className={`relative inline-flex h-10 w-10 rotation-avatar shrink-0 overflow-hidden rounded-full bg-gray-200 text-gray-600 ${className}`}
       {...props}
     >
       {children}
