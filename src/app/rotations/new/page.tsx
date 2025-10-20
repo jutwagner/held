@@ -459,13 +459,13 @@ export default function NewRotationPage() {
               Back
             </Link>
           </Button>
-          <h1 className="text-3xl font-serif font-medium text-gray-900 dark:text-gray-100">Create Rotation</h1>
+          <h1 className="text-3xl font-serif font-medium text-gray-900 dark:text-gray-100">Add Rotation</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form */}
           <div>
-            <div className="held-card p-8">
+            <div className="">
               {reachedLimit && (
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md mb-4">
                   <p className="text-sm text-yellow-700 dark:text-yellow-400 font-semibold">
@@ -554,8 +554,15 @@ export default function NewRotationPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-32 w-full">
-                      <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16.5 3.5a3.5 3.5 0 11-7 0m7 0A3.5 3.5 0 009 3.5m7.5 0V7m-7.5 0V3.5m0 0A3.5 3.5 0 003.5 7m0 0V3.5m0 0A3.5 3.5 0 007 3.5" /></svg>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">Drag & drop or click to upload a cover image</span>
+                     <svg className="w-7 h-7 opacity-20"  id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 44.8 44.8">
+                                <path d="M25.9,14.7L17.7.6C10.1,2.2,4,7.6,1.4,14.7h24.5Z"/>
+                                <path d="M30.8,21.6l8.2-14.2C34.9,2.9,29,0,22.4,0s-2.6,0-3.8.3l12.2,21.3Z"/>
+                                <path d="M43.7,29.3c.7-2.2,1.1-4.5,1.1-6.9,0-5.4-1.9-10.4-5.2-14.3l-12.2,21.2h16.3Z"/>
+                                <path d="M13.9,23.3l-8.2,14.1c4.1,4.5,10,7.4,16.6,7.4s2.6,0,3.8-.3l-12.2-21.2Z"/>
+                                <path d="M17.4,15.5H1.1c-.7,2.2-1.1,4.5-1.1,6.9,0,5.4,1.9,10.4,5.2,14.3l12.2-21.2Z"/>
+                                <path d="M18.9,30.2l8.2,14.1c7.6-1.6,13.7-7,16.3-14.1h-24.5Z"/>
+                              </svg>
+                              <span className="text-gray-500 dark:text-gray-400 text-sm">Drag & drop or click to upload a cover image</span>
                     </div>
                   )}
                 </div>

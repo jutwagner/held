@@ -95,7 +95,7 @@ export default function SleekObjectCard({ object }: { object: HeldObject }) {
             )}
           </div>
 
-          {/* Tags 
+          {/* Tags */}
           {Array.isArray(object.tags) && object.tags.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
@@ -114,7 +114,7 @@ export default function SleekObjectCard({ object }: { object: HeldObject }) {
                 )}
               </div>
             </div>
-          )}*/}
+          )}
 
           {/* Provenance progress */}
           <div className="mb-4">

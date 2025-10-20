@@ -86,7 +86,7 @@ export default function RotationsPage() {
           </div>
           <Button asChild className="mt-4 sm:mt-0">
 
-
+{/* 
             <Link href="/rotations/new"
              className="add-cta flex h-12 w-12 items-center justify-center rounded-lg border border-transparent bg-gray-900 text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
              title="Add Rotation"
@@ -95,7 +95,7 @@ export default function RotationsPage() {
 
                     
 
-            </Link>
+            </Link> */}
           </Button>
         </div>
 

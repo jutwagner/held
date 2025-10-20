@@ -222,7 +222,7 @@ export function ImageEditorModal({
                   onChange={(event) => setZoom(parseFloat(event.target.value))}
                   className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb 100%)`
+                    background: `linear-gradient(to right,rgb(0, 0, 0) 0%,rgb(0, 0, 0) ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%, #e5e7eb ${((zoom - DEFAULT_MIN_ZOOM) / (DEFAULT_MAX_ZOOM - DEFAULT_MIN_ZOOM)) * 100}%,rgb(0, 0, 0) 100%)`
                   }}
                 />
               </div>
